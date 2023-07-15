@@ -215,18 +215,23 @@ class test:
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start=x_start, x_t=x, t=t)
         return model_mean, posterior_variance, posterior_log_variance, x_start
 
+
+    def generate_nosie(self,key,shape):
+        return jax.random.normal(key,shape)
+
+
     def p_sample(self, key, params, x, t):
         b, c, h, w = x.shape
         batch_times = jnp.full((b,), t)
         model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times)
-        noise = jax.random.normal(key, x.shape)
+        noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
         return pred_image, x_start
 
     def p_sample_loop(self, key, params, shape):
         key, normal_key = jax.random.split(key, 2)
-        img = jax.random.normal(normal_key, shape)
+        img = self.generate_nosie(normal_key, shape)
 
         x_start = None
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
@@ -240,7 +245,7 @@ class test:
     def ddim_sample(self, key, shape):
         b, *_ = shape
         key, key_image = jax.random.split(key, 2)
-        img = jax.random.normal(key_image, shape=shape)
+        img = self.generate_nosie(key_image, shape=shape)
 
         times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
         times = list(reversed(times))
@@ -253,7 +258,7 @@ class test:
                 img = x_start
             else:
                 key, key_noise = jax.random.split(key, 2)
-                noise = jax.random.normal(key_noise, shape=shape)
+                noise = self.generate_nosie(key_noise, shape=shape)
                 # noise = pred_noise
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
@@ -273,7 +278,7 @@ class test:
         )
 
     def p_loss(self, key, params, x_start, t):
-        noise = jax.random.normal(key, shape=x_start.shape)
+        noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
