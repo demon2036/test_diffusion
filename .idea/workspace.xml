@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="" />
+    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_google.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_google.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,7 +21,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/bert" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../anaconda3/envs/jtitor/lib/python3.10/site-packages/jax/_src/dtypes.py" root0="SKIP_INSPECTION" />
@@ -36,6 +39,7 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/john/testcocket&quot;,
@@ -57,7 +61,7 @@
       <recent name="$PROJECT_DIR$/check_points" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.schedules">
+  <component name="RunManager" selected="Python.infer">
     <configuration name="dataset" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pythonProject" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -170,10 +174,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.infer" />
         <item itemvalue="Python.schedules" />
         <item itemvalue="Python.dataset" />
         <item itemvalue="Python.gaussian_test" />
-        <item itemvalue="Python.infer" />
         <item itemvalue="Python.test_google" />
       </list>
     </recent_temporary>
@@ -215,7 +219,7 @@
       <workItem from="1689262519228" duration="198000" />
       <workItem from="1689316681348" duration="4000" />
       <workItem from="1689374176087" duration="2565000" />
-      <workItem from="1689406607341" duration="5294000" />
+      <workItem from="1689406607341" duration="12142000" />
     </task>
     <servers />
   </component>
@@ -233,7 +237,7 @@
     <SUITE FILE_PATH="coverage/diffusion$test_check.coverage" NAME="test_check Coverage Results" MODIFIED="1688986417119" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$down.coverage" NAME="down Coverage Results" MODIFIED="1689107847320" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$gaussian.coverage" NAME="gaussian Coverage Results" MODIFIED="1689064079977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/diffusion$infer.coverage" NAME="infer Coverage Results" MODIFIED="1689149867953" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/diffusion$infer.coverage" NAME="infer Coverage Results" MODIFIED="1689426085499" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$gaussian_test.coverage" NAME="gaussian_test Coverage Results" MODIFIED="1689155860950" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$utils.coverage" NAME="utils Coverage Results" MODIFIED="1689071318632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$test_google.coverage" NAME="test_google Coverage Results" MODIFIED="1689147737347" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

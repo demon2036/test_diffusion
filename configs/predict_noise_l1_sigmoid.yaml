@@ -15,7 +15,7 @@
     dtype : 'bfloat16'
   },
   "Gaussian": {
-    loss: 'l2',
+    loss: 'l1',
     timesteps: 1000,
     sampling_timesteps: 75,
     objective: 'predict_noise',
