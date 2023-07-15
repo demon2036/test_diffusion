@@ -101,7 +101,7 @@ class test:
             beta_schedule='linear',
             ddim_sampling_eta=0.,
     ):
-        self.scale=1.5
+        self.scale=1
         self.state = None
         self.model = model(**model_kwargs)
         self.image_size = image_size
@@ -274,7 +274,7 @@ class test:
 
     def q_sample(self, x_start, t, noise):
         return (
-                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
+                0.5*extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
                 extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
