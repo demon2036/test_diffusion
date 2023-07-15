@@ -101,6 +101,7 @@ class test:
             beta_schedule='linear',
             ddim_sampling_eta=0.,
     ):
+        self.scale=1.5
         self.state = None
         self.model = model(**model_kwargs)
         self.image_size = image_size
@@ -217,7 +218,7 @@ class test:
 
 
     def generate_nosie(self,key,shape):
-        return jax.random.normal(key,shape)
+        return jax.random.normal(key,shape)*self.scale
 
 
     def p_sample(self, key, params, x, t):
