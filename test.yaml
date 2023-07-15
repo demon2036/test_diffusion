@@ -1,6 +1,6 @@
 {
   "train": {
-      image_size : 64,
+      image_size : 128,
       seed : 43,
       batch_size : 16,
       file_path : '/home/john/datasets/celeba-128/celeba-128'

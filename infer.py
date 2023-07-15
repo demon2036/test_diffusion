@@ -1,11 +1,6 @@
-import gc
-
-import einops
-import numpy as np
+import argparse
 from tqdm import tqdm
 import jax.random
-import torch
-
 from unet import *
 from schedules import *
 from utils import *
@@ -15,10 +10,11 @@ from functools import partial
 from flax.training import dynamic_scale as dynamic_scale_lib, train_state, orbax_utils
 import optax
 from flax.training.common_utils import shard, shard_prng_key
-from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
 
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
+
+os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 # os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
@@ -60,7 +56,7 @@ def create_state(rng, model_cls, input_shape, learning_rate, train_state, print_
 
     model = model_cls(*args, **model_kwargs)
     if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 140}))
+        print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 120}))
     variables = model.init(rng, jnp.empty(input_shape))
     tx = optax.lion(learning_rate, weight_decay=1e-2)
     return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
@@ -166,7 +162,7 @@ class test:
 
     def predict_noise_from_start(self, x_t, t, x0):
         return (
-                #extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
+            # extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
                 extract(self.sqrt_recip_one_minus_alphas_cumprod, t, x_t.shape) * x_t -
                 extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * x0
         )
@@ -192,9 +188,8 @@ class test:
         model_out = model_predict(self.state, x)
         model_out = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
         x = einops.rearrange(x, 'n b h w c->(n b) h w c')
-        print(x.max(),x.min())
         clip_x_start = True
-        maybe_clip = partial(jnp.clip, a_min=0., a_max=1.) if clip_x_start else identity
+        maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
         if self.objective == 'predict_noise':
             pred_noise = model_out
@@ -220,18 +215,21 @@ class test:
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start=x_start, x_t=x, t=t)
         return model_mean, posterior_variance, posterior_log_variance, x_start
 
+    def generate_nosie(self, key, shape):
+        return jax.random.normal(key, shape)
+
     def p_sample(self, key, params, x, t):
         b, c, h, w = x.shape
         batch_times = jnp.full((b,), t)
         model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times)
-        noise = jax.random.normal(key, x.shape)
+        noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
         return pred_image, x_start
 
     def p_sample_loop(self, key, params, shape):
         key, normal_key = jax.random.split(key, 2)
-        img = jax.random.normal(normal_key, shape)
+        img = self.generate_nosie(normal_key, shape)
 
         x_start = None
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
@@ -245,7 +243,7 @@ class test:
     def ddim_sample(self, key, shape):
         b, *_ = shape
         key, key_image = jax.random.split(key, 2)
-        img = jax.random.normal(key_image, shape=shape)
+        img = self.generate_nosie(key_image, shape=shape)
 
         times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
         times = list(reversed(times))
@@ -258,8 +256,8 @@ class test:
                 img = x_start
             else:
                 key, key_noise = jax.random.split(key, 2)
-                noise = jax.random.normal(key_noise, shape=shape)
-                #noise = pred_noise
+                noise = self.generate_nosie(key_noise, shape=shape)
+                # noise = pred_noise
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
@@ -278,7 +276,7 @@ class test:
         )
 
     def p_loss(self, key, params, x_start, t):
-        noise = jax.random.normal(key, shape=x_start.shape)
+        noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
@@ -328,6 +326,7 @@ def update_ema(state: TrainState, ema_decay=0.999):
 def sample_save_image(key, c, steps, state: TrainState):
     c.set_state(state)
     sample = c.sample(key, state.ema_params, batch_size=64)
+    sample = sample / 2 + 0.5
     c.state = None
     sample = einops.rearrange(sample, 'b h w c->b c h w')
     sample = np.array(sample)
@@ -336,37 +335,29 @@ def sample_save_image(key, c, steps, state: TrainState):
 
 
 if __name__ == "__main__":
-    config = read_yaml()
+    # if os.path.exists('./nohup.out'):
+    #    os.remove('./nohup.out')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-cp', '--config_path', default='./test.yaml')
+    # parser.add_argument('-ct', '--continues',action=True ,)
+    args = parser.parse_args()
+    print(args)
+
+    config = read_yaml(args.config_path)
 
     train_config = config['train']
     unet_config = config['Unet']
     gaussian_config = config['Gaussian']
 
-    key = jax.random.PRNGKey(seed=train_config['seed'])
-    image_size, seed, batch_size = train_config.values()
+    key = jax.random.PRNGKey(seed=43)
+    image_size, seed, batch_size, data_path = train_config.values()
 
-    print(image_size, seed, batch_size)
+    print(image_size, seed, batch_size, data_path)
 
     input_shape = (16, image_size, image_size, 3)
 
-    c = test(model_kwargs=unet_config, **gaussian_config,image_size=image_size)
-    """
-    model_kwargs = {
-        'block_out_channels': (256, 512, 512, 1024),
-        # 'block_out_channels': (128, 256, 256, 512),
-        'layers_per_block': 2,
-        'out_channels': 3,
-        'dtype': 'bfloat16',
-
-    }
-
-
-
-    loss='l2', image_size=image_size, timesteps=1000, sampling_timesteps=100,
-             objective='predict_x0',
-             beta_schedule='cosine'
-
-    """
+    c = test(model_kwargs=unet_config, **gaussian_config, image_size=image_size)
 
     state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5,
                          train_state=TrainState, model_kwargs=unet_config)
