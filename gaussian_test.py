@@ -11,6 +11,8 @@ from flax.training import dynamic_scale as dynamic_scale_lib, train_state, orbax
 import optax
 from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
+from jax_smi import initialise_tracking
+initialise_tracking()
 
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 

@@ -5,7 +5,7 @@
       batch_size : 4,
       file_path : '/home/john/datasets/celeba-128/celeba-128',
       learning_rate : 1e-4,
-      optimizer : "AdamW"
+      optimizer : "Lion"
   },
   "Unet": {
     out_channels: 3,
