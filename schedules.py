@@ -62,35 +62,31 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     return jnp.clip(betas, 0, 0.999)
 
 
+
+def g_noise(noise_key,shape):
+    return jax.random.generalized_normal(noise_key,1,shape)
+    return jax.random.normal(noise_key, shape)
+
 def generate_nosie(key, shape):
-    discount = 1
+    discount = 0.9
     h, w, c = shape
     key, noise_key = jax.random.split(key, 2)
-    noise = jax.random.normal(noise_key, shape)
+
+    noise = g_noise(noise_key,shape)
     for i in range(100):
         key, noise_key = jax.random.split(key, 2)
         r = 2  # random.random() * 2 +
-        print(r)
-        w, h = max(1, int(w / (r))), max(1, int(h / (r)))  #
+        w, h = max(1, int(w / (r ** i))), max(1, int(h / (r ** i)))  #
         new_shape = (w, h, c)
-        new_noise = jax.random.normal(noise_key, new_shape, )
+        new_noise = g_noise(noise_key,new_shape)
         noise += jax.image.resize(new_noise, shape, method='bilinear') * discount ** i
-        print(w, h)
+
         if w == 1 or h == 1: break
-    return noise / noise.std() * jnp.log(i)
-
-
-def generate_nosie(key, shape):
-    discount = 1
-    h, w, c = shape
-    key, noise_key = jax.random.split(key, 2)
-    noise = jax.random.normal(noise_key, shape)
-
     return noise / noise.std()
 
 
 if __name__ == "__main__":
-    betas = linear_beta_schedule(1000)
+    betas = sigmoid_beta_schedule(1000)
     alphas = 1. - betas
     alphas_cumprod = jnp.cumprod(alphas, )
     # print(alphas_cumprod)
@@ -98,11 +94,12 @@ if __name__ == "__main__":
 
     img = np.array(img)
     img = jnp.array(img)
-    scale = 4
-    img = jax.image.resize(img, method="bilinear", shape=(32 * scale, 32 * scale, 3))
+    scale = 1
+    img = jax.image.resize(img, method="bilinear", shape=(64 * scale, 64 * scale, 3))
     img = img / 255
+    img = img * 2 - 1
 
-    t = 100
+    t = 400
     alphas = alphas_cumprod[t]
     seed = jax.random.key(42)
 
@@ -110,10 +107,14 @@ if __name__ == "__main__":
     noise = generate_nosie(seed, img.shape)
     x = jnp.sqrt(alphas) * img + jnp.sqrt(1 - alphas) * noise
 
-    x=x/x.std()
-
+    # x=x/x.std()
 
     x = np.array(x)
+    x = x/x.std()
+
+    print(x.std())
+
+    x = x /2 + 0.5
     plt.subplot(121)
     plt.imshow(x)
     plt.subplot(122)
