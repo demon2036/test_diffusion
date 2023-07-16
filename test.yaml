@@ -2,8 +2,10 @@
   "train": {
       image_size : 128,
       seed : 43,
-      batch_size : 6,
-      file_path : '/home/john/datasets/celeba-128/celeba-128'
+      batch_size : 4,
+      file_path : '/home/john/datasets/celeba-128/celeba-128',
+      learning_rate : 1e-4,
+      optimizer : "AdamW"
   },
   "Unet": {
     out_channels: 3,
@@ -21,5 +23,7 @@
     objective: 'predict_noise',
     beta_schedule : 'sigmoid'
   }
-
 }
+
+
+#'/home/john/datasets/celeba-128/celeba-128'

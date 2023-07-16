@@ -45,7 +45,7 @@ def model_predict(model: TrainState, x):
     return model.apply_fn({"params": model.ema_params}, x)
 
 
-def create_state(rng, model_cls, input_shape, learning_rate, train_state, print_model=True, model_kwargs=None, *args, ):
+def create_state(rng, model_cls, input_shape, learning_rate,optimizer, train_state, print_model=True, model_kwargs=None, *args, ):
     platform = jax.local_devices()[0].platform
 
     if platform == "gpu":
@@ -58,7 +58,15 @@ def create_state(rng, model_cls, input_shape, learning_rate, train_state, print_
     if print_model:
         print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 120}))
     variables = model.init(rng, jnp.empty(input_shape))
-    tx = optax.lion(learning_rate, weight_decay=1e-2)
+
+    if optimizer=='AdamW':
+        optimizer=optax.adamw
+    elif optimizer=="Lion":
+        optimizer=optax.lion
+    else:
+        assert "soem thing is wrong"
+
+    tx = optimizer(learning_rate, weight_decay=1e-2)
     return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
                               ema_params=variables['params'])
 
@@ -356,7 +364,7 @@ if __name__ == "__main__":
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
-    image_size, seed, batch_size, data_path = train_config.values()
+    image_size, seed, batch_size, data_path,learning_rate,optimizer = train_config.values()
 
     print(image_size, seed, batch_size, data_path)
 
@@ -364,7 +372,7 @@ if __name__ == "__main__":
 
     c = test(model_kwargs=unet_config, **gaussian_config, image_size=image_size)
 
-    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5,
+    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5,optimizer=optimizer,
                          train_state=TrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
