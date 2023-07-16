@@ -12,6 +12,7 @@ import optax
 from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
 from jax_smi import initialise_tracking
+
 initialise_tracking()
 
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
@@ -47,7 +48,8 @@ def model_predict(model: TrainState, x):
     return model.apply_fn({"params": model.ema_params}, x)
 
 
-def create_state(rng, model_cls, input_shape, learning_rate,optimizer, train_state, print_model=True, model_kwargs=None, *args, ):
+def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
+                 model_kwargs=None, *args, ):
     platform = jax.local_devices()[0].platform
 
     if platform == "gpu":
@@ -61,10 +63,10 @@ def create_state(rng, model_cls, input_shape, learning_rate,optimizer, train_sta
         print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 120}))
     variables = model.init(rng, jnp.empty(input_shape))
 
-    if optimizer=='AdamW':
-        optimizer=optax.adamw
-    elif optimizer=="Lion":
-        optimizer=optax.lion
+    if optimizer == 'AdamW':
+        optimizer = optax.adamw
+    elif optimizer == "Lion":
+        optimizer = optax.lion
     else:
         assert "soem thing is wrong"
 
@@ -111,7 +113,7 @@ class test:
             beta_schedule='linear',
             ddim_sampling_eta=0.,
     ):
-        self.scale=1
+        self.scale = 1
         self.state = None
         self.model = model(**model_kwargs)
         self.image_size = image_size
@@ -226,10 +228,8 @@ class test:
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start=x_start, x_t=x, t=t)
         return model_mean, posterior_variance, posterior_log_variance, x_start
 
-
-    def generate_nosie(self,key,shape):
-        return jax.random.normal(key,shape)*self.scale
-
+    def generate_nosie(self, key, shape):
+        return jax.random.normal(key, shape) * self.scale
 
     def p_sample(self, key, params, x, t):
         b, c, h, w = x.shape
@@ -284,7 +284,7 @@ class test:
 
     def q_sample(self, x_start, t, noise):
         return (
-                0.5*extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
+                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
                 extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
@@ -348,10 +348,10 @@ def sample_save_image(key, c, steps, state: TrainState):
 
 
 if __name__ == "__main__":
-    #if os.path.exists('./nohup.out'):
+    # if os.path.exists('./nohup.out'):
     #    os.remove('./nohup.out')
 
-    os.makedirs('./result',exist_ok=True)
+    os.makedirs('./result', exist_ok=True)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./test.yaml')
@@ -366,15 +366,17 @@ if __name__ == "__main__":
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
-    image_size, seed, batch_size, data_path,learning_rate,optimizer = train_config.values()
 
-    print(image_size, seed, batch_size, data_path)
+    image_size, seed, batch_size, data_path, \
+        learning_rate, optimizer, sample_steps = train_config.values()
+
+    print(train_config.values())
 
     input_shape = (16, image_size, image_size, 3)
 
     c = test(model_kwargs=unet_config, **gaussian_config, image_size=image_size)
 
-    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5,optimizer=optimizer,
+    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5, optimizer=optimizer,
                          train_state=TrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
@@ -406,7 +408,7 @@ if __name__ == "__main__":
 
             state = update_ema(state, 0.9999)
 
-            if steps % 10000 == 0:
+            if steps % sample_steps == 0:
                 sample_save_image(key, c, steps, state)
                 unreplicate_state = flax.jax_utils.unreplicate(state)
                 model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps

@@ -382,7 +382,8 @@ if __name__ == "__main__":
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
-    image_size, seed, batch_size, data_path,learning_rate,optimizer = train_config.values()
+    image_size, seed, batch_size, data_path, \
+        learning_rate, optimizer, sample_steps = train_config.values()
 
     print(image_size, seed, batch_size, data_path)
 
@@ -422,7 +423,7 @@ if __name__ == "__main__":
 
             state = update_ema(state, 0.9999)
 
-            if steps % 10000 == 0:
+            if steps % sample_steps == 0:
                 sample_save_image(key, c, steps, state)
                 unreplicate_state = flax.jax_utils.unreplicate(state)
                 model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
