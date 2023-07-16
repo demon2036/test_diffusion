@@ -300,7 +300,7 @@ class test:
 
     def q_sample(self, x_start, t, noise):
         return (
-                0.5*extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
+                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
                 extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
