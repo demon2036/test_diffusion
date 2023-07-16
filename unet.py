@@ -8,6 +8,8 @@ from functools import partial
 from einops import rearrange
 from jax._src.nn.initializers import constant
 
+from diffusers import DDIMScheduler
+
 
 class WeightStandardizedConv(nn.Module):
     """
@@ -158,13 +160,17 @@ class EncoderBlock(nn.Module):
     features: int
     layers_per_block: int
     dtype: str
+    down: bool
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
+        skip_blocks = []
         for _ in range(self.layers_per_block):
             x = ResBlock(features=self.features, dtype=self.dtype)(x)
-        x = DownSample(self.features, dtype=self.dtype)(x)
-        return x
+            skip_blocks.append(x)
+        if self.down:
+            x = DownSample(self.features, dtype=self.dtype)(x)
+        return x, skip_blocks
 
 
 class MidBlock(nn.Module):
@@ -176,6 +182,7 @@ class MidBlock(nn.Module):
     def __call__(self, x, *args, **kwargs):
         for _ in range(self.layers_per_block):
             x = ResBlock(self.features, dtype=self.dtype)(x)
+
         return x
 
 
@@ -183,12 +190,16 @@ class DecoderBlock(nn.Module):
     features: int
     layers_per_block: int
     dtype: str
+    up: bool
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x, skip_blocks: list, *args, **kwargs):
         for _ in range(self.layers_per_block):
+            prev_block = skip_blocks.pop()
+            x = jnp.concatenate([x, prev_block], axis=3)
             x = ResBlock(self.features, dtype=self.dtype)(x)
-        x = Upsample(self.features, dtype=self.dtype)(x)
+        if self.up:
+            x = Upsample(self.features, dtype=self.dtype)(x)
         return x
 
 
@@ -204,26 +215,30 @@ class Unet(nn.Module):
 
         block_out_channels = self.block_out_channels
 
-        #x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
+        # x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
 
         temp = []
 
-        for channesls in block_out_channels:
-            x = EncoderBlock(channesls, self.layers_per_block, dtype=self.dtype)(x)
-            temp.append(x)
+        for i, channesls in enumerate(block_out_channels):
+            is_final = (i == len(block_out_channels) - 1)
+
+            x, skip_block = EncoderBlock(channesls, self.layers_per_block, dtype=self.dtype,
+                                         down=True if not is_final else False)(x)
+
+            temp.append(skip_block)
 
         prev = MidBlock(block_out_channels[-1], self.layers_per_block, dtype=self.dtype)(x)
 
         skip_blocks = list(reversed(temp))
         block_out_channels = list(reversed(block_out_channels))
 
-        for skip_block, channels in zip(skip_blocks, block_out_channels):
-            input_tensor = jnp.concatenate([prev, skip_block], axis=3)
-            x = DecoderBlock(channels, self.layers_per_block, dtype=self.dtype)(input_tensor)
+        for i, (skip_block, channels) in enumerate(zip(skip_blocks, block_out_channels)):
+            is_final = (i == len(block_out_channels) - 1)
+
+            x = DecoderBlock(channels, self.layers_per_block, dtype=self.dtype, up=True if not is_final else False)(prev, skip_block)
             prev = x
-
-        x = nn.Conv(self.out_channels*self.scale**2, (3, 3), padding='SAME', dtype='float32')(x)
-
-        #x = einops.rearrange(x, 'b h w (c p1 p2)->b  (h p1) (w p2) c', p1=self.scale, p2=self.scale)
-
+        x = nn.GroupNorm()(x)
+        x = nn.silu(x)
+        x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype='float32')(x)
+        # x = einops.rearrange(x, 'b h w (c p1 p2)->b  (h p1) (w p2) c', p1=self.scale, p2=self.scale)
         return x
