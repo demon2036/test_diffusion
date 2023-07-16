@@ -1,8 +1,8 @@
 {
   "train": {
-      image_size : 128,
+      image_size : 64,
       seed : 43,
-      batch_size : 256,
+      batch_size : 128,
       file_path : '/root/data/celeba-128/celeba-128',
       learning_rate : 1e-4,
       optimizer : "AdamW"

@@ -64,7 +64,7 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
 
 
 def g_noise(noise_key,shape):
-    return jax.random.generalized_normal(noise_key,1,shape)
+   # return jax.random.generalized_normal(noise_key,1,shape)
     return jax.random.normal(noise_key, shape)
 
 def generate_nosie(key, shape):
@@ -104,15 +104,15 @@ if __name__ == "__main__":
     seed = jax.random.key(42)
 
     # noise = jax.random.normal(seed, img.shape)
-    noise = generate_nosie(seed, img.shape)
+    noise = g_noise(seed, img.shape)
     x = jnp.sqrt(alphas) * img + jnp.sqrt(1 - alphas) * noise
 
     # x=x/x.std()
 
     x = np.array(x)
-    x = x/x.std()
+   # x = x/x.std()
 
-    print(x.std())
+    print(x.max())
 
     x = x /2 + 0.5
     plt.subplot(121)
