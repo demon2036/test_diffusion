@@ -341,6 +341,8 @@ if __name__ == "__main__":
     #if os.path.exists('./nohup.out'):
     #    os.remove('./nohup.out')
 
+    os.makedirs('./result',exist_ok=True)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./test.yaml')
     # parser.add_argument('-ct', '--continues',action=True ,)
