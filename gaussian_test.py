@@ -60,7 +60,7 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
 
     model = model_cls(*args, **model_kwargs)
     if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 160}))
+        print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 200}))
     variables = model.init(rng, jnp.empty(input_shape))
 
     if optimizer == 'AdamW':
