@@ -8,7 +8,7 @@ from functools import partial
 from einops import rearrange
 from jax._src.nn.initializers import constant
 
-from diffusers import DDIMScheduler
+
 
 
 class WeightStandardizedConv(nn.Module):
