@@ -70,7 +70,10 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
     else:
         assert "soem thing is wrong"
 
-    tx = optimizer(learning_rate, weight_decay=1e-2)
+    tx = optax.chain(
+        optax.clip_by_global_norm(1),
+        optimizer(learning_rate, weight_decay=1e-2)
+    )
     return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
                               ema_params=variables['params'])
 
