@@ -87,6 +87,7 @@ def generate_nosie(key, shape):
 
 
 if __name__ == "__main__":
+    os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     betas = cosine_beta_schedule(1000)
     alphas = 1. - betas
     alphas_cumprod = jnp.cumprod(alphas, )
@@ -95,18 +96,18 @@ if __name__ == "__main__":
 
     img = np.array(img)
     img = jnp.array(img)
-    scale = 64
+    scale = 8
     img = jax.image.resize(img, method="bilinear", shape=(64 * scale, 64 * scale, 3))
     img = img / 255
     img = img * 2 - 1
 
-    t = 0
+    t = 100
     alphas = alphas_cumprod[t]
 
 
     snr=alphas/(1-alphas)
 
-    alphas=1- 1/(1+(1/scale)**1.5*snr)
+    alphas=1- 1/(1+(1/scale)**2*snr)
 
 
     seed = jax.random.key(42)

@@ -1,13 +1,4 @@
-# import omegaconf
-# import yaml
-# import os
-# import json
-#
-# state = flax.jax_utils.replicate(model_ckpt['model'])
-# time_steps = [20, 25, 35, 50, 75, 100, 200, 250, 500, 1000]
-# for time in time_steps:
-#     c.sampling_timesteps = time
-#     sample_save_image(key, c, time, state)
+import numpy as np
 
 # def pyramid_noise_like(x, discount=0.9):
 #   b, c, w, h = x.shape # EDIT: w and h get over-written, rename for a different variant!
@@ -22,51 +13,57 @@
 
 #
 
+import jax.numpy as jnp
+import torch
 
-import numpy as np
-import cv2
+from gaussian_test import test
+from torch_diffusion import GaussianDiffusion,Unet
 
+from diffusers import UNet2DModel
+
+def show(l1,l2):
+    for a,b in zip(l1,l2):
+        print(np.max(np.array(a)-np.array(b)))
 
 if __name__=="__main__":
+    c=test( loss='l2', image_size=64, timesteps=1000, sampling_timesteps=999, beta_schedule='linear')
+
+    model = Unet(
+        dim=64,
+        dim_mults=(1, 2, 4, 8),
+        flash_attn=True
+    )
+
+    diffusion = GaussianDiffusion(
+        model,
+        image_size=128,
+        timesteps=1000,  # number of steps
+        sampling_timesteps=250,
+        beta_schedule='linear',
+        objective='pred_noise',
+        # number of sampling timesteps (using ddim for faster inference [see citation for ddim paper])
+    )
 
 
-    def add_gaussian_noise(image, target_snr):
-        # Convert image to grayscale
-        #gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray_image =image
 
-        # Calculate signal power
-        signal_power = np.mean(gray_image) ** 2
+    # x1=c.posterior_mean_coef2
+    # x2=diffusion.posterior_mean_coef2
+    # print(np.max(np.array(x1)-np.array(x2)))
+    shape=((1,4,4,3))
+    time=100
+    img1=jnp.ones(shape=shape)
+    noise1=jnp.zeros_like(img1)
+    t1=jnp.full((1,),time)
+    x1=c.q_sample(img1,t1,noise1)
 
-        # Calculate noise power
-        noise_power = signal_power / (10 ** (target_snr / 10))
+    a1,b1,c1=c.q_posterior(img1,x1,t1)
 
-        # Generate Gaussian noise
-        noise = np.random.normal(0, 1, gray_image.shape)
+    device='cpu'
+    img2=torch.ones(shape,device=device)
+    t2=torch.full((1,),time,dtype=torch.long,device=device)
+    noise2=torch.zeros_like(img2,device=device)
+    x2=diffusion.q_sample(img2,t2,noise2)
+    a2, b2, c2 = diffusion.q_posterior(img2, x2, t2)
 
-        # Calculate generated noise power
-        generated_noise_power = np.mean(noise) ** 2
+    show([ a1,b1,c1],[a2, b2, c2 ])
 
-        # Scale the noise to match the target noise power
-        scaled_noise = noise * np.sqrt(noise_power / generated_noise_power)
-
-        # Add scaled noise to the original image
-        noisy_image = gray_image + scaled_noise
-
-        # Clip the values to the valid range of [0, 255]
-        noisy_image = np.clip(noisy_image, 0, 255)
-
-        # Convert the image back to uint8
-        noisy_image = noisy_image.astype(np.uint8)
-
-        return noisy_image
-
-
-    # 读取原始图像
-    image = cv2.imread('/home/john/ダウンロード/alice.png')
-
-    # 添加高斯噪声并指定信噪比为20dB
-    noisy_image = add_gaussian_noise(image, 60)
-
-    # 保存添加噪声后的图像
-    cv2.imwrite('noisy_image.jpg', noisy_image)
