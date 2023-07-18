@@ -24,7 +24,9 @@ def get_dataloader(batch_size=32, dataset='mnist', cache=True,image_size=64):
         return dataloader
     else:
         mnist = MyDataSet(dataset, cache,image_size)
-        dataloader = DataLoader(mnist, batch_size=batch_size, num_workers=os.cpu_count()//2, persistent_workers=True,
+        dataloader = DataLoader(mnist, batch_size=batch_size,
+                                num_workers=min(os.cpu_count(),len(mnist.data)//batch_size//2)
+                                , persistent_workers=True,
                                 drop_last=True)
         return dataloader
 
