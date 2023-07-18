@@ -8,7 +8,7 @@ from functools import partial
 from einops import rearrange
 from jax._src.nn.initializers import constant
 
-
+from diffusers import UNet2DModel
 
 
 class WeightStandardizedConv(nn.Module):
@@ -97,11 +97,42 @@ class Upsample(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
+        b,h,w,c=x.shape
+        x= jax.image.resize(x,shape=(b,h*2,w*2,c),method="nearest")
         x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype)(x)
-        x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
+        #x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
         return x
 
 
+
+
+
+class ResBlock(nn.Module):
+    features: int
+    dtype: str
+    factor: int = 4
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype)
+        b,h,w,c=x.shape
+        hidden_state=x
+
+        hidden_state=nn.GroupNorm(dtype=self.dtype)(hidden_state)
+        hidden_state=nn.silu(hidden_state)
+        hidden_state=conv(self.features,(3,3),padding="SAME")(hidden_state)
+
+        hidden_state = nn.GroupNorm(dtype=self.dtype)(hidden_state)
+        hidden_state = nn.silu(hidden_state)
+        hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
+
+        if c!=self.features:
+            x=conv(self.features,(1,1))(x)
+        return x+hidden_state
+
+
+
+"""
 class ResBlock(nn.Module):
     features: int
     dtype: str
@@ -131,7 +162,7 @@ class ResBlock(nn.Module):
         return x
 
 
-"""
+
 class ResBlock(nn.Module):
     features: int
     dtype: str
@@ -216,7 +247,7 @@ class Unet(nn.Module):
         block_out_channels = self.block_out_channels
 
         # x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
-
+        x=nn.Conv(block_out_channels[0],(3,3),padding="SAME",dtype=self.dtype)(x)
         temp = []
 
         for i, channesls in enumerate(block_out_channels):
