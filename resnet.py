@@ -1,3 +1,4 @@
+import einops
 from jax._src.nn.initializers import constant
 import jax
 import jax.numpy as jnp
@@ -105,7 +106,7 @@ class ResBlock(nn.Module):
     factor: int = 4
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x, temb,*args, **kwargs):
         conv = partial(nn.Conv, padding='SAME', dtype=self.dtype)
         b,h,w,c=x.shape
         hidden_state=x
@@ -113,6 +114,10 @@ class ResBlock(nn.Module):
         hidden_state=nn.GroupNorm(dtype=self.dtype)(hidden_state)
         hidden_state=nn.silu(hidden_state)
         hidden_state=conv(self.features,(3,3),padding="SAME")(hidden_state)
+
+        temb=nn.Dense(self.features,dtype=self.dtype)(temb)
+        hidden_state+=einops.rearrange(temb,'b c ->b 1 1 c')
+
 
         hidden_state = nn.GroupNorm(dtype=self.dtype)(hidden_state)
         hidden_state = nn.silu(hidden_state)

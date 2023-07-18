@@ -44,8 +44,8 @@ class TrainState(train_state.TrainState):
 
 
 @jax.pmap
-def model_predict(model: TrainState, x):
-    return model.apply_fn({"params": model.ema_params}, x)
+def model_predict(model: TrainState, x,time):
+    return model.apply_fn({"params": model.ema_params}, x,time)
 
 
 def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
@@ -60,8 +60,8 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
 
     model = model_cls(*args, **model_kwargs)
     if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), depth=2, console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape))
+        print(model.tabulate(rng, jnp.empty(input_shape),jnp.empty((input_shape[0],)), depth=2, console_kwargs={'width': 200}))
+    variables = model.init(rng, jnp.empty(input_shape),jnp.empty((input_shape[0],)) )
 
     if optimizer == 'AdamW':
         optimizer = optax.adamw
@@ -217,9 +217,11 @@ class test:
 
     def model_predictions(self, params, x, t, *args, **kwargs):
         x = shard(x)
-        model_out = model_predict(self.state, x)
+        t=shard(t)
+        model_out = model_predict(self.state, x,t)
         model_out = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
         x = einops.rearrange(x, 'n b h w c->(n b) h w c')
+        t =flax.jax_utils.unreplicate(t)
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
@@ -312,7 +314,7 @@ class test:
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x)
+        model_output = state.apply_fn({"params": params}, x,t)
 
         if self.objective == 'predict_noise':
             target = noise

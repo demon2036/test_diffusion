@@ -14,10 +14,10 @@ class EncoderBlock(nn.Module):
     down: bool
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x,t_emb, *args, **kwargs):
         skip_blocks = []
         for _ in range(self.layers_per_block):
-            x = ResBlock(features=self.features, dtype=self.dtype)(x)
+            x = ResBlock(features=self.features, dtype=self.dtype)(x,t_emb)
             skip_blocks.append(x)
         if self.down:
             x = DownSample(self.features, dtype=self.dtype)(x)
@@ -31,9 +31,9 @@ class MidBlock(nn.Module):
     dtype: str
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x,t_emb, *args, **kwargs):
         for _ in range(self.layers_per_block):
-            x = ResBlock(self.features, dtype=self.dtype)(x)
+            x = ResBlock(self.features, dtype=self.dtype)(x,t_emb)
 
         return x
 
@@ -45,11 +45,11 @@ class DecoderBlock(nn.Module):
     up: bool
 
     @nn.compact
-    def __call__(self, x, skip_blocks: list, *args, **kwargs):
+    def __call__(self, x, skip_blocks: list,t_emb, *args, **kwargs):
         for _ in range(self.layers_per_block):
             prev_block = skip_blocks.pop()
             x = jnp.concatenate([x, prev_block], axis=3)
-            x = ResBlock(self.features, dtype=self.dtype)(x)
+            x = ResBlock(self.features, dtype=self.dtype)(x,t_emb)
         if self.up:
             x = Upsample(self.features, dtype=self.dtype)(x)
         return x
