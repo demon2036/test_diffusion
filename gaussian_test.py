@@ -34,6 +34,7 @@ def l1_loss(predictions, target):
 def extract(a, t, x_shape):
     b = t.shape[0]
     # b, *_ = t.shape
+    print(t)
     out = a[t]
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
@@ -81,7 +82,7 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state: TrainState, batch, train_key, cls):
     def loss_fn(params):
-        loss = cls(train_key, params, batch)
+        loss = cls(train_key,state, params, batch)
         return loss
 
     dynamic_scale = state.dynamic_scale
@@ -106,8 +107,6 @@ def train_step(state: TrainState, batch, train_key, cls):
 class test:
     def __init__(
             self,
-            model=Unet,
-            model_kwargs={},
             loss='l2',
             image_size=32,
             timesteps=1000,
@@ -118,7 +117,7 @@ class test:
     ):
         self.scale = 1
         self.state = None
-        self.model = model(**model_kwargs)
+        self.model = None
         self.image_size = image_size
         assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
         self.objective = objective
@@ -149,7 +148,7 @@ class test:
         self.sqrt_one_minus_alphas_cumprod = jnp.sqrt(1 - alphas_cumprod)
         self.log_one_minus_alphas_cumprod = jnp.log(1 - alphas_cumprod)
         self.sqrt_recip_alphas_cumprod = jnp.sqrt(1 / alphas_cumprod)
-        self.sqrt_recip_one_minus_alphas_cumprod = jnp.sqrt(1 / (1 - alphas_cumprod))
+        #self.sqrt_recip_one_minus_alphas_cumprod = jnp.sqrt(1 / (1 - alphas_cumprod))
         self.sqrt_recipm1_alphas_cumprod = jnp.sqrt(1 / alphas_cumprod - 1)
 
         posterior_variance = betas * (1 - alphas_cumprod_prev) / (1 - alphas_cumprod)
@@ -166,6 +165,14 @@ class test:
             self.loss = l2_loss
         elif loss == 'l1':
             self.loss = l1_loss
+
+        maybe_clipped_snr=snr.clone()
+        maybe_clipped_snr=jnp.clip(maybe_clipped_snr,a_max=5)
+
+        if objective == 'predict_noise':
+            self.loss_weight=maybe_clipped_snr/snr
+            #register_buffer('loss_weight', maybe_clipped_snr / snr)
+
 
     def set_state(self, state):
         self.state = state
@@ -291,12 +298,12 @@ class test:
                 extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
-    def p_loss(self, key, params, x_start, t):
+    def p_loss(self, key,state, params, x_start, t):
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
-        model_output = self.model.apply({"params": params}, x)
+        model_output = state.apply_fn({"params": params}, x)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -308,12 +315,12 @@ class test:
         p_loss = self.loss(target, model_output).mean()
         return p_loss
 
-    def __call__(self, key, params, img):
+    def __call__(self, key,state, params, img):
         key_times, key_noise = jax.random.split(key, 2)
         b, h, w, c = img.shape
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
-        return self.p_loss(key_noise, params, img, t)
+        return self.p_loss(key_noise,state, params, img, t)
 
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64):
@@ -377,7 +384,7 @@ if __name__ == "__main__":
 
     input_shape = (16, image_size, image_size, 3)
 
-    c = test(model_kwargs=unet_config, **gaussian_config, image_size=image_size)
+    c = test( **gaussian_config, image_size=image_size)
 
     state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5, optimizer=optimizer,
                          train_state=TrainState, model_kwargs=unet_config)
@@ -389,6 +396,7 @@ if __name__ == "__main__":
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     state = model_ckpt['model']
+
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
     dl = generator(batch_size=batch_size, image_size=image_size, file_path=data_path)  # file_path

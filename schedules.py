@@ -68,6 +68,7 @@ def g_noise(noise_key,shape):
     return jax.random.normal(noise_key, shape)
 
 def generate_nosie(key, shape):
+    return g_noise(key,shape)
     discount = 0.9
     h, w, c = shape
     key, noise_key = jax.random.split(key, 2)
@@ -86,29 +87,36 @@ def generate_nosie(key, shape):
 
 
 if __name__ == "__main__":
-    betas = sigmoid_beta_schedule(1000)
+    betas = cosine_beta_schedule(1000)
     alphas = 1. - betas
     alphas_cumprod = jnp.cumprod(alphas, )
     # print(alphas_cumprod)
-    img = Image.open('/home/john/datasets/celeba-128/celeba-128/183375.jpg.jpg')
+    img = Image.open('/home/john/data/celeba-128/celeba-128/183375.jpg.jpg')
 
     img = np.array(img)
     img = jnp.array(img)
-    scale = 1
+    scale = 64
     img = jax.image.resize(img, method="bilinear", shape=(64 * scale, 64 * scale, 3))
     img = img / 255
     img = img * 2 - 1
 
-    t = 400
+    t = 0
     alphas = alphas_cumprod[t]
+
+
+    snr=alphas/(1-alphas)
+
+    alphas=1- 1/(1+(1/scale)**1.5*snr)
+
+
     seed = jax.random.key(42)
 
     # noise = jax.random.normal(seed, img.shape)
     noise = g_noise(seed, img.shape)
-    x = jnp.sqrt(alphas) * img + jnp.sqrt(1 - alphas) * noise
+    x = jnp.sqrt(alphas) * img + jnp.sqrt(1-alphas) * noise
 
     # x=x/x.std()
-
+    print(alphas,snr)
     x = np.array(x)
    # x = x/x.std()
 
