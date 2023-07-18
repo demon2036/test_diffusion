@@ -34,7 +34,6 @@ def l1_loss(predictions, target):
 def extract(a, t, x_shape):
     b = t.shape[0]
     # b, *_ = t.shape
-    print(t)
     out = a[t]
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
@@ -114,6 +113,9 @@ class test:
             objective='predict_noise',
             beta_schedule='linear',
             ddim_sampling_eta=0.,
+            min_snr_loss_weight=False,
+            scale_shift=False
+
     ):
         self.scale = 1
         self.state = None
@@ -132,6 +134,13 @@ class test:
         betas = beta_schedule_fn(timesteps)
 
         alphas = 1 - betas
+
+        if scale_shift:
+            scale = 64/image_size
+            snr = alphas / (1 - alphas)
+            alphas = 1 - 1 / (1 + (1 / scale) ** 2 * snr)
+
+
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
 
@@ -167,7 +176,8 @@ class test:
             self.loss = l1_loss
 
         maybe_clipped_snr=snr.clone()
-        maybe_clipped_snr=jnp.clip(maybe_clipped_snr,a_max=5)
+        if min_snr_loss_weight:
+            maybe_clipped_snr=jnp.clip(maybe_clipped_snr,a_max=5)
 
         if objective == 'predict_noise':
             self.loss_weight=maybe_clipped_snr/snr
@@ -185,9 +195,8 @@ class test:
 
     def predict_noise_from_start(self, x_t, t, x0):
         return (
-            # extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
-                extract(self.sqrt_recip_one_minus_alphas_cumprod, t, x_t.shape) * x_t -
-                extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * x0
+                (extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t - x0) /
+                extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape)
         )
 
     def predict_v(self, x_start, t, noise):
@@ -280,7 +289,7 @@ class test:
             else:
                 key, key_noise = jax.random.split(key, 2)
                 noise = self.generate_nosie(key_noise, shape=shape)
-                # noise = pred_noise
+                noise = pred_noise
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
@@ -312,7 +321,9 @@ class test:
         else:
             target = None
 
-        p_loss = self.loss(target, model_output).mean()
+        p_loss = self.loss(target, model_output)
+
+        p_loss =(p_loss*extract(self.loss_weight,t,p_loss.shape)).mean()
         return p_loss
 
     def __call__(self, key,state, params, img):
