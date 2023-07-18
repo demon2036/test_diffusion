@@ -4,19 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="fix bug">
-      <change afterPath="$PROJECT_DIR$/.idea/diffusion.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/schedules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/test_yaml.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resnet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/unet_block.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/predict_noise_sigmoid_128_lion_l1.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/predict_noise_sigmoid_128_lion_l1.yaml" afterDir="false" />
+    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/schedules.py" beforeDir="false" afterPath="$PROJECT_DIR$/schedules.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test yaml.py" beforeDir="false" afterPath="$PROJECT_DIR$/test yaml.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +62,7 @@
       <recent name="$PROJECT_DIR$/check_points" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.gaussian_test">
+  <component name="RunManager" selected="Python.schedules">
     <configuration name="gaussian_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -221,7 +210,7 @@
       <workItem from="1689657245714" duration="10747000" />
       <workItem from="1689675228958" duration="1540000" />
       <workItem from="1689677331186" duration="7258000" />
-      <workItem from="1689690044953" duration="2077000" />
+      <workItem from="1689690044953" duration="2495000" />
     </task>
     <task id="LOCAL-00001" summary="commit">
       <option name="closed" value="true" />
@@ -367,7 +356,23 @@
       <option name="project" value="LOCAL" />
       <updated>1689685273415</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="commit">
+      <option name="closed" value="true" />
+      <created>1689696596886</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1689696596886</updated>
+    </task>
+    <task id="LOCAL-00020" summary="commit">
+      <option name="closed" value="true" />
+      <created>1689696638008</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1689696638008</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -378,9 +383,9 @@
     <MESSAGE value="add clip norm" />
     <MESSAGE value="change width to 160" />
     <MESSAGE value="change unet" />
-    <MESSAGE value="commit" />
     <MESSAGE value="fix bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
+    <MESSAGE value="commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -401,6 +406,6 @@
     <SUITE FILE_PATH="coverage/diffusion$test.coverage" NAME="test Coverage Results" MODIFIED="1689665960086" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$resnet.coverage" NAME="resnet Coverage Results" MODIFIED="1689696265218" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diffusion$temp.coverage" NAME="test Coverage Results" MODIFIED="1689450893562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/diffusion$schedules.coverage" NAME="schedules Coverage Results" MODIFIED="1689680545025" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/diffusion$schedules.coverage" NAME="schedules Coverage Results" MODIFIED="1689696818236" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

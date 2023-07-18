@@ -96,18 +96,18 @@ if __name__ == "__main__":
 
     img = np.array(img)
     img = jnp.array(img)
-    scale = 8
+    scale = 2
     img = jax.image.resize(img, method="bilinear", shape=(64 * scale, 64 * scale, 3))
     img = img / 255
     img = img * 2 - 1
 
-    t = 100
+    t = 600
     alphas = alphas_cumprod[t]
 
 
     snr=alphas/(1-alphas)
 
-    alphas=1- 1/(1+(1/scale)**2*snr)
+    alphas=1- 1/(1+(1/scale)**1*snr)
 
 
     seed = jax.random.key(42)
