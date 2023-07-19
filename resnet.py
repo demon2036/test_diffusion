@@ -79,21 +79,23 @@ class DepthWiseConv(nn.Module):
 class DownSample(nn.Module):
     features: int
     dtype: str
+    precision: str = "highest"
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.features, (3, 3), (2, 2), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.features, (3, 3), (2, 2), padding="SAME", dtype=self.dtype,precision=self.precision)(x)
         return x
 
 
 class Upsample(nn.Module):
     features: int
     dtype: str
+    precision: str = "highest"
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         b,h,w,c=x.shape
-        x= jax.image.resize(x,shape=(b,h*2,w*2,c),method="nearest")
-        x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype)(x)
+        x= jax.image.resize(x,shape=(b,h*2,w*2,c),method="nearest",precision=self.precision)
+        x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype,precision=self.precision)(x)
         #x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
         return x
 
@@ -104,10 +106,11 @@ class ResBlock(nn.Module):
     features: int
     dtype: str
     factor: int = 4
+    precision: str = "highest"
 
     @nn.compact
     def __call__(self, x, temb,*args, **kwargs):
-        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype)
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,precision=self.precision)
         b,h,w,c=x.shape
         hidden_state=x
 
@@ -115,7 +118,7 @@ class ResBlock(nn.Module):
         hidden_state=nn.silu(hidden_state)
         hidden_state=conv(self.features,(3,3),padding="SAME")(hidden_state)
 
-        temb=nn.Dense(self.features,dtype=self.dtype)(temb)
+        temb=nn.Dense(self.features,dtype=self.dtype,precision=self.precision)(temb)
         hidden_state+=einops.rearrange(temb,'b c ->b 1 1 c')
 
 

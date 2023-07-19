@@ -291,8 +291,8 @@ class test:
                 img = x_start
             else:
                 key, key_noise = jax.random.split(key, 2)
-                noise = self.generate_nosie(key_noise, shape=shape)
-                #noise = pred_noise
+                #noise = self.generate_nosie(key_noise, shape=shape)
+                noise = pred_noise
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
@@ -378,7 +378,7 @@ if __name__ == "__main__":
     os.makedirs('./result', exist_ok=True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='configs/test/scale_shift.yaml')
+    parser.add_argument('-cp', '--config_path', default='./test.yaml')
     # parser.add_argument('-ct', '--continues',action=True ,)
     args = parser.parse_args()
     print(args)
@@ -396,7 +396,7 @@ if __name__ == "__main__":
 
     print(train_config.values())
 
-    input_shape = (16, image_size, image_size, 3)
+    input_shape = (1, image_size, image_size, 3)
 
     c = test( **gaussian_config, image_size=image_size)
 

@@ -2,7 +2,7 @@
   "train": {
       image_size : 128,
       seed : 43,
-      batch_size : 64,
+      batch_size : 32,
       file_path : '/root/data/celeba-128/celeba-128',
       learning_rate : 3e-5,
       optimizer : "Lion",
@@ -16,7 +16,8 @@
       128, 256, 256, 512
     ],
     scale : 1,
-    dtype : 'bfloat16'
+    dtype : 'float32',
+    precision : 'highest'
   },
   "Gaussian": {
     loss: 'l2',

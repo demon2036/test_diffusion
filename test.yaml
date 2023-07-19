@@ -2,11 +2,11 @@
   "train": {
       image_size : 64,
       seed : 43,
-      batch_size : 8,
+      batch_size : 4,
       file_path : '/home/john/data/celeba-128/celeba-128',
       learning_rate : 3e-5,
       optimizer : "Lion",
-      sample_steps : 50000
+      sample_steps : 10000
 
   },
   "Unet": {
@@ -16,7 +16,8 @@
       128, 256, 256, 512
     ],
     scale : 1,
-    dtype : 'bfloat16'
+    dtype : 'float32',
+    precision : 'highest'
   },
   "Gaussian": {
     loss: 'l2',
