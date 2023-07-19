@@ -8,7 +8,7 @@ import jax.random
 from unet_block import EncoderBlock,DecoderBlock,MidBlock
 import jax.numpy as jnp
 import os
-from diffusers import UNet2DModel
+# from diffusers import UNet2DModel
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 class SinusoidalPosEmb(nn.Module):
