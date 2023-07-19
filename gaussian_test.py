@@ -48,7 +48,7 @@ def model_predict(model: TrainState, x,time):
     return model.apply_fn({"params": model.ema_params}, x,time)
 
 
-def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
+def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=False,
                  model_kwargs=None, *args, ):
     platform = jax.local_devices()[0].platform
 
@@ -221,7 +221,8 @@ class test:
         model_out = model_predict(self.state, x,t)
         model_out = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
         x = einops.rearrange(x, 'n b h w c->(n b) h w c')
-        t =flax.jax_utils.unreplicate(t)
+        t = einops.rearrange(t, 'n b ->(n b) ')
+
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
@@ -291,7 +292,7 @@ class test:
             else:
                 key, key_noise = jax.random.split(key, 2)
                 noise = self.generate_nosie(key_noise, shape=shape)
-                noise = pred_noise
+                #noise = pred_noise
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
@@ -377,7 +378,7 @@ if __name__ == "__main__":
     os.makedirs('./result', exist_ok=True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./test.yaml')
+    parser.add_argument('-cp', '--config_path', default='configs/test/scale_shift.yaml')
     # parser.add_argument('-ct', '--continues',action=True ,)
     args = parser.parse_args()
     print(args)
@@ -433,7 +434,11 @@ if __name__ == "__main__":
             state = update_ema(state, 0.9999)
 
             if steps % sample_steps == 0:
-                sample_save_image(key, c, steps, state)
+                try:
+                    sample_save_image(key, c, steps, state)
+                except Exception as e:
+                    print(e)
+
                 unreplicate_state = flax.jax_utils.unreplicate(state)
                 model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
