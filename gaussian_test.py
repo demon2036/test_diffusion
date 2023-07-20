@@ -236,7 +236,7 @@ class test:
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
-        if self.objective == 'pred_noise':
+        if self.objective == 'predict_noise':
             pred_noise = model_output
             x_start = self.predict_start_from_noise(x, t, pred_noise)
             x_start = maybe_clip(x_start)
@@ -244,12 +244,12 @@ class test:
             if clip_x_start and rederive_pred_noise:
                 pred_noise = self.predict_noise_from_start(x, t, x_start)
 
-        elif self.objective == 'pred_x0':
+        elif self.objective == 'predict_x0':
             x_start = model_output
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 
-        elif self.objective == 'pred_v':
+        elif self.objective == 'predict_v':
             v = model_output
             x_start = self.predict_start_from_v(x, t, v)
             x_start = maybe_clip(x_start)
