@@ -110,11 +110,11 @@ class ResBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x, temb,*args, **kwargs):
-        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,precision=self.precision)
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,precision=self.precision,param_dtype='bfloat16')
         b,h,w,c=x.shape
         hidden_state=x
 
-        hidden_state=nn.GroupNorm(dtype=self.dtype)(hidden_state)
+        hidden_state=nn.GroupNorm(dtype='float32')(hidden_state)
         hidden_state=nn.silu(hidden_state)
         hidden_state=conv(self.features,(3,3),padding="SAME")(hidden_state)
 
@@ -122,7 +122,7 @@ class ResBlock(nn.Module):
         hidden_state+=einops.rearrange(temb,'b c ->b 1 1 c')
 
 
-        hidden_state = nn.GroupNorm(dtype=self.dtype)(hidden_state)
+        hidden_state = nn.GroupNorm(dtype='float32')(hidden_state)
         hidden_state = nn.silu(hidden_state)
         hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
 

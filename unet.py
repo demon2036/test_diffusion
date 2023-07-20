@@ -74,9 +74,9 @@ class Unet(nn.Module):
                 prev, skip_block, t_emb)
             prev = x
 
-        x = nn.GroupNorm(dtype=self.dtype)(x)
+        x = nn.GroupNorm(dtype='float32')(x)
         x = nn.silu(x)
-        x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype=self.dtype)(x)
+        x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype='float32')(x)
         # x = einops.rearrange(x, 'b h w (c p1 p2)->b  (h p1) (w p2) c', p1=self.scale, p2=self.scale)
         # x = nn.Conv(128, (3, 3), padding='SAME', dtype=self.dtype)(x)
         # x = nn.Conv(self.out_channels, (3, 3), padding='SAME', dtype=self.dtype)(x)
