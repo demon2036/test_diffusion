@@ -138,7 +138,7 @@ class test:
         if scale_shift:
             scale = 64/image_size
             snr = alphas / (1 - alphas)
-            alphas = 1 - 1 / (1 + ( scale) ** 2 * snr)
+            alphas = 1 - 1 / (1 + ( scale) ** 1 * snr)
 
 
         alphas_cumprod = jnp.cumprod(alphas)
