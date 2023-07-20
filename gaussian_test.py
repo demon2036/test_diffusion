@@ -345,6 +345,7 @@ class test:
         else:
             target = None
 
+
         p_loss = self.loss(target, model_output)
 
         p_loss =(p_loss*extract(self.loss_weight,t,p_loss.shape)).mean()

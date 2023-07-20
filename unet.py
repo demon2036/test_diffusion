@@ -73,6 +73,7 @@ class Unet(nn.Module):
             x = DecoderBlock(channels, self.layers_per_block, dtype=self.dtype, up=True if not is_final else False)(
                 prev, skip_block, t_emb)
             prev = x
+
         x = nn.GroupNorm(dtype=self.dtype)(x)
         x = nn.silu(x)
         x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype=self.dtype)(x)
