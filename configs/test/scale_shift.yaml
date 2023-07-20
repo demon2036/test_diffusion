@@ -16,7 +16,7 @@
       128, 256, 256, 512
     ],
     scale : 1,
-    dtype : 'float32',
+    dtype : 'float16',
     precision : 'highest'
   },
   "Gaussian": {
