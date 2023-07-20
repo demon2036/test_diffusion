@@ -49,8 +49,11 @@ class Unet(nn.Module):
         ])(t_emb)
 
         block_out_channels = self.block_out_channels
-        # x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
-        x = nn.Conv(block_out_channels[0], (3, 3), padding="SAME", dtype=self.dtype)(x)
+
+        kernal=max(self.scale**2,7)
+
+        #x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
+        x = nn.Conv(block_out_channels[0], (kernal, kernal),strides=self.scale, padding="SAME", dtype=self.dtype)(x)
         temp = []
 
         for i, channesls in enumerate(block_out_channels):
@@ -70,10 +73,13 @@ class Unet(nn.Module):
             x = DecoderBlock(channels, self.layers_per_block, dtype=self.dtype, up=True if not is_final else False)(
                 prev, skip_block, t_emb)
             prev = x
-        x = nn.GroupNorm()(x)
+        x = nn.GroupNorm(dtype=self.dtype)(x)
         x = nn.silu(x)
         x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype=self.dtype)(x)
         # x = einops.rearrange(x, 'b h w (c p1 p2)->b  (h p1) (w p2) c', p1=self.scale, p2=self.scale)
+        # x = nn.Conv(128, (3, 3), padding='SAME', dtype=self.dtype)(x)
+        # x = nn.Conv(self.out_channels, (3, 3), padding='SAME', dtype=self.dtype)(x)
+
         return x
 
 

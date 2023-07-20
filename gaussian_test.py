@@ -48,7 +48,7 @@ def model_predict(model: TrainState, x,time):
     return model.apply_fn({"params": model.ema_params}, x,time)
 
 
-def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=False,
+def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
                  model_kwargs=None, *args, ):
     platform = jax.local_devices()[0].platform
 
@@ -181,7 +181,11 @@ class test:
 
         if objective == 'predict_noise':
             self.loss_weight=maybe_clipped_snr/snr
-            #register_buffer('loss_weight', maybe_clipped_snr / snr)
+        elif objective == 'predict_x0':
+            self.loss_weight = maybe_clipped_snr
+        elif objective == 'predict_v':
+            self.loss_weight = maybe_clipped_snr / (snr + 1)
+
 
 
     def set_state(self, state):
@@ -200,10 +204,16 @@ class test:
         )
 
     def predict_v(self, x_start, t, noise):
-        pass
+        return (
+            extract(self.sqrt_alphas_cumprod, t, x_start.shape) * noise -
+            extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * x_start
+        )
 
     def predict_start_from_v(self, x_t, t, v):
-        pass
+        return (
+            extract(self.sqrt_alphas_cumprod, t, x_t.shape) * x_t -
+            extract(self.sqrt_one_minus_alphas_cumprod, t, x_t.shape) * v
+        )
 
     def q_posterior(self, x_start, x_t, t):
         posterior_mean = (
@@ -215,25 +225,33 @@ class test:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
         pass
 
-    def model_predictions(self, params, x, t, *args, **kwargs):
+    def model_predictions(self, params, x, t, rederive_pred_noise=False,*args, **kwargs):
         x = shard(x)
         t=shard(t)
         model_out = model_predict(self.state, x,t)
-        model_out = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
+        model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
         x = einops.rearrange(x, 'n b h w c->(n b) h w c')
         t = einops.rearrange(t, 'n b ->(n b) ')
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
-        if self.objective == 'predict_noise':
-            pred_noise = model_out
+        if self.objective == 'pred_noise':
+            pred_noise = model_output
             x_start = self.predict_start_from_noise(x, t, pred_noise)
             x_start = maybe_clip(x_start)
-            # pred_noise = self.predict_noise_from_start(x, t, x_start)
 
-        elif self.objective == 'predict_x0':
-            x_start = model_out
+            if clip_x_start and rederive_pred_noise:
+                pred_noise = self.predict_noise_from_start(x, t, x_start)
+
+        elif self.objective == 'pred_x0':
+            x_start = model_output
+            x_start = maybe_clip(x_start)
+            pred_noise = self.predict_noise_from_start(x, t, x_start)
+
+        elif self.objective == 'pred_v':
+            v = model_output
+            x_start = self.predict_start_from_v(x, t, v)
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 
@@ -321,6 +339,9 @@ class test:
             target = noise
         elif self.objective == 'predict_x0':
             target = x_start
+        elif self.objective == 'predict_v':
+            v = self.predict_v(x_start, t, noise)
+            target = v
         else:
             target = None
 
