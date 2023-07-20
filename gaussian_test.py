@@ -310,7 +310,13 @@ class test:
             else:
                 key, key_noise = jax.random.split(key, 2)
                 #noise = self.generate_nosie(key_noise, shape=shape)
-                noise = pred_noise
+                #noise = pred_noise
+
+                if time_next>100:
+                    noise = self.generate_nosie(key_noise, shape=shape)
+                else:
+                    noise = pred_noise
+
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
