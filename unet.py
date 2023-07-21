@@ -70,7 +70,7 @@ class Block(nn.Module):
     @nn.compact
     def __call__(self, x, scale_shift=None):
         x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
-        x = nn.GroupNorm(self.groups)(x)
+        x = nn.GroupNorm(self.groups,dtype=self.dtype)(x)
 
         if scale_shift is not None:
             scale, shift = scale_shift
@@ -90,7 +90,7 @@ class ResnetBlock(nn.Module):
         scale_shift = None
         if time_emb is not None:
             time_emb = nn.silu(time_emb)
-            time_emb = nn.Dense(self.dim_out * 2)(time_emb)
+            time_emb = nn.Dense(self.dim_out * 2,dtype=self.dtype)(time_emb)
             time_emb = einops.rearrange(time_emb, 'b c -> b  1 1 c')
             scale_shift = jnp.split(time_emb,indices_or_sections=2,axis=3)
 
@@ -129,7 +129,6 @@ class Unet(nn.Module):
 
         h = []
 
-
         for i, dim_mul in enumerate(self.dim_mults):
 
             dim = self.dim * dim_mul
@@ -161,9 +160,6 @@ class Unet(nn.Module):
                 x = Upsample(dim,dtype=self.dtype)(x)
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
-
-
-
 
 
         x = jnp.concatenate([x, r], axis=3)
