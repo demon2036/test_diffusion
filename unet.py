@@ -139,5 +139,5 @@ class Unet(nn.Module):
 
         x = jnp.concatenate([x, r], axis=3)
         x = ResnetBlock(dim, dtype=self.dtype)(x, t)
-        x = nn.Conv(self.out_channels, (1, 1), dtype=self.dtype)(x)
+        x = nn.Conv(self.out_channels, (1, 1), dtype="float32")(x)
         return x
