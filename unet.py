@@ -12,7 +12,6 @@ from typing import *
 class DownSample(nn.Module):
     dim: int
     dtype: Any = jnp.bfloat16
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = einops.rearrange(x, 'b  (h p1) (w p2) c -> b  h w (c p1 p2)', p1=2, p2=2)
@@ -23,7 +22,6 @@ class DownSample(nn.Module):
 class Upsample(nn.Module):
     dim: int
     dtype: Any = jnp.bfloat16
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         b, h, w, c = x.shape
@@ -36,7 +34,6 @@ class Upsample(nn.Module):
 
 class SinusoidalPosEmb(nn.Module):
     dim: int
-
     @nn.compact
     def __call__(self, x):
         half_dim = self.dim // 2
@@ -47,26 +44,10 @@ class SinusoidalPosEmb(nn.Module):
         return emb
 
 
-
-# class SinusoidalPosEmb(nn.Module):
-#     dim: int
-#     @nn.compact
-#     def __call__(self, x, *args, **kwargs):
-#         half_dim = self.dim // 2
-#         emb = math.log(10000) / (half_dim - 1)
-#         emb = jnp.exp(jnp.arange(half_dim, ) * -emb)
-#         emb = x[:, None] * emb[None, :]
-#         emb = jnp.concatenate((jnp.sin(emb), jnp.cos(emb)), axis=-1)
-#         return emb
-
-
-# building block modules
-
 class Block(nn.Module):
     dim_out: int
     groups: int = 8
     dtype: Any = jnp.bfloat16
-
     @nn.compact
     def __call__(self, x, scale_shift=None):
         x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
@@ -83,7 +64,6 @@ class ResnetBlock(nn.Module):
     dim_out: int
     groups: int = 8
     dtype: Any = jnp.bfloat16
-
     @nn.compact
     def __call__(self, x, time_emb=None):
         _, _, _, c = x.shape
@@ -111,7 +91,6 @@ class Unet(nn.Module):
     channels: int = 3,
     dim_mults: Sequence = (1, 2, 4, 8)
     dtype: Any = jnp.bfloat16
-
     @nn.compact
     def __call__(self, x,time,*args, **kwargs):
         time_dim = self.dim * 4
@@ -122,15 +101,12 @@ class Unet(nn.Module):
             nn.Dense(time_dim,dtype=self.dtype)
         ])(time)
 
-
-
         x = nn.Conv(self.dim, (7, 7), padding="SAME", dtype=self.dtype)(x)
         r = x
 
         h = []
 
         for i, dim_mul in enumerate(self.dim_mults):
-
             dim = self.dim * dim_mul
 
             x = ResnetBlock(dim,dtype=self.dtype)(x, t)
@@ -161,9 +137,7 @@ class Unet(nn.Module):
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 
-
         x = jnp.concatenate([x, r], axis=3)
-
         x = ResnetBlock(dim, dtype=self.dtype)(x, t)
         x = nn.Conv(self.out_channels, (1, 1), dtype=self.dtype)(x)
         return x
