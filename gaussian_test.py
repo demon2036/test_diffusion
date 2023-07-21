@@ -428,7 +428,7 @@ if __name__ == "__main__":
 
     c = test( **gaussian_config, image_size=image_size)
 
-    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5, optimizer=optimizer,
+    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=learning_rate, optimizer=optimizer,
                          train_state=TrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}

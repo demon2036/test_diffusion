@@ -1,136 +1,173 @@
 import math
+from functools import partial
 
+import einops
+import jax
+import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
-import einops
-import jax.random
-import optax
-from flax.training import train_state
 
-from unet_block import EncoderBlock, DecoderBlock, MidBlock
-import jax.numpy as jnp
-import os
 
-# from diffusers import UNet2DModel
-os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
+class DownSample(nn.Module):
+    dim: int
+    dtype: Any = jnp.bfloat16
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        x = einops.rearrange(x, 'b  (h p1) (w p2) c -> b  h w (c p1 p2)', p1=2, p2=2)
+        x = nn.Conv(self.dim, (1, 1),dtype=self.dtype)(x)
+        return x
+
+
+class Upsample(nn.Module):
+    dim: int
+    dtype: Any = jnp.bfloat16
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        b, h, w, c = x.shape
+        x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
+        x = nn.Conv(self.dim * 4, (3, 3), padding="SAME", dtype=self.dtype)(x)
+        return x
+
+
+# sinusoidal positional embeds
 
 class SinusoidalPosEmb(nn.Module):
     dim: int
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x):
         half_dim = self.dim // 2
-        emb = math.log(10000) / (half_dim - 1)
+        emb = jnp.log(10000) / (half_dim - 1)
         emb = jnp.exp(jnp.arange(half_dim, ) * -emb)
         emb = x[:, None] * emb[None, :]
         emb = jnp.concatenate((jnp.sin(emb), jnp.cos(emb)), axis=-1)
         return emb
 
 
-class Unet(nn.Module):
-    out_channels: int
-    layers_per_block: int
-    block_out_channels: Sequence
-    dtype: str
-    scale: int = 1
-    precision: str = "highest"
+
+# class SinusoidalPosEmb(nn.Module):
+#     dim: int
+#     @nn.compact
+#     def __call__(self, x, *args, **kwargs):
+#         half_dim = self.dim // 2
+#         emb = math.log(10000) / (half_dim - 1)
+#         emb = jnp.exp(jnp.arange(half_dim, ) * -emb)
+#         emb = x[:, None] * emb[None, :]
+#         emb = jnp.concatenate((jnp.sin(emb), jnp.cos(emb)), axis=-1)
+#         return emb
+
+
+# building block modules
+
+class Block(nn.Module):
+    dim_out: int
+    groups: int = 8
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
-    def __call__(self, x, time, *args, **kwargs):
+    def __call__(self, x, scale_shift=None):
+        x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
+        x = nn.GroupNorm(self.groups)(x)
 
-        dim = self.block_out_channels[0]
-        t_emb = SinusoidalPosEmb(dim)(time)
-
-        t_emb = nn.Sequential([
-            nn.Dense(dim * 4, dtype=self.dtype),
-            nn.gelu,
-            nn.Dense(dim * 4, dtype=self.dtype)
-        ])(t_emb)
-
-        block_out_channels = self.block_out_channels
-
-        kernal=max(self.scale**2,7)
-
-        #x = einops.rearrange(x, 'b  (h p1) (w p2) c->b h w (c p1 p2)', p1=self.scale, p2=self.scale)
-        x = nn.Conv(block_out_channels[0], (kernal, kernal),strides=self.scale, padding="SAME", dtype=self.dtype)(x)
-        temp = []
-
-        for i, channesls in enumerate(block_out_channels):
-            is_final = (i == len(block_out_channels) - 1)
-            x, skip_block = EncoderBlock(channesls, self.layers_per_block, dtype=self.dtype,
-                                         down=True if not is_final else False)(x, t_emb)
-
-            temp.append(skip_block)
-
-        prev = MidBlock(block_out_channels[-1], self.layers_per_block, dtype=self.dtype)(x, t_emb)
-
-        skip_blocks = list(reversed(temp))
-        block_out_channels = list(reversed(block_out_channels))
-
-        for i, (skip_block, channels) in enumerate(zip(skip_blocks, block_out_channels)):
-            is_final = (i == len(block_out_channels) - 1)
-            x = DecoderBlock(channels, self.layers_per_block, dtype=self.dtype, up=True if not is_final else False)(
-                prev, skip_block, t_emb)
-            prev = x
-
-        x = nn.GroupNorm(dtype='float32')(x)
+        if scale_shift is not None:
+            scale, shift = scale_shift
+            x = x * (scale + 1) + shift
         x = nn.silu(x)
-        x = nn.Conv(self.out_channels * self.scale ** 2, (3, 3), padding='SAME', dtype='float32')(x)
-        # x = einops.rearrange(x, 'b h w (c p1 p2)->b  (h p1) (w p2) c', p1=self.scale, p2=self.scale)
-        # x = nn.Conv(128, (3, 3), padding='SAME', dtype=self.dtype)(x)
-        # x = nn.Conv(self.out_channels, (3, 3), padding='SAME', dtype=self.dtype)(x)
-
         return x
 
 
-def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=False,
-                 model_kwargs=None, *args, ):
-    platform = jax.local_devices()[0].platform
+class ResnetBlock(nn.Module):
+    dim_out: int
+    groups: int = 8
+    dtype: Any = jnp.bfloat16
 
-    if platform == "gpu":
-        dynamic_scale = None
-    else:
-        dynamic_scale = None
+    @nn.compact
+    def __call__(self, x, time_emb=None):
+        _, _, _, c = x.shape
+        scale_shift = None
+        if time_emb is not None:
+            time_emb = nn.silu(time_emb)
+            time_emb = nn.Dense(self.dim_out * 2)(time_emb)
+            time_emb = einops.rearrange(time_emb, 'b c -> b  1 1 c')
+            scale_shift = jnp.split(time_emb,indices_or_sections=2,axis=3)
 
-    model = model_cls(*args, **model_kwargs)
-    if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)), depth=2,
-                             console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)))
+        h = Block(dim_out=self.dim_out,dtype=self.dtype)(x, scale_shift=scale_shift)
 
-    if optimizer == 'AdamW':
-        optimizer = optax.adamw
-    elif optimizer == "Lion":
-        optimizer = optax.lion
-    else:
-        assert "soem thing is wrong"
+        h = Block(dim_out=self.dim_out,dtype=self.dtype)(h)
 
-    tx = optax.chain(
-        optax.clip_by_global_norm(1),
-        optimizer(learning_rate, weight_decay=1e-2)
-    )
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
-                              ema_params=variables['params'])
+        if c != self.dim_out:
+            x = nn.Conv(self.dim_out, (1, 1), dtype=self.dtype)(x)
+
+        return h + x
 
 
-if __name__ == "__main__":
-    key = jax.random.PRNGKey(seed=43)
-    dim = 512
+class Unet(nn.Module):
+    dim: int = 64
+    out_channels:int =3
+    resnet_block_groups: int = 8,
+    channels: int = 3,
+    dim_mults: Sequence = (1, 2, 4, 8)
+    dtype: Any = jnp.bfloat16
 
-    model_kwargs = {
-        'out_channels': 3,
-        'layers_per_block': 2,
-        'block_out_channels': [
-            128, 256, 256, 512
-        ],
-        'scale': 1,
-        'dtype': 'bfloat16'
-    }
-    s = Unet(**model_kwargs)
-    variable = s.init(key, jnp.ones((1, 32, 32, 3)), jnp.ones((1,)))
-    # print(variable['params'])
-    # s.dtype=jnp.float32
-    print(s.dtype)
-    t = s.apply({'params': variable['params']}, jnp.ones((1, 16, 16, 3)), jnp.ones((1,)))
-    print(t.dtype)
+    @nn.compact
+    def __call__(self, x,time,*args, **kwargs):
+        time_dim = self.dim * 4
+        t = nn.Sequential([
+            SinusoidalPosEmb(self.dim),
+            nn.Dense(time_dim,dtype=self.dtype),
+            nn.gelu,
+            nn.Dense(time_dim,dtype=self.dtype)
+        ])(time)
+
+
+
+        x = nn.Conv(self.dim, (7, 7), padding="SAME", dtype=self.dtype)(x)
+        r = x
+
+        h = []
+
+
+        for i, dim_mul in enumerate(self.dim_mults):
+
+            dim = self.dim * dim_mul
+
+            x = ResnetBlock(dim,dtype=self.dtype)(x, t)
+            h.append(x)
+            x = ResnetBlock(dim,dtype=self.dtype)(x, t)
+            h.append(x)
+            if i != len(self.dim_mults) - 1:
+                x = DownSample(dim,dtype=self.dtype)(x)
+            else:
+                x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
+
+        x = ResnetBlock(dim, dtype=self.dtype)(x, t)
+        # x = self.mid_attn(x) + x
+        x = ResnetBlock(dim, dtype=self.dtype)(x, t)
+
+        reversed_dim_mults = list(reversed(self.dim_mults))
+
+        for i, dim_mul in enumerate(reversed_dim_mults):
+            dim = self.dim * dim_mul
+
+            x = jnp.concatenate([x, h.pop()], axis=3)
+            x = ResnetBlock(dim,dtype=self.dtype)(x, t)
+            x = jnp.concatenate([x, h.pop()], axis=3)
+            x = ResnetBlock(dim,dtype=self.dtype)(x, t)
+
+            if i != len(self.dim_mults) - 1:
+                x = Upsample(dim,dtype=self.dtype)(x)
+            else:
+                x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
+
+
+
+
+
+        x = jnp.concatenate([x, r], axis=3)
+
+        x = ResnetBlock(dim, dtype=self.dtype)(x, t)
+        x = nn.Conv(self.out_channels, (1, 1), dtype=self.dtype)(x)
+        return x
