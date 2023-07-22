@@ -362,9 +362,9 @@ class test:
         return self.p_loss(key_noise, state, params, img, t)
 
 
-def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64):
+def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64,cache=False):
     # d = get_dataloader(batch_size.)
-    d = get_dataloader(batch_size, file_path, cache=True, image_size=image_size)
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size)
     while True:
         for data in d:
             # x, y = data
