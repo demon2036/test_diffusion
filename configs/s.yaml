@@ -1,0 +1,25 @@
+{
+  "train": {
+      image_size : 64,
+      seed : 43,
+      batch_size : 512,
+      file_path : '/root/data/s',
+      learning_rate : 8.0e-5,
+      optimizer : "Lion",
+      sample_steps : 50000
+
+  },
+  "Unet": {
+    out_channels: 3,
+    dtype : 'bfloat16'
+  },
+  "Gaussian": {
+    loss: 'l1',
+    timesteps: 1000,
+    sampling_timesteps: 75,
+    objective: 'predict_noise',
+    beta_schedule : 'linear',
+    min_snr_loss_weight : True
+  }
+
+}
