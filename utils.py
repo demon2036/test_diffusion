@@ -11,7 +11,7 @@ from flax.training import train_state
 import optax
 import einops
 from torchvision.utils import save_image
-
+from functools import partial
 from orbax import checkpoint
 from orbax.checkpoint import CheckpointManagerOptions, CheckpointManager, PyTreeCheckpointer
 import orbax
@@ -19,12 +19,20 @@ import orbax
 import yaml
 import json
 
+
 def read_yaml(config_path):
     with open(config_path, 'r') as f:
         res = yaml.load(f, Loader=yaml.FullLoader)
         print(json.dumps(res, indent=5))
         return res
 
+
+@partial(jax.pmap, static_broadcasted_argnums=(1,))
+def update_ema(state, ema_decay=0.999):
+    new_ema_params = jax.tree_map(lambda ema, normal: ema * ema_decay + (1 - ema_decay) * normal, state.ema_params,
+                                  state.params)
+    state = state.replace(ema_params=new_ema_params)
+    return state
 
 
 def ds(batch_size=8, size=256):

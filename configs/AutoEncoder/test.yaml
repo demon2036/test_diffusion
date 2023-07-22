@@ -1,0 +1,28 @@
+{
+  "train": {
+      dataloader_configs : {
+        image_size : 256,
+        batch_size : 8,
+        file_path : '/home/john/data/s'
+      },
+      trainer_configs:{
+          seed : 43,
+          total_steps : 500000,
+          sample_steps : 1,
+          save_path : 'result/AutoEncoder',
+          model_path : 'check_points/AutoEncoder'
+      },
+      optimizer : "AdamW",
+      optimizer_configs : {
+        learning_rate : 8.0e-5
+      }
+
+
+  },
+  "AutoEncoder": {
+    dims : [64,128,256],
+    dtype : 'bfloat16'
+  },
+
+
+}

@@ -424,11 +424,12 @@ if __name__ == "__main__":
             state = update_ema(state, 0.9999)
 
             if steps % sample_steps == 0:
-                sample_save_image(key, c, steps, state)
-                unreplicate_state = flax.jax_utils.unreplicate(state)
-                model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
-                save_args = orbax_utils.save_args_from_target(model_ckpt)
-                checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
+                pass
+                # sample_save_image(key, c, steps, state)
+                # unreplicate_state = flax.jax_utils.unreplicate(state)
+                # model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
+                # save_args = orbax_utils.save_args_from_target(model_ckpt)
+                # checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
                 # del unreplicate_state, sample, model_ckpt
 
     end = time.time()

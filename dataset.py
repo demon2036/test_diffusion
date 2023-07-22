@@ -1,6 +1,5 @@
 import os
 import time
-from multiprocessing.pool import Pool
 import einops
 import numpy as np
 import cv2
@@ -12,6 +11,7 @@ from torchvision.transforms import *
 import os
 from PIL import Image
 import albumentations as A
+import jax.numpy as jnp
 
 
 def get_dataloader(batch_size=32, dataset='/home/john/data/s', cache=True, image_size=64,repeat=1):
@@ -62,6 +62,15 @@ class MyDataSet(Dataset):
             img = self._preprocess(self.path + '/' + self.img_names[idx%self.real_length])
 
         return img
+
+def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64, cache=False):
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size)
+    while True:
+        for data in d:
+            x = data
+            x = x.numpy()
+            x = jnp.asarray(x)
+            yield x
 
 
 if __name__ == '__main__':

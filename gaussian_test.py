@@ -12,6 +12,7 @@ import optax
 from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
 from jax_smi import initialise_tracking
+from loss import l1_loss,l2_loss
 
 initialise_tracking()
 
@@ -23,12 +24,6 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 # os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
 # os.environ['XLA_PYTHON_CLIENT_ALLOCATOR']='platform'
 
-def l2_loss(predictions, target):
-    return optax.l2_loss(predictions=predictions, targets=target)
-
-
-def l1_loss(predictions, target):
-    return jnp.abs(target - predictions)
 
 
 def extract(a, t, x_shape):
