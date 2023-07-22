@@ -44,8 +44,8 @@ class TrainState(train_state.TrainState):
 
 
 @jax.pmap
-def model_predict(model: TrainState, x,time):
-    return model.apply_fn({"params": model.ema_params}, x,time)
+def model_predict(model: TrainState, x, time):
+    return model.apply_fn({"params": model.ema_params}, x, time)
 
 
 def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
@@ -60,8 +60,9 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
 
     model = model_cls(*args, **model_kwargs)
     if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape),jnp.empty((input_shape[0],)), depth=2, console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape),jnp.empty((input_shape[0],)) )
+        print(model.tabulate(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)), depth=2,
+                             console_kwargs={'width': 200}))
+    variables = model.init(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)))
 
     if optimizer == 'AdamW':
         optimizer = optax.adamw
@@ -81,7 +82,7 @@ def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_st
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state: TrainState, batch, train_key, cls):
     def loss_fn(params):
-        loss = cls(train_key,state, params, batch)
+        loss = cls(train_key, state, params, batch)
         return loss
 
     dynamic_scale = state.dynamic_scale
@@ -136,10 +137,9 @@ class test:
         alphas = 1 - betas
 
         if scale_shift:
-            scale = 64/image_size
+            scale = 64 / image_size
             snr = alphas / (1 - alphas)
-            alphas = 1 - 1 / (1 + ( scale) ** 1 * snr)
-
+            alphas = 1 - 1 / (1 + (scale) ** 1 * snr)
 
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
@@ -157,7 +157,7 @@ class test:
         self.sqrt_one_minus_alphas_cumprod = jnp.sqrt(1 - alphas_cumprod)
         self.log_one_minus_alphas_cumprod = jnp.log(1 - alphas_cumprod)
         self.sqrt_recip_alphas_cumprod = jnp.sqrt(1 / alphas_cumprod)
-        #self.sqrt_recip_one_minus_alphas_cumprod = jnp.sqrt(1 / (1 - alphas_cumprod))
+        # self.sqrt_recip_one_minus_alphas_cumprod = jnp.sqrt(1 / (1 - alphas_cumprod))
         self.sqrt_recipm1_alphas_cumprod = jnp.sqrt(1 / alphas_cumprod - 1)
 
         posterior_variance = betas * (1 - alphas_cumprod_prev) / (1 - alphas_cumprod)
@@ -175,18 +175,16 @@ class test:
         elif loss == 'l1':
             self.loss = l1_loss
 
-        maybe_clipped_snr=snr.clone()
+        maybe_clipped_snr = snr.clone()
         if min_snr_loss_weight:
-            maybe_clipped_snr=jnp.clip(maybe_clipped_snr,a_max=5)
+            maybe_clipped_snr = jnp.clip(maybe_clipped_snr, a_max=5)
 
         if objective == 'predict_noise':
-            self.loss_weight=maybe_clipped_snr/snr
+            self.loss_weight = maybe_clipped_snr / snr
         elif objective == 'predict_x0':
             self.loss_weight = maybe_clipped_snr
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
-
-
 
     def set_state(self, state):
         self.state = state
@@ -205,14 +203,14 @@ class test:
 
     def predict_v(self, x_start, t, noise):
         return (
-            extract(self.sqrt_alphas_cumprod, t, x_start.shape) * noise -
-            extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * x_start
+                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * noise -
+                extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * x_start
         )
 
     def predict_start_from_v(self, x_t, t, v):
         return (
-            extract(self.sqrt_alphas_cumprod, t, x_t.shape) * x_t -
-            extract(self.sqrt_one_minus_alphas_cumprod, t, x_t.shape) * v
+                extract(self.sqrt_alphas_cumprod, t, x_t.shape) * x_t -
+                extract(self.sqrt_one_minus_alphas_cumprod, t, x_t.shape) * v
         )
 
     def q_posterior(self, x_start, x_t, t):
@@ -225,10 +223,10 @@ class test:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
         pass
 
-    def model_predictions(self, params, x, t, rederive_pred_noise=False,*args, **kwargs):
+    def model_predictions(self, params, x, t, rederive_pred_noise=False, *args, **kwargs):
         x = shard(x)
-        t=shard(t)
-        model_out = model_predict(self.state, x,t)
+        t = shard(t)
+        model_out = model_predict(self.state, x, t)
         model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
         x = einops.rearrange(x, 'n b h w c->(n b) h w c')
         t = einops.rearrange(t, 'n b ->(n b) ')
@@ -309,13 +307,13 @@ class test:
                 img = x_start
             else:
                 key, key_noise = jax.random.split(key, 2)
-                #noise = self.generate_nosie(key_noise, shape=shape)
-                #noise = pred_noise
+                # noise = self.generate_nosie(key_noise, shape=shape)
+                noise = pred_noise
 
-                if time_next>100:
-                    noise = self.generate_nosie(key_noise, shape=shape)
-                else:
-                    noise = pred_noise
+                # if time_next > 100:
+                #     noise = self.generate_nosie(key_noise, shape=shape)
+                # else:
+                #     noise = pred_noise
 
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
@@ -334,12 +332,12 @@ class test:
                 extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
         )
 
-    def p_loss(self, key,state, params, x_start, t):
+    def p_loss(self, key, state, params, x_start, t):
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x,t)
+        model_output = state.apply_fn({"params": params}, x, t)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -351,18 +349,17 @@ class test:
         else:
             target = None
 
-
         p_loss = self.loss(target, model_output)
 
-        p_loss =(p_loss*extract(self.loss_weight,t,p_loss.shape)).mean()
+        p_loss = (p_loss * extract(self.loss_weight, t, p_loss.shape)).mean()
         return p_loss
 
-    def __call__(self, key,state, params, img):
+    def __call__(self, key, state, params, img):
         key_times, key_noise = jax.random.split(key, 2)
         b, h, w, c = img.shape
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
-        return self.p_loss(key_noise,state, params, img, t)
+        return self.p_loss(key_noise, state, params, img, t)
 
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64):
@@ -426,9 +423,10 @@ if __name__ == "__main__":
 
     input_shape = (1, image_size, image_size, 3)
 
-    c = test( **gaussian_config, image_size=image_size)
+    c = test(**gaussian_config, image_size=image_size)
 
-    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=learning_rate, optimizer=optimizer,
+    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=learning_rate,
+                         optimizer=optimizer,
                          train_state=TrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
@@ -438,7 +436,6 @@ if __name__ == "__main__":
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     state = model_ckpt['model']
-
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
     dl = generator(batch_size=batch_size, image_size=image_size, file_path=data_path)  # file_path
@@ -459,7 +456,7 @@ if __name__ == "__main__":
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps>100:
+            if steps > 100:
                 state = update_ema(state, 0.9999)
 
             if steps % sample_steps == 0:
