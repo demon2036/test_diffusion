@@ -3,7 +3,8 @@ import time
 from multiprocessing.pool import Pool
 import einops
 import numpy as np
-import torch
+import cv2
+import torchvision.utils
 import tqdm
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import MNIST, CIFAR10, CelebA
@@ -13,20 +14,13 @@ from PIL import Image
 import albumentations as A
 
 
-def get_dataloader(batch_size=32, dataset='mnist', cache=True,image_size=64):
-    if dataset == 'mnist':
-        transform = Compose([
-            ToTensor(),
-        ])
-        mnist = CIFAR10('./dataset', download=True, transform=transform)
-        dataloader = DataLoader(mnist, batch_size=batch_size, num_workers=os.cpu_count(), persistent_workers=True,
-                                drop_last=True)
-        return dataloader
-    else:
-        mnist = MyDataSet(dataset, cache,image_size)
-        dataloader = DataLoader(mnist, batch_size=batch_size,
-                                num_workers=min(os.cpu_count(),len(mnist.data)//batch_size//2)
-                                , persistent_workers=True,
+def get_dataloader(batch_size=32, dataset='/home/john/data/s', cache=True,image_size=64):
+        data = MyDataSet(dataset, cache,image_size)
+
+
+        dataloader = DataLoader(data, batch_size=batch_size,
+                                num_workers=min(os.cpu_count(),len(data.data)//batch_size//2)
+                                , persistent_workers=True,pin_memory=True,shuffle=True,
                                 drop_last=True)
         return dataloader
 
@@ -39,15 +33,20 @@ class MyDataSet(Dataset):
         self.data = []
         self.count = 0
         self.img_names = os.listdir(self.path)
+
         if self.cache:
             for img_name in tqdm.tqdm(self.img_names):
                 self.data.append(self._preprocess(self.path + '/' + img_name))
+        else:
+            self.data=self.img_names
 
     def _preprocess(self, image_path):
         img = Image.open(image_path)
         img = np.array(img)/255.0
         img = 2*img-1
-        img = A.resize(img, self.image_size, self.image_size)
+
+        img=A.smallest_max_size(img,self.image_size,interpolation=cv2.INTER_AREA)
+        img=A.random_crop(img,self.image_size,self.image_size,0,0)
         return img
 
     def __len__(self):
@@ -63,12 +62,20 @@ class MyDataSet(Dataset):
 
 
 if __name__ == '__main__':
-    dl = get_dataloader(32, '/home/john/datasets/celeba-128/celeba-128',cache=True)
-
     start = time.time()
-    for _ in range(100):
-        for data in dl:
-            print(type(data))
-            # print(data.shape)
+    dl = get_dataloader(32, '/home/john/data/s',cache=False,image_size=128)
     end = time.time()
+
+    # for _ in range(100):
+    #     for data in dl:
+    #         print(type(data))
+    #         # print(data.shape)
+
+    for data in dl:
+        print(data.shape)
+        data=data/2+0.5
+        data=einops.rearrange(data,'b h w c->b c h w')
+        torchvision.utils.save_image(data,'./test.png')
+        break
+
     print(end - start)
