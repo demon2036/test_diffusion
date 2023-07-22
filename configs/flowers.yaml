@@ -3,7 +3,7 @@
       image_size : 64,
       seed : 43,
       batch_size : 512,
-      file_path : '/root/data/celeba-128/celeba-128',
+      file_path : '/root/data/flowers',
       learning_rate : 8.0e-5,
       optimizer : "Lion",
       sample_steps : 50000
