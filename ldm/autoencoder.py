@@ -141,10 +141,8 @@ class EncoderBlock(nn.Module):
     def __call__(self, x, *args, **kwargs):
         for _ in range(self.num_blocks):
             x = ResBlock(self.dim, self.dtype)(x)
-
         if self.add_down:
             x = DownSample(self.dim, self.dtype)(x)
-
         return x
 
 
@@ -169,12 +167,16 @@ class AutoEncoder(nn.Module):
     dims: Sequence = (64, 128, 256)
     num_blocks: int = 2
     dtype: str = 'bfloat16'
+    latent :int =3
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         for i, dim in enumerate(self.dims):
             x = EncoderBlock(dim, self.num_blocks, True if i != len(self.dims) else False,
                              dtype=self.dtype)(x)
+
+        x=nn.Conv(self.latent,(1,1),dtype=self.dtype)(x)
+
         x = nn.tanh(x)
         reversed_dims = list(reversed(self.dims))
 
