@@ -49,7 +49,8 @@ class MyDataSet(Dataset):
         img = np.array(img) / 255.0
         img = 2 * img - 1
         img = A.smallest_max_size(img, self.image_size, interpolation=cv2.INTER_AREA)
-        img = A.random_crop(img, self.image_size, self.image_size, 0, 0)
+        img = A.center_crop(img,self.image_size,self.image_size)
+        #img = A.random_crop(img, self.image_size, self.image_size, 0, 0)
         return img
 
     def __len__(self):

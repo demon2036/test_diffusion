@@ -27,7 +27,7 @@ class Upsample(nn.Module):
     def __call__(self, x, *args, **kwargs):
         b, h, w, c = x.shape
         x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
-        x = nn.Conv(self.dim , (3, 3), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
         return x
 
 
@@ -35,6 +35,7 @@ class Upsample(nn.Module):
 
 class SinusoidalPosEmb(nn.Module):
     dim: int
+
     @nn.compact
     def __call__(self, x):
         half_dim = self.dim // 2
@@ -53,7 +54,7 @@ class Block(nn.Module):
     @nn.compact
     def __call__(self, x, scale_shift=None):
         x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
-        x = nn.GroupNorm(self.groups, dtype=self.dtype,)(x)
+        x = nn.GroupNorm(self.groups, dtype=self.dtype, )(x)
 
         if scale_shift is not None:
             scale, shift = scale_shift
@@ -150,4 +151,30 @@ class Unet(nn.Module):
         x = jnp.concatenate([x, r], axis=3)
         x = ResnetBlock(dim, dtype=self.dtype)(x, t)
         x = nn.Conv(self.out_channels, (1, 1), dtype="float32")(x)
+        return x
+
+
+class MultiUnet(nn.Module):
+    dim: int = 32
+    out_channels: int = 3
+    resnet_block_groups: int = 8,
+    channels: int = 3,
+    dim_mults: Sequence = (1, 2, 4, 8)
+    dtype: Any = jnp.bfloat16
+    num_unets: int = 4
+
+    @nn.compact
+    def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
+        unet_configs={
+            'dim':self.dim,
+            'out_channels': self.out_channels,
+            'resnet_block_groups': self.resnet_block_groups,
+            'channels': self.channels,
+            'dim_mults': self.dim_mults,
+            'dtype': self.dtype,
+        }
+        x = Unet(**unet_configs)
+
+        for _ in range(self.num_unets-1):
+            x = Unet(**unet_configs)+x
         return x
