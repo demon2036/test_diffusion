@@ -162,8 +162,8 @@ if __name__ == "__main__":
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps > 100:
-                state = update_ema(state, 0.9999)
+            if steps > 100 && steps%10==0:
+                state = update_ema(state, 0.995)
 
             if steps % sample_steps == 0:
                 try:
