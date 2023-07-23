@@ -75,7 +75,7 @@ def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-12
 
 if __name__ == '__main__':
     start = time.time()
-    dl = get_dataloader(128, '/home/john/data/s', cache=False, image_size=128,repeat=2)
+    dl = get_dataloader(128, '/home/john/data/s', cache=False, image_size=64,repeat=2)
     end = time.time()
 
     # for _ in range(100):
@@ -85,9 +85,9 @@ if __name__ == '__main__':
 
     for data in dl:
         print(data.shape)
-        # data = data / 2 + 0.5
-        # data = einops.rearrange(data, 'b h w c->b c h w')
-        # torchvision.utils.save_image(data, './test.png')
-        # break
+        data = data / 2 + 0.5
+        data = einops.rearrange(data, 'b h w c->b c h w')
+        torchvision.utils.save_image(data, './test.png')
+        break
 
     print(end - start)

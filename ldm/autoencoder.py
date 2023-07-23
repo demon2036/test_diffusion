@@ -1,6 +1,6 @@
 import argparse
 import os
-
+from resnet import Block, EfficientBlock, EfficientBlock2
 import torch
 from flax.training.common_utils import shard_prng_key, shard
 from tqdm import tqdm
@@ -80,7 +80,7 @@ def train_step(state: AutoEncoderTrainState, batch, ):
     return new_state, metric
 
 
-class DownSample(nn.Module):
+class DownBlock(nn.Module):
     dim: int
     dtype: str
 
@@ -91,7 +91,7 @@ class DownSample(nn.Module):
         return x
 
 
-class Upsample(nn.Module):
+class UpBlock(nn.Module):
     dim: int
     dtype: Any = jnp.bfloat16
 
@@ -99,20 +99,8 @@ class Upsample(nn.Module):
     def __call__(self, x, *args, **kwargs):
         b, h, w, c = x.shape
         x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
-        x = nn.Conv(self.dim * 4, (3, 3), padding="SAME", dtype=self.dtype)(x)
-        return x
-
-
-class Block(nn.Module):
-    dim: int
-    dtype: str = 'bfloat16'
-    groups: int = 8
-
-    @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
-        x = nn.GroupNorm(num_groups=self.groups, dtype=self.dtype)(x)
-        x = nn.silu(x)
+        x = nn.Conv(self.dim , (3, 3), padding="SAME", dtype=self.dtype)(x)
+        #x = einops.rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
         return x
 
 
@@ -120,18 +108,22 @@ class ResBlock(nn.Module):
     dim: int
     dtype: str
 
+
     @nn.compact
     def __call__(self, x):
+
         b, _, _, c = x.shape
         hidden = Block(self.dim, self.dtype)(x)
         hidden = Block(self.dim, self.dtype)(hidden)
 
         if c != self.dim:
             x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
-        return hidden + x
+        x=hidden + x
+
+        return x
 
 
-class EncoderBlock(nn.Module):
+class DownSample(nn.Module):
     dim: int
     num_blocks: int
     add_down: bool
@@ -142,11 +134,11 @@ class EncoderBlock(nn.Module):
         for _ in range(self.num_blocks):
             x = ResBlock(self.dim, self.dtype)(x)
         if self.add_down:
-            x = DownSample(self.dim, self.dtype)(x)
+            x = DownBlock(self.dim, self.dtype)(x)
         return x
 
 
-class DecoderBlock(nn.Module):
+class UpSample(nn.Module):
     dim: int
     num_blocks: int
     add_up: bool
@@ -154,12 +146,47 @@ class DecoderBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-
         for _ in range(self.num_blocks):
             x = ResBlock(self.dim, self.dtype)(x)
 
         if self.add_up:
-            x = Upsample(self.dim, self.dtype)(x)
+            x = UpBlock(self.dim, self.dtype)(x)
+        return x
+
+
+class Encoder(nn.Module):
+    dims: Sequence
+    num_blocks: int
+    dtype: str
+    latent: int
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype,padding="same")(x)
+
+        for i, dim in enumerate(self.dims):
+            x = DownSample(dim, self.num_blocks, True if i != len(self.dims) else False,
+                           dtype=self.dtype)(x)
+
+        x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
+        x = nn.tanh(x)
+        return x
+
+
+class Decoder(nn.Module):
+    dims: Sequence
+    num_blocks: int
+    dtype: str
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
+        for i, dim in enumerate(self.dims):
+            x = UpSample(dim, self.num_blocks, True if i != len(self.dims) else False,
+                         dtype=self.dtype)(x)
+
+        x = nn.Conv(3, (3, 3), dtype='float32',padding='SAME')(x)
+        x = nn.tanh(x)
         return x
 
 
@@ -167,43 +194,29 @@ class AutoEncoder(nn.Module):
     dims: Sequence = (64, 128, 256)
     num_blocks: int = 2
     dtype: str = 'bfloat16'
-    latent :int =3
+    latent: int = 3
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        for i, dim in enumerate(self.dims):
-            x = EncoderBlock(dim, self.num_blocks, True if i != len(self.dims) else False,
-                             dtype=self.dtype)(x)
-
-        x=nn.Conv(self.latent,(1,1),dtype=self.dtype)(x)
-
-        x = nn.tanh(x)
+        x = Encoder(self.dims, self.num_blocks, self.dtype, self.latent)(x)
         reversed_dims = list(reversed(self.dims))
-
-        for i, dim in enumerate(reversed_dims):
-            x = DecoderBlock(dim, self.num_blocks, add_up=True if i != len(self.dims) else False,
-                             dtype=self.dtype)(x)
-
-        x = ResBlock(reversed_dims[-1], self.dtype)(x)
-        x = nn.Conv(3, (3, 3), padding="SAME", dtype='float32')(x)
-        x = nn.tanh(x)
+        x = Decoder(reversed_dims, self.num_blocks, self.dtype)(x)
         return x
 
 
-def sample_save_image(state: AutoEncoderTrainState, save_path,steps,data):
+def sample_save_image(state: AutoEncoderTrainState, save_path, steps, data):
     os.makedirs(save_path, exist_ok=True)
+
     @jax.pmap
-    def infer(state,data):
+    def infer(state, data):
         sample = state.apply_fn({'params': state.ema_params}, data)
         return sample
-    sample=infer(state,data)
-    all_image=jnp.concatenate([sample,data],axis=1)
+
+    sample = infer(state, data)
+    all_image = jnp.concatenate([sample, data], axis=1)
     all_image = all_image / 2 + 0.5
     all_image = einops.rearrange(all_image, 'n b h w c->(n b) c h w')
     all_image = np.array(all_image)
     all_image = torch.Tensor(all_image)
 
     save_image(all_image, f'{save_path}/{steps}.png')
-
-
-

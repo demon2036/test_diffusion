@@ -6,6 +6,7 @@ import flax.linen as nn
 from typing import *
 from functools import partial
 
+
 class WeightStandardizedConv(nn.Module):
     """
     apply weight standardization  https://arxiv.org/abs/1903.10520
@@ -80,9 +81,10 @@ class DownSample(nn.Module):
     features: int
     dtype: str
     precision: str = "highest"
+
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.features, (3, 3), (2, 2), padding="SAME", dtype=self.dtype,precision=self.precision)(x)
+        x = nn.Conv(self.features, (3, 3), (2, 2), padding="SAME", dtype=self.dtype, precision=self.precision)(x)
         return x
 
 
@@ -93,13 +95,11 @@ class Upsample(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        b,h,w,c=x.shape
-        x= jax.image.resize(x,shape=(b,h*2,w*2,c),method="nearest",precision=self.precision)
-        x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype,precision=self.precision)(x)
-        #x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
+        b, h, w, c = x.shape
+        x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest", precision=self.precision)
+        x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype, precision=self.precision)(x)
+        # x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
         return x
-
-
 
 
 class ResBlock(nn.Module):
@@ -109,31 +109,41 @@ class ResBlock(nn.Module):
     precision: str = "highest"
 
     @nn.compact
-    def __call__(self, x, temb,*args, **kwargs):
-        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,precision=self.precision,param_dtype='bfloat16')
-        b,h,w,c=x.shape
-        hidden_state=x
-
-        hidden_state=nn.GroupNorm(dtype='float32')(hidden_state)
-        hidden_state=nn.silu(hidden_state)
-        hidden_state=conv(self.features,(3,3),padding="SAME")(hidden_state)
-
-        temb=nn.Dense(self.features,dtype=self.dtype,precision=self.precision)(temb)
-        hidden_state+=einops.rearrange(temb,'b c ->b 1 1 c')
-
+    def __call__(self, x, temb, *args, **kwargs):
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype, precision=self.precision, param_dtype='bfloat16')
+        b, h, w, c = x.shape
+        hidden_state = x
 
         hidden_state = nn.GroupNorm(dtype='float32')(hidden_state)
         hidden_state = nn.silu(hidden_state)
         hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
 
-        if c!=self.features:
-            x=conv(self.features,(1,1))(x)
-        return x+hidden_state
+        temb = nn.Dense(self.features, dtype=self.dtype, precision=self.precision)(temb)
+        hidden_state += einops.rearrange(temb, 'b c ->b 1 1 c')
+
+        hidden_state = nn.GroupNorm(dtype='float32')(hidden_state)
+        hidden_state = nn.silu(hidden_state)
+        hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
+
+        if c != self.features:
+            x = conv(self.features, (1, 1))(x)
+        return x + hidden_state
 
 
+class Block(nn.Module):
+    dim: int
+    dtype: str = 'bfloat16'
+    groups: int = 8
 
-"""
-class ResBlock(nn.Module):
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
+        x = nn.GroupNorm(num_groups=self.groups, dtype=self.dtype)(x)
+        x = nn.silu(x)
+        return x
+
+
+class EfficientBlock(nn.Module):
     features: int
     dtype: str
     factor: int = 4
@@ -146,7 +156,10 @@ class ResBlock(nn.Module):
         conv = partial(nn.Conv, padding='SAME', dtype=self.dtype)
         x = conv(project_channels, (1, 1))(x)
         y = x
-        x = nn.GroupNorm()(x)
+        x = nn.GroupNorm(8)(x)
+
+        x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+
         out_put = []
         first_part = x[:, :, :, :partial_channel]
         for i in range(1, self.factor):
@@ -162,7 +175,35 @@ class ResBlock(nn.Module):
         return x
 
 
+class EfficientBlock2(nn.Module):
+    features: int
+    dtype: str
+    factor: int = 4
 
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+
+        b,h,w,c=x.shape
+        partial_channel = c // self.factor
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,feature_group_count=partial_channel)
+        #x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+        out_put = []
+        count=3
+
+        for i in range(0, self.factor):
+            first_part =x[:, :, :, i * partial_channel: (i + 1) * partial_channel]
+            first_part = conv(partial_channel, (count, count))(first_part)
+            count+=2
+            out_put.append(first_part)
+        x = jnp.concatenate(out_put, axis=3)
+
+        x = nn.GroupNorm(8)(x)
+        x = nn.silu(x)
+        x = conv(self.features, (1, 1), feature_group_count=1)(x)
+        return x
+
+
+"""
 class ResBlock(nn.Module):
     features: int
     dtype: str
@@ -185,5 +226,3 @@ class ResBlock(nn.Module):
         x = nn.Conv(self.features, (1, 1), dtype=self.dtype)(x)
         return x + y
 """
-
-
