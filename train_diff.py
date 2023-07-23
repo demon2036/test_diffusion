@@ -15,8 +15,8 @@ from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
 from jax_smi import initialise_tracking
 from gaussian import Gaussian
-initialise_tracking()
 
+initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
@@ -25,15 +25,9 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 # os.environ['XLA_PYTHON_CLIENT_ALLOCATOR']='platform'
 
 
-
-
-
 class TrainState(train_state.TrainState):
     dynamic_scale: Optional[dynamic_scale_lib.DynamicScale] = None
     ema_params: Any = None
-
-
-
 
 
 def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
@@ -90,6 +84,7 @@ def train_step(state: TrainState, batch, train_key, cls):
     metric = {"loss": loss}
 
     return new_state, metric
+
 
 def sample_save_image(key, c, steps, state: TrainState):
     c.set_state(state)
@@ -162,7 +157,7 @@ if __name__ == "__main__":
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps > 100 && steps%10==0:
+            if steps > 100 and steps % 10 == 0:
                 state = update_ema(state, 0.995)
 
             if steps % sample_steps == 0:
