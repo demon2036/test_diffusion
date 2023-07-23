@@ -6,7 +6,7 @@
       file_path : '/root/data/celeba-512',
       learning_rate : 1.0e-4,
       optimizer : "AdamW",
-      sample_steps : 100
+      sample_steps : 10000
 
   },
   "Unet": {
