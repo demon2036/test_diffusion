@@ -12,7 +12,7 @@
   "Unet": {
     dim: 48,
     out_channels: 3,
-    dim_mults: [1, 2, 4, 4, 8, 8]
+    dim_mults: [1, 2, 4,  8, 16]
   },
   "Gaussian": {
     loss: 'l2',

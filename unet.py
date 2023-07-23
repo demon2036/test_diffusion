@@ -27,7 +27,7 @@ class Upsample(nn.Module):
     def __call__(self, x, *args, **kwargs):
         b, h, w, c = x.shape
         x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
-        x = nn.Conv(self.dim * 4, (3, 3), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.dim , (3, 3), padding="SAME", dtype=self.dtype)(x)
         return x
 
 

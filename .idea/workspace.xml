@@ -5,18 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/SR/test_sr.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gaussian.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_sr.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_sr.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/AutoEncoder/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/AutoEncoder/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gaussian_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaussian_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ldm/autoencoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/ldm/autoencoder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,7 +242,7 @@
       <workItem from="1690063465234" duration="1118000" />
       <workItem from="1690064813376" duration="1921000" />
       <workItem from="1690100566420" duration="1125000" />
-      <workItem from="1690113658124" duration="11320000" />
+      <workItem from="1690113658124" duration="13016000" />
     </task>
     <task id="LOCAL-00001" summary="commit">
       <option name="closed" value="true" />
@@ -519,7 +508,23 @@
       <option name="project" value="LOCAL" />
       <updated>1690101700015</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="commit">
+      <option name="closed" value="true" />
+      <created>1690126571919</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1690126571919</updated>
+    </task>
+    <task id="LOCAL-00035" summary="commit">
+      <option name="closed" value="true" />
+      <created>1690126636388</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1690126636388</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
