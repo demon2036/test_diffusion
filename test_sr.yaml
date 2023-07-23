@@ -35,7 +35,7 @@
     timesteps: 1000,
     sampling_timesteps: 75,
     objective: 'predict_noise',
-    beta_schedule : 'linear',
+    beta_schedule : 'cosine',
     sr_factor: 4
   }
 
