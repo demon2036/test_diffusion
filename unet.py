@@ -173,8 +173,8 @@ class MultiUnet(nn.Module):
             'dim_mults': self.dim_mults,
             'dtype': self.dtype,
         }
-        x = Unet(**unet_configs)(x)
+        x = Unet(**unet_configs)(x,time,x_self_cond)
 
         for _ in range(self.num_unets-1):
-            x = Unet(**unet_configs)(x)+x
+            x = Unet(**unet_configs)(x,time,x_self_cond)+x
         return x
