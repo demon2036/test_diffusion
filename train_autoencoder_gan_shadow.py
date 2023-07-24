@@ -8,8 +8,7 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
         fake_logit, _ = discriminator_state.apply_fn(
             {'params': discriminator_state.ema_params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
             mutable=['batch_stats'])
-
-        return -fake_logit
+        return -fake_logit.mean()
     else:
         return 0
 
@@ -115,7 +114,7 @@ if __name__ == "__main__":
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
-    disc_start = finished_steps > trainer_configs['disc_start']
+    disc_start = finished_steps >= trainer_configs['disc_start']
 
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
