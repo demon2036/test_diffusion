@@ -110,8 +110,6 @@ class Unet(nn.Module):
             nn.Dense(time_dim, dtype=self.dtype)
         ])(time)
 
-        print(x.shape)
-
         x = nn.Conv(self.dim, (7, 7), padding="SAME", dtype=self.dtype)(x)
         r = x
 

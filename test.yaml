@@ -1,30 +1,26 @@
 {
   "train": {
-      image_size : 64,
+      image_size : 128,
       seed : 43,
-      batch_size : 8,
-      file_path : '/home/john/data/celeba-128/celeba-128',
-      learning_rate : 8.0e-5,
+      batch_size : 1,
+      file_path : '/home/john/data/flowers',
+      learning_rate : 3.0e-5,
       optimizer : "AdamW",
-      sample_steps : 10000
+      sample_steps : 1
 
   },
   "Unet": {
     out_channels: 3,
-#    layers_per_block: 2,
-#    block_out_channels: [
-#      128, 256, 256, 512
-#    ],
-#    scale : 1,
-#    dtype : 'bfloat16',
-#    precision : 'highest'
+    dtype : 'bfloat16'
   },
   "Gaussian": {
-    loss: 'l2',
+    loss: 'l1',
     timesteps: 1000,
     sampling_timesteps: 75,
     objective: 'predict_noise',
-    beta_schedule : 'linear'
+    beta_schedule : 'sigmoid',
+    min_snr_loss_weight : True,
+    scale_shift : True
   }
 
 }

@@ -1,6 +1,6 @@
 from collections import namedtuple
 from functools import partial
-
+import numpy as np
 from einops import einops
 from flax.training.common_utils import shard
 from tqdm import tqdm

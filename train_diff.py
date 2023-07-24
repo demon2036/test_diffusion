@@ -1,7 +1,7 @@
 import argparse
 from tqdm import tqdm
 import jax.random
-
+import numpy as np
 from dataset import generator
 from unet import *
 from schedules import *
