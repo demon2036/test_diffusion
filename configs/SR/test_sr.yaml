@@ -8,7 +8,7 @@
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 300,
+      sample_steps: 10000,
       save_path: 'result/SR',
       model_path: 'check_points/SR'
     },
@@ -33,7 +33,7 @@
   "Gaussian": {
     loss: 'l1',
     timesteps: 1000,
-    sampling_timesteps: 75,
+    sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule : 'cosine',
     sr_factor: 4
