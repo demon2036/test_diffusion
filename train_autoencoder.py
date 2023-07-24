@@ -1,4 +1,5 @@
 from ldm.autoencoder import *
+from discriminator import EMATrainState
 
 @partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
 def train_step(state: EMATrainState, batch, ):

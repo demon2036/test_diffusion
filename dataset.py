@@ -34,7 +34,6 @@ class MyDataSet(Dataset):
         self.count = 0
         self.img_names = os.listdir(self.path)
 
-
         if self.cache:
             for _ in range(self.repeat):
                 for img_name in tqdm.tqdm(self.img_names):
