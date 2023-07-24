@@ -20,6 +20,7 @@
   },
   "AutoEncoder": {
     dims : [64,128,256,256],
-    dtype : 'bfloat16'
+    dtype : 'bfloat16',
+    latent: 4
   }
 }

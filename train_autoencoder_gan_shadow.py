@@ -6,7 +6,7 @@ from loss import hinge_d_loss
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
     if disc_start:
         fake_logit, _ = discriminator_state.apply_fn(
-            {'params': discriminator_state.params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
+            {'params': discriminator_state.ema_params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
             mutable=['batch_stats'])
 
         return -fake_logit
@@ -36,7 +36,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
 @partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
 def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState):
     def loss_fn(params):
-        fake_image = state.apply_fn({'params': state.params}, x)
+        fake_image = state.apply_fn({'params': state.ema_params}, x)
         real_image = x
 
         logit_real, mutable = discriminator_state.apply_fn(
@@ -137,6 +137,8 @@ if __name__ == "__main__":
                 for k, v in metrics_disc.items():
                     metrics_disc.update({k: v[0]})
                 metrics.update(metrics_disc)
+                discriminator_state = update_ema(discriminator_state, 0.9999)
+
             pbar.set_postfix(metrics)
             pbar.set_postfix(metrics)
             pbar.update(1)
