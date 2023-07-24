@@ -153,7 +153,7 @@ class test(Gaussian):
         if self.predict_residual:
             ret += x_self_cond
 
-        return img
+        return ret
 
     def sample(self, key, params, lr_image):
 
@@ -221,7 +221,7 @@ def sample_save_image(key, diffusion: test, steps, state: TrainState, batch, sav
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./test_sr.yaml')
+    parser.add_argument('-cp', '--config_path', default='./sr4.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)

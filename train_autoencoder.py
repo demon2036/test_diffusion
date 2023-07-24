@@ -1,11 +1,48 @@
 from ldm.autoencoder import *
 
+@partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
+def train_step(state: EMATrainState, batch, ):
+    def loss_fn(params):
+        reconstruct = state.apply_fn({'params': params}, batch)
+        loss = l1_loss(reconstruct, batch)
+        return loss.mean()
+
+    grad_fn = jax.value_and_grad(loss_fn)
+    loss, grads = grad_fn(state.params)
+    grads = jax.lax.pmean(grads, axis_name='batch')
+
+    new_state = state.apply_gradients(grads=grads)
+    loss = jax.lax.pmean(loss, axis_name='batch')
+    metric = {"loss": loss}
+    return new_state, metric
+
+def create_state(rng, model_cls, input_shape, optimizer, train_state=EMATrainState, print_model=True,
+                 optimizer_kwargs=None, model_kwargs=None):
+    model = model_cls(**model_kwargs)
+    if print_model:
+        print(model.tabulate(rng, jnp.empty(input_shape), depth=2,
+                             console_kwargs={'width': 200}))
+    variables = model.init(rng, jnp.empty(input_shape))
+
+    if optimizer == 'AdamW':
+        optimizer = optax.adamw
+    elif optimizer == "Lion":
+        optimizer = optax.lion
+    else:
+        assert "some thing is wrong"
+
+    tx = optax.chain(
+        optax.clip_by_global_norm(1),
+        optimizer(**optimizer_kwargs)
+    )
+    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx,
+                              ema_params=variables['params'])
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./configs/AutoEncoder/test.yaml')
-    # parser.add_argument('-ct', '--continues',action=True ,)
-
     args = parser.parse_args()
     config = read_yaml(args.config_path)
 
@@ -51,9 +88,8 @@ if __name__ == "__main__":
                 state = update_ema(state, 0.9999)
 
             if steps % trainer_configs['sample_steps'] == 0:
-                save_path=f"{trainer_configs['save_path']}/{steps}.png"
-
-                sample_save_image(state, save_path, steps, batch)
+                save_path=f"{trainer_configs['save_path']}"
+                sample_save_image_autoencoder(state, save_path, steps, batch)
                 unreplicate_state = flax.jax_utils.unreplicate(state)
                 model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
                 save_args = orbax_utils.save_args_from_target(model_ckpt)

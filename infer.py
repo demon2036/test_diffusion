@@ -339,7 +339,7 @@ if __name__ == "__main__":
     #    os.remove('./nohup.out')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./test.yaml')
+    parser.add_argument('-cp', '--config_path', default='./ae4.yaml')
     # parser.add_argument('-ct', '--continues',action=True ,)
     args = parser.parse_args()
     print(args)

@@ -19,65 +19,6 @@ from loss import l1_loss, l2_loss
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-class AutoEncoderTrainState(train_state.TrainState):
-    dynamic_scale: Optional[dynamic_scale_lib.DynamicScale] = None
-    ema_params: Any = None
-
-
-def create_state(rng, model_cls, input_shape, optimizer, train_state=AutoEncoderTrainState, print_model=True,
-                 optimizer_kwargs=None, model_kwargs=None):
-    platform = jax.local_devices()[0].platform
-
-    if platform == "gpu":
-        dynamic_scale = dynamic_scale_lib.DynamicScale()
-        dynamic_scale = None
-    else:
-        dynamic_scale = None
-
-    model = model_cls(**model_kwargs)
-    if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)), depth=2,
-                             console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape))
-
-    if optimizer == 'AdamW':
-        optimizer = optax.adamw
-    elif optimizer == "Lion":
-        optimizer = optax.lion
-    else:
-        assert "some thing is wrong"
-
-    tx = optax.chain(
-        optax.clip_by_global_norm(1),
-        optimizer(**optimizer_kwargs)
-    )
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
-                              ema_params=variables['params'])
-
-
-@partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step(state: AutoEncoderTrainState, batch, ):
-    def loss_fn(params):
-        reconstruct = state.apply_fn({'params': params}, batch)
-        loss = l1_loss(reconstruct, batch)
-        return loss.mean()
-
-    dynamic_scale = state.dynamic_scale
-    if dynamic_scale:
-        grad_fn = dynamic_scale.value_and_grad(loss_fn, )  # axis_name=pmap_axis
-        dynamic_scale, is_fin, loss, grads = grad_fn(state.params)
-        # grad_fn = dynamic_scale.value_and_grad(cls.p_loss, argnums=1)  # axis_name=pmap_axis
-        # dynamic_scale, is_fin, loss, grads = grad_fn(state.params,state,key,batch)
-    else:
-        grad_fn = jax.value_and_grad(loss_fn)
-        loss, grads = grad_fn(state.params)
-        #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
-        grads = jax.lax.pmean(grads, axis_name='batch')
-
-    new_state = state.apply_gradients(grads=grads)
-    loss = jax.lax.pmean(loss, axis_name='batch')
-    metric = {"loss": loss}
-    return new_state, metric
 
 
 class DownBlock(nn.Module):
@@ -107,11 +48,8 @@ class UpBlock(nn.Module):
 class ResBlock(nn.Module):
     dim: int
     dtype: str
-
-
     @nn.compact
     def __call__(self, x):
-
         b, _, _, c = x.shape
         hidden = Block(self.dim, self.dtype)(x)
         hidden = Block(self.dim, self.dtype)(hidden)
@@ -119,7 +57,6 @@ class ResBlock(nn.Module):
         if c != self.dim:
             x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
         x=hidden + x
-
         return x
 
 
@@ -143,7 +80,6 @@ class UpSample(nn.Module):
     num_blocks: int
     add_up: bool
     dtype: str
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         for _ in range(self.num_blocks):
@@ -152,14 +88,11 @@ class UpSample(nn.Module):
         if self.add_up:
             x = UpBlock(self.dim, self.dtype)(x)
         return x
-
-
 class Encoder(nn.Module):
     dims: Sequence
     num_blocks: int
     dtype: str
     latent: int
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype,padding="same")(x)
@@ -167,7 +100,6 @@ class Encoder(nn.Module):
         for i, dim in enumerate(self.dims):
             x = DownSample(dim, self.num_blocks, True if i != len(self.dims) else False,
                            dtype=self.dtype)(x)
-
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
         x = nn.tanh(x)
         return x
@@ -177,7 +109,6 @@ class Decoder(nn.Module):
     dims: Sequence
     num_blocks: int
     dtype: str
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
@@ -188,14 +119,11 @@ class Decoder(nn.Module):
         x = nn.Conv(3, (3, 3), dtype='float32',padding='SAME')(x)
         x = nn.tanh(x)
         return x
-
-
 class AutoEncoder(nn.Module):
     dims: Sequence = (64, 128, 256)
     num_blocks: int = 2
     dtype: str = 'bfloat16'
     latent: int = 3
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = Encoder(self.dims, self.num_blocks, self.dtype, self.latent)(x)
@@ -203,16 +131,19 @@ class AutoEncoder(nn.Module):
         x = Decoder(reversed_dims, self.num_blocks, self.dtype)(x)
         return x
 
-
-def sample_save_image(state: AutoEncoderTrainState, save_path, steps, data):
+def sample_save_image_autoencoder(state, save_path, steps, data):
     os.makedirs(save_path, exist_ok=True)
-
     @jax.pmap
-    def infer(state, data):
-        sample = state.apply_fn({'params': state.ema_params}, data)
+    def infer(state,params, data):
+        sample = state.apply_fn({'params': params}, data)
         return sample
 
-    sample = infer(state, data)
+    if steps<50000:
+        sample = infer(state, state.params, data)
+    else:
+        sample = infer(state, state.ema_params, data)
+
+
     all_image = jnp.concatenate([sample, data], axis=1)
     all_image = all_image / 2 + 0.5
     all_image = einops.rearrange(all_image, 'n b h w c->(n b) c h w')
