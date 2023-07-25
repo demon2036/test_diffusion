@@ -4,7 +4,7 @@
       seed : 43,
       batch_size : 64,
       file_path : '/root/data/flowers',
-      learning_rate : 1.0e-3,
+      learning_rate : 1.0e-4,
       optimizer : "AdamW",
       sample_steps : 50000
 
