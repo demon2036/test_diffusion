@@ -106,7 +106,7 @@ if __name__ == "__main__":
     os.makedirs('./result', exist_ok=True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./ae4.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/test.yaml')
     # parser.add_argument('-ct', '--continues',action=True ,)
     args = parser.parse_args()
     print(args)

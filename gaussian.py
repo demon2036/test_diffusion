@@ -1,3 +1,4 @@
+import random
 from collections import namedtuple
 from functools import partial
 import numpy as np
@@ -5,19 +6,22 @@ from einops import einops
 from flax.training.common_utils import shard
 from tqdm import tqdm
 
-from schedules import linear_beta_schedule,cosine_beta_schedule,sigmoid_beta_schedule
-from loss import l1_loss,l2_loss
+from schedules import linear_beta_schedule, cosine_beta_schedule, sigmoid_beta_schedule
+from loss import l1_loss, l2_loss
 import jax
 import jax.numpy as jnp
 
-
-
-
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 
+
 @jax.pmap
-def model_predict(model, x, time,x_self_cond=None):
-    return model.apply_fn({"params": model.ema_params}, x, time,x_self_cond)
+def model_predict_ema(model, x, time, x_self_cond=None):
+    return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond)
+
+
+@jax.jit
+def model_predict(model, x, time, x_self_cond=None):
+    return model.apply_fn({"params": model.params}, x, time, x_self_cond)
 
 
 def extract(a, t, x_shape):
@@ -25,7 +29,6 @@ def extract(a, t, x_shape):
     # b, *_ = t.shape
     out = a[t]
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
-
 
 
 class Gaussian:
@@ -39,13 +42,15 @@ class Gaussian:
             beta_schedule='linear',
             ddim_sampling_eta=0.,
             min_snr_loss_weight=False,
-            scale_shift=False
+            scale_shift=False,
+            self_condition=False
 
     ):
         self.scale = 1
         self.state = None
         self.model = None
         self.image_size = image_size
+        self.self_condition = self_condition
         assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
         self.objective = objective
 
@@ -147,18 +152,22 @@ class Gaussian:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
         pass
 
-    def model_predictions(self, params, x, t=None, x_self_cond=None, rederive_pred_noise=False, *args, **kwargs):
+    def model_predictions(self, params, x, t=None, x_self_cond=None, rederive_pred_noise=False, state=None, *args,
+                          **kwargs):
 
-        if x_self_cond is not None:
-            x_self_cond = shard(x_self_cond)
+        if state is not None:
+            model_output = model_predict(state, x, t, x_self_cond)
+        else:
+            if x_self_cond is not None:
+                x_self_cond = shard(x_self_cond)
 
-        if t is not None:
-            t = shard(t)
-        x = shard(x)
-        model_out = model_predict(self.state, x, t, x_self_cond)
-        model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
-        x = einops.rearrange(x, 'n b h w c->(n b) h w c')
-        t = einops.rearrange(t, 'n b ->(n b) ')
+            if t is not None:
+                t = shard(t)
+            x = shard(x)
+            model_out = model_predict_ema(self.state, x, t, x_self_cond)
+            model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
+            x = einops.rearrange(x, 'n b h w c->(n b) h w c')
+            t = einops.rearrange(t, 'n b ->(n b) ')
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -198,10 +207,10 @@ class Gaussian:
     def generate_nosie(self, key, shape):
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, params, x, t,x_self_cond=None):
+    def p_sample(self, key, params, x, t, x_self_cond=None):
         b, c, h, w = x.shape
         batch_times = jnp.full((b,), t)
-        model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times,x_self_cond)
+        model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times, x_self_cond)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
@@ -214,7 +223,8 @@ class Gaussian:
         x_start = None
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
-            img, x_start = self.p_sample(normal_key, params, img, t)
+            x_self_cond = x_start if self.self_condition else None
+            img, x_start = self.p_sample(normal_key, params, img, t, x_self_cond)
 
         ret = img
 
@@ -227,10 +237,11 @@ class Gaussian:
 
         times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
         times = list(reversed(times))
-
+        x_start = None
         for time, time_next in tqdm(zip(times[:-1], times[1:]), total=self.sampling_timesteps):
             batch_times = jnp.full((b,), time)
-            pred_noise, x_start = self.model_predictions(None, img, batch_times)
+            x_self_cond = x_start if self.self_condition else None
+            pred_noise, x_start = self.model_predictions(None, img, batch_times, x_self_cond)
 
             if time_next < 0:
                 img = x_start
@@ -262,11 +273,21 @@ class Gaussian:
         )
 
     def p_loss(self, key, state, params, x_start, t):
+        key, cond_key = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x, t)
+
+        def estimate(_):
+            return jax.lax.stop_gradient(self.model_predictions(None, x, t, state=state)).pred_x_start
+
+        zeros = jnp.zeros_like(x)
+        x_self_cond = None
+        if self.self_condition:
+            x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,None)
+
+        model_output = state.apply_fn({"params": params}, x, t, x_self_cond)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -289,4 +310,3 @@ class Gaussian:
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
         return self.p_loss(key_noise, state, params, img, t)
-

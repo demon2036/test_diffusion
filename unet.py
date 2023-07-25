@@ -68,7 +68,6 @@ class ResnetBlock(nn.Module):
     groups: int = 8
     dtype: Any = jnp.bfloat16
 
-
     @nn.compact
     def __call__(self, x, time_emb=None):
         _, _, _, c = x.shape
@@ -96,12 +95,16 @@ class Unet(nn.Module):
     channels: int = 3,
     dim_mults: Sequence = (1, 2, 4, 8)
     dtype: Any = jnp.bfloat16
+    self_condition: bool = False
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
 
-        if x_self_cond is not None:
+        if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
+        elif self.self_condition :
+            x = jnp.concatenate([x, jnp.zeros_like(x)], axis=3)
+        print(x.shape)
 
         time_dim = self.dim * 4
         t = nn.Sequential([
@@ -164,16 +167,16 @@ class MultiUnet(nn.Module):
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
-        unet_configs={
-            'dim':self.dim,
+        unet_configs = {
+            'dim': self.dim,
             'out_channels': self.out_channels,
             'resnet_block_groups': self.resnet_block_groups,
             'channels': self.channels,
             'dim_mults': self.dim_mults,
             'dtype': self.dtype,
         }
-        x = Unet(**unet_configs)(x,time,x_self_cond)
+        x = Unet(**unet_configs)(x, time, x_self_cond)
 
-        for _ in range(self.num_unets-1):
-            x = Unet(**unet_configs)(x,time,x_self_cond)+x
+        for _ in range(self.num_unets - 1):
+            x = Unet(**unet_configs)(x, time, x_self_cond) + x
         return x
