@@ -21,7 +21,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         reconstruct = state.apply_fn({'params': params}, x)
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + gan_loss, (rec_loss, gan_loss)
+        return rec_loss + gan_loss*0.5, (rec_loss, gan_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss)), grads = grad_fn(state.params)
