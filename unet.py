@@ -68,6 +68,7 @@ class ResnetBlock(nn.Module):
     groups: int = 8
     dtype: Any = jnp.bfloat16
 
+
     @nn.compact
     def __call__(self, x, time_emb=None):
         _, _, _, c = x.shape

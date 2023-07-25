@@ -67,12 +67,12 @@ class WeightStandardizedConv(nn.Module):
 
 class DepthWiseConv(nn.Module):
     features: int
-    kernel_size: int
-    dtype: str
+    kernel_size: int = 3
+    dtype: str = 'bfloat16'
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.features, (self.kernel_size, self.kernel_size), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.features, (self.kernel_size, self.kernel_size), padding="SAME", dtype=self.dtype,feature_group_count=self.features)(x)
         x = nn.Conv(self.features, (1, 1), dtype=self.dtype)(x)
         return x
 
@@ -182,18 +182,17 @@ class EfficientBlock2(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-
-        b,h,w,c=x.shape
+        b, h, w, c = x.shape
         partial_channel = c // self.factor
-        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype,feature_group_count=partial_channel)
-        #x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype, feature_group_count=partial_channel)
+        # x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
         out_put = []
-        count=3
+        count = 3
 
         for i in range(0, self.factor):
-            first_part =x[:, :, :, i * partial_channel: (i + 1) * partial_channel]
+            first_part = x[:, :, :, i * partial_channel: (i + 1) * partial_channel]
             first_part = conv(partial_channel, (count, count))(first_part)
-            count+=2
+            count += 2
             out_put.append(first_part)
         x = jnp.concatenate(out_put, axis=3)
 
