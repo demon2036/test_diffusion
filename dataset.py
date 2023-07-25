@@ -1,6 +1,7 @@
 import os
 import time
 import einops
+import flax.linen
 import numpy as np
 import cv2
 import torchvision.utils
@@ -75,9 +76,9 @@ def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-12
 
 if __name__ == '__main__':
     start = time.time()
-    dl = get_dataloader(128, '/home/john/data/s', cache=False, image_size=64,repeat=2)
+    dl = get_dataloader(1, '/home/john/data/flowers', cache=False, image_size=2,repeat=2)
     end = time.time()
-
+    os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     # for _ in range(100):
     #     for data in dl:
     #         print(type(data))
@@ -86,8 +87,16 @@ if __name__ == '__main__':
     for data in dl:
         print(data.shape)
         data = data / 2 + 0.5
-        data = einops.rearrange(data, 'b h w c->b c h w')
-        torchvision.utils.save_image(data, './test.png')
+        data=data.numpy()
+        data=jnp.asarray(data)
+
+        #sm=flax.linen.softmax(data,axis=2)
+        sm=flax.linen.softmax(data,axis=(1,2))
+        print(sm.sum())
+        print(sm)
+
+        # data = einops.rearrange(data, '(n b) h w c->(b n) c h w',n=2)
+        # torchvision.utils.save_image(data, './test2.png')
         break
 
     print(end - start)
