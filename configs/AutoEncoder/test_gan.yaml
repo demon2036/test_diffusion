@@ -22,6 +22,6 @@
   "AutoEncoder": {
     dims : [64,128,256],
     dtype : 'bfloat16',
-    use_attn : True
+    #use_attn : True
   }
 }

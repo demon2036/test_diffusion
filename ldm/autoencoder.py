@@ -86,15 +86,14 @@ class ResBlock(nn.Module):
     def __call__(self, x):
         b, _, _, c = x.shape
         if self.efficient:
-            hidden = nn.LayerNorm(dtype=self.dtype)(x)
-            hidden = SAFM(self.dim, dtype=self.dtype)(hidden)
+            x=EfficientBlock(self.dim,self.dtype)(x)
         else:
             hidden = Block(self.dim, self.dtype)(x)
             hidden = Block(self.dim, self.dtype)(hidden)
 
-        if c != self.dim:
-            x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
-        x = hidden + x
+            if c != self.dim:
+                x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
+            x = hidden + x
 
         return x
 
@@ -111,8 +110,8 @@ class DownSample(nn.Module):
         for _ in range(self.num_blocks):
             x = ResBlock(self.dim, self.dtype)(x)
 
-        if self.use_attn:
-            x=Attention(self.dim,self.dtype)(x)+x
+        # if self.use_attn:
+        #     x=Attention(self.dim,self.dtype)(x)+x
 
         if self.add_down:
             x = DownBlock(self.dim, self.dtype)(x)
@@ -131,8 +130,8 @@ class UpSample(nn.Module):
         for _ in range(self.num_blocks):
             x = ResBlock(self.dim, self.dtype)(x)
 
-        if self.use_attn:
-            x=Attention(self.dim,self.dtype)(x)+x
+        # if self.use_attn:
+        #     x=Attention(self.dim,self.dtype)(x)+x
 
         if self.add_up:
             x = UpBlock(self.dim, self.dtype)(x)
@@ -146,7 +145,6 @@ class Attention(nn.Module):
 
     @nn.compact
     def __call__(self,x, *args, **kwargs):
-
         x=nn.Conv(self.dim,(3,3),padding="SAME",dtype=self.dtype)(x)
         x=nn.softmax(x,axis=(1,2))
         x = nn.Conv(self.dim * 4, (1, 1), padding="SAME", dtype=self.dtype)(x)
@@ -172,7 +170,7 @@ class Encoder(nn.Module):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
 
         for i, dim in enumerate(self.dims):
-            x = DownSample(dim, self.num_blocks, True if i != len(self.dims) else False,dtype=self.dtype,use_attn=self.use_attn)(x)
+            x = DownSample(dim, self.num_blocks, True if i != len(self.dims) else False,dtype=self.dtype,)(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
         x = nn.tanh(x)
         return x
@@ -188,8 +186,7 @@ class Decoder(nn.Module):
     def __call__(self, x, *args, **kwargs):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
         for i, dim in enumerate(self.dims):
-            x = UpSample(dim, self.num_blocks, True if i != len(self.dims) else False,dtype=self.dtype,use_attn=self.use_attn)(x)
-
+            x = UpSample(dim, self.num_blocks, True if i != len(self.dims) else False,dtype=self.dtype,)(x)
         x = nn.Conv(3, (3, 3), dtype='float32', padding='SAME')(x)
         x = nn.tanh(x)
         return x
@@ -200,13 +197,13 @@ class AutoEncoder(nn.Module):
     num_blocks: int = 2
     dtype: str = 'bfloat16'
     latent: int = 3
-    use_attn:bool =False
+    # use_attn:bool =False
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = Encoder(self.dims, self.num_blocks, self.dtype, self.latent,use_attn=self.use_attn)(x)
+        x = Encoder(self.dims, self.num_blocks, self.dtype, self.latent)(x)
         reversed_dims = list(reversed(self.dims))
-        x = Decoder(reversed_dims, self.num_blocks, self.dtype,use_attn=self.use_attn)(x)
+        x = Decoder(reversed_dims, self.num_blocks, self.dtype,)(x)
         return x
 
 
