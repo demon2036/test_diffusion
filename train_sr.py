@@ -105,7 +105,7 @@ class test(Gaussian):
         super().__init__(*args, **kwargs)
 
         self.sr_factor = sr_factor
-        self.predict_residual = True
+        self.predict_residual = predict_residual
 
     def p_sample_loop(self, key, params, shape, x_self_cond=None):
         key, normal_key = jax.random.split(key, 2)
