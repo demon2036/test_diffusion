@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="commit">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder_gan.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_autoencoder_gan.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/SR/sr8_not_residual.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_sr.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +41,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "unet",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/SR",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -52,10 +52,10 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/SR" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/configs" />
       <recent name="$PROJECT_DIR$/configs/AutoEncoder" />
-      <recent name="$PROJECT_DIR$/configs/SR" />
       <recent name="$PROJECT_DIR$/configs/test" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -247,14 +247,6 @@
       <workItem from="1690192169303" duration="296000" />
       <workItem from="1690246188070" duration="5449000" />
       <workItem from="1690335346005" duration="1268000" />
-    </task>
-    <task id="LOCAL-00001" summary="commit">
-      <option name="closed" value="true" />
-      <created>1689436150408</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1689436150408</updated>
     </task>
     <task id="LOCAL-00002" summary="commit">
       <option name="closed" value="true" />
@@ -632,7 +624,23 @@
       <option name="project" value="LOCAL" />
       <updated>1690316318622</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="commit">
+      <option name="closed" value="true" />
+      <created>1690319162613</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1690319162613</updated>
+    </task>
+    <task id="LOCAL-00050" summary="commit">
+      <option name="closed" value="true" />
+      <created>1690319462262</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1690319462263</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
