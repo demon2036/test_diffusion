@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
-      batch_size: 64,
-      file_path: '/root/data/celeba-512'
+      image_size: 128,
+      batch_size: 8,
+      file_path: '/home/john/data/celeba-512'
     },
     trainer_configs: {
       seed: 43,
@@ -12,23 +12,19 @@
       save_path: 'result/SR',
       model_path: 'check_points/SR'
     },
-    optimizer: "AdamW",
+     optimizer:  optax.adamw,
     optimizer_configs: {
       learning_rate: 1.0e-4
     }
 
   },
   "Unet": {
-    dim: 32,
-    out_channels: 3,
-    dim_mults: [1, 2, 4, 4, 8, 8]
-#    layers_per_block: 2,
-#    block_out_channels: [
-#      128, 256, 256, 512
-#    ],
-#    scale : 1,
-#    dtype : 'bfloat16',
-#    precision : 'highest'
+    target: modules.models.unet.Unet,
+    params: {
+      dim: 32,
+      out_channels: 3,
+      dim_mults: [ 1, 2, 4, 4, 8, 8 ]
+    }
   },
   "Gaussian": {
     loss: 'l1',
@@ -40,4 +36,7 @@
     predict_residual : False
   }
 
+
 }
+
+
