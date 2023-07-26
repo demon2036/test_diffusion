@@ -6,7 +6,6 @@ from functools import partial
 import jax
 import jax.numpy as jnp
 from modules.loss.loss import l1_loss, l2_loss, hinge_d_loss
-import optax
 import argparse
 
 from modules.state_utils import create_state
@@ -28,12 +27,17 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
         return 0
 
 
-@partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,))  # static_broadcasted_argnums=(3),
-def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool):
+@partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,4,))  # static_broadcasted_argnums=(3),
+def train_step_diffusion(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool, diffusion: GaussianAE,
+                         key):
     def loss_fn(params):
+        key_real, key_fake = jax.random.split(key, 2)
         reconstruct = state.apply_fn({'params': params}, x)
-        gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
+
+        reconstruct=diffusion(key_real,reconstruct)
+        gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
+
         return rec_loss + gan_loss * 0.1, (rec_loss, gan_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
@@ -47,11 +51,16 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
     return new_state, metric
 
 
-@partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState):
+@partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,))  # static_broadcasted_argnums=(3),
+def train_step_disc_diffusion(state: EMATrainState, x, discriminator_state: EMATrainState, diffusion: GaussianAE, key):
     def loss_fn(params):
+        key_real, key_fake = jax.random.split(key, 2)
+
         fake_image = state.apply_fn({'params': state.params}, x)
         real_image = x
+
+        fake_image = diffusion(key_fake, fake_image)
+        real_image = diffusion(key_fake, real_image)
 
         logit_real = discriminator_state.apply_fn({'params': params, }, real_image)
         logit_fake = discriminator_state.apply_fn({'params': params}, fake_image)
@@ -66,10 +75,6 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState)
     disc_loss = jax.lax.pmean(disc_loss, axis_name='batch')
     metric = {'disc_loss': disc_loss}
     return new_disc_state, metric
-
-
-
-
 
 
 if __name__ == "__main__":
@@ -114,17 +119,21 @@ if __name__ == "__main__":
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
+    diffusion_model=GaussianAE()
+
+
     disc_start = finished_steps >= trainer_configs['disc_start']
     metrics = {}
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
-            key, train_step_key = jax.random.split(key, num=2)
-            train_step_key = shard_prng_key(train_step_key)
+            key, train_step_key_generator,train_step_key_discriminator = jax.random.split(key, num=3)
+            train_step_key_generator = shard_prng_key(train_step_key_generator)
+            train_step_key_discriminator = shard_prng_key(train_step_key_discriminator)
             batch = next(dl)
 
             batch = shard(batch)
-            state, metrics = train_step(state, batch, discriminator_state, disc_start)
+            state, metrics = train_step_diffusion(state, batch, discriminator_state, disc_start,diffusion_model,train_step_key_generator)
             for k, v in metrics.items():
                 metrics.update({k: v[0]})
 
@@ -132,7 +141,7 @@ if __name__ == "__main__":
                 disc_start = True
 
             if steps > trainer_configs['disc_start']:
-                discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state)
+                discriminator_state, metrics_disc = train_step_disc_diffusion(state, batch, discriminator_state,diffusion_model,train_step_key_discriminator)
                 for k, v in metrics_disc.items():
                     metrics_disc.update({k: v[0]})
                 metrics.update(metrics_disc)
