@@ -8,7 +8,6 @@ import jax.numpy as jnp
 from modules.loss.loss import l1_loss, l2_loss, hinge_d_loss
 import optax
 import argparse
-
 from modules.state_utils import create_state
 from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
     get_obj_from_str, EMATrainState
