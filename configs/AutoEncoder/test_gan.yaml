@@ -35,12 +35,13 @@
       optimizer: {
         optimizer: optax.adamw,
         optimizer_configs: {
-          learning_rate: 1.0e-3
+          learning_rate: 1.0e-4
         }
       },
-      params : {
-
-    }
+      params: {
+        dim: 48,
+        dim_mults: [1,2,2,4]
+      },
 
   }
 
