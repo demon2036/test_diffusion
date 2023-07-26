@@ -2,20 +2,21 @@ from flax.training import orbax_utils
 from flax.training.common_utils import shard_prng_key, shard
 from data.dataset import generator
 from modules.models.autoencoder import AutoEncoder
-from modules.models.discriminator import create_discriminator_state, EMATrainState
 from functools import partial
 import jax
 import jax.numpy as jnp
-from  modules.loss.loss import l1_loss,l2_loss,hinge_d_loss
+from modules.loss.loss import l1_loss, l2_loss, hinge_d_loss
 import optax
 import argparse
-from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder
+
+from modules.state_utils import create_state
+from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
+    get_obj_from_str,EMATrainState
 import os
 import flax
 from tqdm import tqdm
 
-
-
+os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
@@ -23,7 +24,6 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
         fake_logit, _ = discriminator_state.apply_fn(
             {'params': discriminator_state.params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
             mutable=['batch_stats'])
-
         return -fake_logit.mean()
     else:
         return 0
@@ -35,7 +35,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         reconstruct = state.apply_fn({'params': params}, x)
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + gan_loss*0.5, (rec_loss, gan_loss)
+        return rec_loss + gan_loss * 0.1, (rec_loss, gan_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss)), grads = grad_fn(state.params)
@@ -74,49 +74,35 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState)
     return new_disc_state, metric
 
 
-def create_state(rng, model_cls, input_shape, optimizer, train_state=EMATrainState, print_model=True,
-                 optimizer_kwargs=None, model_kwargs=None):
-    model = model_cls(**model_kwargs)
-    if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), depth=2,
-                             console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape))
-
-    if optimizer == 'AdamW':
-        optimizer = optax.adamw
-    elif optimizer == "Lion":
-        optimizer = optax.lion
-    else:
-        assert "some thing is wrong"
-
-    tx = optax.chain(
-        optax.clip_by_global_norm(1),
-        optimizer(**optimizer_kwargs)
-    )
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx,
-                              ema_params=variables['params'])
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./configs/AutoEncoder/test_gan.yaml')
-    args = parser.parse_args()
-    config = read_yaml(args.config_path)
 
+    args = parser.parse_args()
+    print(args)
+    config = read_yaml(args.config_path)
     train_config = config['train']
-    autoencoder_config = config['AutoEncoder']
+    model_cls_str, model_optimizer, model_configs = config['AutoEncoder'].values()
+    print(model_cls_str)
+    model_cls = get_obj_from_str(model_cls_str)
+
+    disc_cls_str, disc_optimizer, disc_configs = config['Discriminator'].values()
+    disc_cls = get_obj_from_str(disc_cls_str)
 
     key = jax.random.PRNGKey(seed=43)
 
-    dataloader_configs, trainer_configs, optimizer, optimizer_configs = train_config.values()
+    dataloader_configs, trainer_configs = train_config.values()
 
     input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
+    input_shapes = (input_shape,)
 
-    state = create_state(rng=key, model_cls=AutoEncoder, input_shape=input_shape, optimizer=optimizer,
-                         model_kwargs=autoencoder_config, optimizer_kwargs=optimizer_configs)
+    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
+                         optimizer_dict=model_optimizer,
+                         train_state=EMATrainState, model_kwargs=model_configs)
 
-    discriminator_state = create_discriminator_state(rng=key, input_shape=input_shape, optimizer=optimizer,
-                                                     optimizer_kwargs=optimizer_configs)
+    discriminator_state = create_state(rng=key, model_cls=disc_cls, input_shapes=input_shapes,
+                                       optimizer_dict=disc_optimizer,
+                                       train_state=EMATrainState, model_kwargs=disc_configs)
 
     model_ckpt = {'model': state, 'discriminator': discriminator_state, 'steps': 0}
     save_path = trainer_configs['model_path']
@@ -131,7 +117,7 @@ if __name__ == "__main__":
     finished_steps = model_ckpt['steps']
 
     disc_start = finished_steps >= trainer_configs['disc_start']
-
+    metrics = {}
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
@@ -153,7 +139,6 @@ if __name__ == "__main__":
                     metrics_disc.update({k: v[0]})
                 metrics.update(metrics_disc)
             pbar.set_postfix(metrics)
-            pbar.set_postfix(metrics)
             pbar.update(1)
 
             if steps > 100:
@@ -167,4 +152,4 @@ if __name__ == "__main__":
                 model_ckpt = {'model': un_replicate_state, 'discriminator': un_replicate_disc_state, 'steps': steps}
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
                 checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args},
-                                        force=False)  # save_kwargs={'save_args': save_args}
+                                        force=False)

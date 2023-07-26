@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import flax.linen as nn
 from modules.models.resnet import ResBlock,DownSample,UpSample
-from attention import Attention
+from modules.models.attention import Attention
 
 
 
@@ -41,5 +41,5 @@ class DecoderUpBlock(nn.Module):
         #     x=Attention(self.dim,self.dtype)(x)+x
 
         if self.add_up:
-            x = Upsample(self.dim, self.dtype)(x)
+            x = UpSample(self.dim, self.dtype)(x)
         return x

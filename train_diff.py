@@ -1,19 +1,14 @@
 import argparse
-import importlib
-import importlib.util
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
-from modules.models.unet import MultiUnet, Unet
 from modules.state_utils import create_state
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
     sample_save_image_diffusion, get_obj_from_str
 import flax
 import os
-import time
 from functools import partial
 from flax.training import orbax_utils
-import optax
 from flax.training.common_utils import shard, shard_prng_key
 from jax_smi import initialise_tracking
 from modules.gaussian.gaussian import Gaussian
@@ -22,11 +17,6 @@ import jax.numpy as jnp
 initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-
-
-# os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
-# os.environ['XLA_PYTHON_CLIENT_ALLOCATOR']='platform'
-
 
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
@@ -44,7 +34,9 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-if __name__ == "__main__":
+
+
+def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='configs/Diffusion/test_diff.yaml')
     args = parser.parse_args()
@@ -68,7 +60,6 @@ if __name__ == "__main__":
                          optimizer_kwargs=optimizer_configs,
                          train_state=EMATrainState, model_kwargs=unet_config)
 
-    """
     model_ckpt = {'model': state, 'steps': 0}
     model_save_path = trainer_configs['model_path']
 
@@ -100,15 +91,15 @@ if __name__ == "__main__":
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image_diffusion(key, c, steps, state,save_path)
+                    sample_save_image_diffusion(key, c, steps, state, save_path)
                 except Exception as e:
                     print(e)
 
                 unreplicate_state = flax.jax_utils.unreplicate(state)
-                model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
+                model_ckpt = {'model': unreplicate_state, 'steps': steps}
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
                 checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
-                # del unreplicate_state, sample, model_ckpt
 
-    end = time.time()
-    """
+
+if __name__ == "__main__":
+    train()

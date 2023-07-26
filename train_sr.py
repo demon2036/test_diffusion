@@ -1,5 +1,5 @@
 import argparse
-import jax.numpy as jnp
+import jax.numpy as jnp6
 import einops
 import numpy as np
 from tqdm import tqdm
