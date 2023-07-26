@@ -46,21 +46,21 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str, unet_config = config['Unet']['target'], config['Unet']['params']
+    model_cls_str, model_optimizer, unet_config = config['Unet'].values()
     model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
 
-    dataloader_configs, trainer_configs, optimizer_str, optimizer_configs = train_config.values()
+    dataloader_configs, trainer_configs = train_config.values()
 
     input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
     input_shapes = (input_shape, input_shape[0])
 
     diffusion = GaussianSR(**gaussian_config, image_size=dataloader_configs['image_size'])
 
-    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes, optimizer_name=optimizer_str,
-                         optimizer_kwargs=optimizer_configs,
+    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
+                         optimizer_dict=model_optimizer,
                          train_state=EMATrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
@@ -95,11 +95,10 @@ def train():
                 batch = einops.rearrange(batch, 'n b h w c -> (n b ) h w c')
                 sample_save_image_sr(key, diffusion, steps, state, batch, save_path=trainer_configs['save_path'])
                 unreplicate_state = flax.jax_utils.unreplicate(state)
-                model_ckpt = {'model': unreplicate_state, 'steps': steps}  # 'steps': steps
+                model_ckpt = {'model': unreplicate_state, 'steps': steps}
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
                 checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
-                # del unreplicate_state, sample, model_ckpt
 
 
 if __name__ == "__main__":
-   train()
+    train()

@@ -12,14 +12,15 @@
       save_path: 'result/SR',
       model_path: 'check_points/SR'
     },
-     optimizer:  optax.adamw,
-    optimizer_configs: {
-      learning_rate: 1.0e-4
-    }
-
   },
   "Unet": {
     target: modules.models.unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 1.0e-3
+      }
+    },
     params: {
       dim: 32,
       out_channels: 3,

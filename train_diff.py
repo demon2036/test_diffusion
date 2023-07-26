@@ -43,21 +43,21 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str, unet_config = config['Unet']['target'], config['Unet']['params']
+    model_cls_str,model_optimizer, unet_config = config['Unet'].values()
     model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
 
-    dataloader_configs, trainer_configs, optimizer_str, optimizer_configs = train_config.values()
+    dataloader_configs, trainer_configs = train_config.values()
 
     input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
     input_shapes = (input_shape, input_shape[0])
 
     c = Gaussian(**gaussian_config, image_size=dataloader_configs['image_size'])
 
-    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes, optimizer_name=optimizer_str,
-                         optimizer_kwargs=optimizer_configs,
+    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
+                         optimizer_dict=model_optimizer,
                          train_state=EMATrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}

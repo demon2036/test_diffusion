@@ -12,14 +12,16 @@
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
     },
-    optimizer:  optax.adamw,
-    optimizer_configs: {
-      learning_rate: 1.0e-4
-    }
 
   },
   "Unet": {
     target: modules.models.unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 1.0e-3
+      }
+    },
     params:{
       out_channels: 3,
       dtype: 'bfloat16',
@@ -35,7 +37,6 @@
     min_snr_loss_weight: True,
     scale_shift: True,
     self_condition: True,
-    sr_factor : 4
 
   }
 
