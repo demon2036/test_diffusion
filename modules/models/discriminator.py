@@ -1,21 +1,14 @@
-import jax
+from modules.utils import EMATrainState
 import jax.numpy as jnp
 import flax.linen as nn
 import optax
-from flax.training import train_state
-from typing import *
-
-
-class EMATrainState(train_state.TrainState):
-    batch_stats:Any=None
-    ema_params: Any = None
 
 
 def create_discriminator_state(rng, input_shape, optimizer, train_state=EMATrainState, print_model=True,
-                 optimizer_kwargs=None,):
+                               optimizer_kwargs=None, ):
     model = NLayerDiscriminator()
     if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape),False, depth=2,
+        print(model.tabulate(rng, jnp.empty(input_shape), False, depth=2,
                              console_kwargs={'width': 200}))
     variables = model.init(rng, jnp.empty(input_shape))
     if optimizer == 'AdamW':
@@ -30,9 +23,9 @@ def create_discriminator_state(rng, input_shape, optimizer, train_state=EMATrain
         optimizer(**optimizer_kwargs)
     )
 
-
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, batch_stats=variables['batch_stats'],
-                              ema_params=variables['params'] )
+    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx,
+                              batch_stats=variables['batch_stats'],
+                              ema_params=variables['params'])
 
 
 class NLayerDiscriminator(nn.Module):
@@ -45,7 +38,7 @@ class NLayerDiscriminator(nn.Module):
     use_actnorm: bool = False
 
     @nn.compact
-    def __call__(self, x, train: bool=True):
+    def __call__(self, x, train: bool = True):
         """Construct a PatchGAN discriminator
         Parameters:
             input_nc (int)  -- the number of channels in input images

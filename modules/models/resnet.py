@@ -72,75 +72,51 @@ class DepthWiseConv(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.features, (self.kernel_size, self.kernel_size), padding="SAME", dtype=self.dtype,feature_group_count=self.features)(x)
+        _, _, _, c = x.shape
+        x = nn.Conv(self.features, (self.kernel_size, self.kernel_size), padding="SAME", dtype=self.dtype,
+                    feature_group_count=c)(x)
         x = nn.Conv(self.features, (1, 1), dtype=self.dtype)(x)
         return x
 
 
-class DownSample(nn.Module):
-    features: int
-    dtype: str
-    precision: str = "highest"
+class Block(nn.Module):
+    dim_out: int
+    groups: int = 8
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.features, (3, 3), (2, 2), padding="SAME", dtype=self.dtype, precision=self.precision)(x)
-        return x
+    def __call__(self, x, scale_shift=None):
+        x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
+        x = nn.GroupNorm(self.groups, dtype=self.dtype, )(x)
 
-
-class Upsample(nn.Module):
-    features: int
-    dtype: str
-    precision: str = "highest"
-
-    @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        b, h, w, c = x.shape
-        x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest", precision=self.precision)
-        x = nn.Conv(self.features * 4, (3, 3), padding="SAME", dtype=self.dtype, precision=self.precision)(x)
-        # x = rearrange(x, ' b h w (c p1 p2)->b (h p1) (w p2) c', p1=2, p2=2)
+        if scale_shift is not None:
+            scale, shift = scale_shift
+            x = x * (scale + 1) + shift
+        x = nn.silu(x)
         return x
 
 
 class ResBlock(nn.Module):
-    features: int
-    dtype: str
-    factor: int = 4
-    precision: str = "highest"
-
-    @nn.compact
-    def __call__(self, x, temb, *args, **kwargs):
-        conv = partial(nn.Conv, padding='SAME', dtype=self.dtype, precision=self.precision, param_dtype='bfloat16')
-        b, h, w, c = x.shape
-        hidden_state = x
-
-        hidden_state = nn.GroupNorm(dtype='float32')(hidden_state)
-        hidden_state = nn.silu(hidden_state)
-        hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
-
-        temb = nn.Dense(self.features, dtype=self.dtype, precision=self.precision)(temb)
-        hidden_state += einops.rearrange(temb, 'b c ->b 1 1 c')
-
-        hidden_state = nn.GroupNorm(dtype='float32')(hidden_state)
-        hidden_state = nn.silu(hidden_state)
-        hidden_state = conv(self.features, (3, 3), padding="SAME")(hidden_state)
-
-        if c != self.features:
-            x = conv(self.features, (1, 1))(x)
-        return x + hidden_state
-
-
-class Block(nn.Module):
-    dim: int
-    dtype: str = 'bfloat16'
+    dim_out: int
     groups: int = 8
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
-        x = nn.GroupNorm(num_groups=self.groups, dtype=self.dtype)(x)
-        x = nn.silu(x)
-        return x
+    def __call__(self, x, time_emb=None):
+        _, _, _, c = x.shape
+        scale_shift = None
+        if time_emb is not None:
+            time_emb = nn.silu(time_emb)
+            time_emb = nn.Dense(self.dim_out * 2, dtype=self.dtype)(time_emb)
+            time_emb = einops.rearrange(time_emb, 'b c -> b  1 1 c')
+            scale_shift = jnp.split(time_emb, indices_or_sections=2, axis=3)
+
+        h = Block(dim_out=self.dim_out, dtype=self.dtype)(x, scale_shift=scale_shift)
+        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h)
+        if c != self.dim_out:
+            x = nn.Conv(self.dim_out, (1, 1), dtype=self.dtype)(x)
+
+        return h + x
 
 
 class EfficientBlock(nn.Module):
@@ -202,26 +178,24 @@ class EfficientBlock2(nn.Module):
         return x
 
 
-"""
-class ResBlock(nn.Module):
-    features: int
-    dtype: str
+class DownSample(nn.Module):
+    dim: int
+    dtype: Any = jnp.bfloat16
 
-    # groups:int
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        # use or not use short cut
-        _, _, _, c = x.shape
-        if c == self.features:
-            y = x
-        else:
-            y = nn.Conv(self.features, (1, 1), dtype=self.dtype)(x)
-        x = DepthWiseConv(self.features, 5, dtype=self.dtype)(x)
-        # x = nn.LayerNorm()(x)
-        x = nn.GroupNorm()(x)
-        x = nn.Conv(self.features * 4, (1, 1), dtype=self.dtype)(x)
-        x = nn.silu(x)
-        # x = nn.gelu(x)
-        x = nn.Conv(self.features, (1, 1), dtype=self.dtype)(x)
-        return x + y
-"""
+        x = einops.rearrange(x, 'b  (h p1) (w p2) c -> b  h w (c p1 p2)', p1=2, p2=2)
+        x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
+        return x
+
+
+class UpSample(nn.Module):
+    dim: int
+    dtype: Any = jnp.bfloat16
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        b, h, w, c = x.shape
+        x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
+        x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
+        return x

@@ -1,20 +1,23 @@
 import argparse
+import importlib
+import importlib.util
 from tqdm import tqdm
 import jax.random
-import numpy as np
-from dataset import generator
-from unet import *
-from schedules import *
-from utils import *
+from data.dataset import generator
+from modules.models.unet import MultiUnet, Unet
+from modules.state_utils import create_state
+from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
+    sample_save_image_diffusion, get_obj_from_str
+import flax
 import os
 import time
 from functools import partial
-from flax.training import dynamic_scale as dynamic_scale_lib, train_state, orbax_utils
+from flax.training import orbax_utils
 import optax
 from flax.training.common_utils import shard, shard_prng_key
-from collections import namedtuple
 from jax_smi import initialise_tracking
-from gaussian import Gaussian
+from modules.gaussian.gaussian import Gaussian
+import jax.numpy as jnp
 
 initialise_tracking()
 
@@ -25,124 +28,59 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 # os.environ['XLA_PYTHON_CLIENT_ALLOCATOR']='platform'
 
 
-class TrainState(train_state.TrainState):
-    dynamic_scale: Optional[dynamic_scale_lib.DynamicScale] = None
-    ema_params: Any = None
-
-
-def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
-                 model_kwargs=None, *args, ):
-    platform = jax.local_devices()[0].platform
-
-    if platform == "gpu":
-        dynamic_scale = dynamic_scale_lib.DynamicScale()
-        dynamic_scale = None
-    else:
-        dynamic_scale = None
-
-    model = model_cls(*args, **model_kwargs)
-    if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)), depth=2,
-                             console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)))
-
-    if optimizer == 'AdamW':
-        optimizer = optax.adamw
-    elif optimizer == "Lion":
-        optimizer = optax.lion
-    else:
-        assert "soem thing is wrong"
-
-    tx = optax.chain(
-        optax.clip_by_global_norm(1),
-        optimizer(learning_rate, weight_decay=1e-2)
-    )
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
-                              ema_params=variables['params'])
-
-
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step(state: TrainState, batch, train_key, cls):
+def train_step(state, batch, train_key, cls):
     def loss_fn(params):
         loss = cls(train_key, state, params, batch)
         return loss
 
-    dynamic_scale = state.dynamic_scale
-    if dynamic_scale:
-        grad_fn = dynamic_scale.value_and_grad(loss_fn, )  # axis_name=pmap_axis
-        dynamic_scale, is_fin, loss, grads = grad_fn(state.params)
-        # grad_fn = dynamic_scale.value_and_grad(cls.p_loss, argnums=1)  # axis_name=pmap_axis
-        # dynamic_scale, is_fin, loss, grads = grad_fn(state.params,state,key,batch)
-    else:
-        grad_fn = jax.value_and_grad(loss_fn)
-        loss, grads = grad_fn(state.params)
-        #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
-        grads = jax.lax.pmean(grads, axis_name='batch')
-
+    grad_fn = jax.value_and_grad(loss_fn)
+    loss, grads = grad_fn(state.params)
+    #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
+    grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
     loss = jax.lax.pmean(loss, axis_name='batch')
     metric = {"loss": loss}
-
     return new_state, metric
 
 
-def sample_save_image(key, c, steps, state: TrainState):
-    c.set_state(state)
-    sample = c.sample(key, state.ema_params, batch_size=64)
-    sample = sample / 2 + 0.5
-    c.state = None
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'./result/{steps}.png')
-
-
 if __name__ == "__main__":
-    # if os.path.exists('./nohup.out'):
-    #    os.remove('./nohup.out')
-
-    os.makedirs('./result', exist_ok=True)
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./ae4.yaml')
-    # parser.add_argument('-ct', '--continues',action=True ,)
+    parser.add_argument('-cp', '--config_path', default='configs/Diffusion/test_diff.yaml')
     args = parser.parse_args()
     print(args)
-
     config = read_yaml(args.config_path)
-
     train_config = config['train']
-    unet_config = config['Unet']
+    model_cls_str, unet_config = config['Unet']['target'], config['Unet']['params']
+    model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
 
     key = jax.random.PRNGKey(seed=43)
 
-    image_size, seed, batch_size, data_path, \
-        learning_rate, optimizer, sample_steps = train_config.values()
+    dataloader_configs, trainer_configs, optimizer_str, optimizer_configs = train_config.values()
 
-    print(train_config.values())
+    input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
+    input_shapes = (input_shape, input_shape[0])
 
-    input_shape = (1, image_size, image_size, 3)
+    c = Gaussian(**gaussian_config, image_size=dataloader_configs['image_size'])
 
-    c = Gaussian(**gaussian_config, image_size=image_size)
+    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes, optimizer_name=optimizer_str,
+                         optimizer_kwargs=optimizer_configs,
+                         train_state=EMATrainState, model_kwargs=unet_config)
 
-    state = create_state(rng=key, model_cls=MultiUnet, input_shape=input_shape, learning_rate=learning_rate,
-                         optimizer=optimizer,
-                         train_state=TrainState, model_kwargs=unet_config)
-
+    """
     model_ckpt = {'model': state, 'steps': 0}
-    save_path = './check_points/Unet'
-    checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=50)
-    if len(os.listdir(save_path)) > 0:
+    model_save_path = trainer_configs['model_path']
+
+    checkpoint_manager = create_checkpoint_manager(model_save_path, max_to_keep=10)
+    if len(os.listdir(model_save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
-    state = model_ckpt['model']
-
     state = flax.jax_utils.replicate(model_ckpt['model'])
-    dl = generator(batch_size=batch_size, image_size=image_size, file_path=data_path)  # file_path
+    dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
-    with tqdm(total=1000000) as pbar:
+    with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
             key, train_step_key = jax.random.split(key, num=2)
@@ -160,9 +98,9 @@ if __name__ == "__main__":
             if steps > 100 and steps % 10 == 0:
                 state = update_ema(state, 0.995)
 
-            if steps % sample_steps == 0:
+            if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image(key, c, steps, state)
+                    sample_save_image_diffusion(key, c, steps, state,save_path)
                 except Exception as e:
                     print(e)
 
@@ -173,14 +111,4 @@ if __name__ == "__main__":
                 # del unreplicate_state, sample, model_ckpt
 
     end = time.time()
-
-    """
-    c.set_state(state)
-    sample = c.sample(key, state.params, batch_size=64)
-    c.state = None
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'./result/test.png')
-    
     """

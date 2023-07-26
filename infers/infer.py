@@ -1,15 +1,14 @@
 import argparse
 from tqdm import tqdm
 import jax.random
-from unet import *
-from schedules import *
-from utils import *
+from modules.models.unet import *
+from modules.gaussian.schedules import *
+from modules.utils import *
 import os
-import time
 from functools import partial
-from flax.training import dynamic_scale as dynamic_scale_lib, train_state, orbax_utils
+from flax.training import dynamic_scale as dynamic_scale_lib, train_state
 import optax
-from flax.training.common_utils import shard, shard_prng_key
+from flax.training.common_utils import shard
 from collections import namedtuple
 
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
@@ -363,7 +362,7 @@ if __name__ == "__main__":
                          train_state=TrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
-    save_path = './check_points'
+    save_path = '../check_points'
     checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=50)
     if len(os.listdir(save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)

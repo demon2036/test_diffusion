@@ -1,34 +1,32 @@
-import argparse
-from tqdm import tqdm
-import jax.random
-from unet import *
-from schedules import *
-from utils import *
-import os
-import time
-from functools import partial
-from flax.training import dynamic_scale as dynamic_scale_lib, train_state, orbax_utils
-import optax
-from flax.training.common_utils import shard, shard_prng_key
 from collections import namedtuple
-from jax_smi import initialise_tracking
+from functools import partial
+import numpy as np
+from einops import einops
+from flax.training.common_utils import shard
+from tqdm import tqdm
 
-initialise_tracking()
+from modules.gaussian.schedules import linear_beta_schedule, cosine_beta_schedule, sigmoid_beta_schedule
+from modules.loss.loss import l1_loss, l2_loss
+import jax
+import jax.numpy as jnp
 
 ModelPrediction = namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 
-os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+
+def extract(a, t, x_shape):
+    b = t.shape[0]
+    # b, *_ = t.shape
+    out = a[t]
+    return out.reshape(b, *((1,) * (len(x_shape) - 1)))
+
+@jax.pmap
+def model_predict_ema(model, x, time, x_self_cond=None):
+    return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond)
 
 
-# os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
-# os.environ['XLA_PYTHON_CLIENT_ALLOCATOR']='platform'
-
-def l2_loss(predictions, target):
-    return optax.l2_loss(predictions=predictions, targets=target)
-
-
-def l1_loss(predictions, target):
-    return jnp.abs(target - predictions)
+@jax.jit
+def model_predict(model, x, time, x_self_cond=None):
+    return model.apply_fn({"params": model.params}, x, time, x_self_cond)
 
 
 def extract(a, t, x_shape):
@@ -38,73 +36,7 @@ def extract(a, t, x_shape):
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
-class TrainState(train_state.TrainState):
-    dynamic_scale: Optional[dynamic_scale_lib.DynamicScale] = None
-    ema_params: Any = None
-
-
-@jax.pmap
-def model_predict(model: TrainState, x, time):
-    return model.apply_fn({"params": model.ema_params}, x, time)
-
-
-def create_state(rng, model_cls, input_shape, learning_rate, optimizer, train_state, print_model=True,
-                 model_kwargs=None, *args, ):
-    platform = jax.local_devices()[0].platform
-
-    if platform == "gpu":
-        dynamic_scale = dynamic_scale_lib.DynamicScale()
-        dynamic_scale = None
-    else:
-        dynamic_scale = None
-
-    model = model_cls(*args, **model_kwargs)
-    if print_model:
-        print(model.tabulate(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)), depth=2,
-                             console_kwargs={'width': 200}))
-    variables = model.init(rng, jnp.empty(input_shape), jnp.empty((input_shape[0],)))
-
-    if optimizer == 'AdamW':
-        optimizer = optax.adamw
-    elif optimizer == "Lion":
-        optimizer = optax.lion
-    else:
-        assert "soem thing is wrong"
-
-    tx = optax.chain(
-        optax.clip_by_global_norm(1),
-        optimizer(learning_rate, weight_decay=1e-2)
-    )
-    return train_state.create(apply_fn=model.apply, params=variables['params'], tx=tx, dynamic_scale=dynamic_scale,
-                              ema_params=jax.tree_map(lambda x:x-100,variables['params']))
-
-
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step(state: TrainState, batch, train_key, cls):
-    def loss_fn(params):
-        loss = cls(train_key, state, params, batch)
-        return loss
-
-    dynamic_scale = state.dynamic_scale
-    if dynamic_scale:
-        grad_fn = dynamic_scale.value_and_grad(loss_fn, )  # axis_name=pmap_axis
-        dynamic_scale, is_fin, loss, grads = grad_fn(state.params)
-        # grad_fn = dynamic_scale.value_and_grad(cls.p_loss, argnums=1)  # axis_name=pmap_axis
-        # dynamic_scale, is_fin, loss, grads = grad_fn(state.params,state,key,batch)
-    else:
-        grad_fn = jax.value_and_grad(loss_fn)
-        loss, grads = grad_fn(state.params)
-        #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
-        grads = jax.lax.pmean(grads, axis_name='batch')
-
-    new_state = state.apply_gradients(grads=grads)
-    loss = jax.lax.pmean(loss, axis_name='batch')
-    metric = {"loss": loss}
-
-    return new_state, metric
-
-
-class test:
+class Gaussian:
     def __init__(
             self,
             loss='l2',
@@ -115,13 +47,15 @@ class test:
             beta_schedule='linear',
             ddim_sampling_eta=0.,
             min_snr_loss_weight=False,
-            scale_shift=False
+            scale_shift=False,
+            self_condition=False
 
     ):
         self.scale = 1
         self.state = None
         self.model = None
         self.image_size = image_size
+        self.self_condition = self_condition
         assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
         self.objective = objective
 
@@ -139,7 +73,7 @@ class test:
         if scale_shift:
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
-            alphas = 1 - 1 / (1 + (1 / scale) ** 2 * snr)
+            alphas = 1 - 1 / (1 + (scale) ** 1 * snr)
 
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
@@ -223,13 +157,22 @@ class test:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
         pass
 
-    def model_predictions(self, params, x, t, rederive_pred_noise=False, *args, **kwargs):
-        x = shard(x)
-        t = shard(t)
-        model_out = model_predict(self.state, x, t)
-        model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
-        x = einops.rearrange(x, 'n b h w c->(n b) h w c')
-        t = einops.rearrange(t, 'n b ->(n b) ')
+    def model_predictions(self, params, x, t=None, x_self_cond=None, rederive_pred_noise=False, state=None, *args,
+                          **kwargs):
+
+        if state is not None:
+            model_output = model_predict(state, x, t, x_self_cond)
+        else:
+            if x_self_cond is not None:
+                x_self_cond = shard(x_self_cond)
+
+            if t is not None:
+                t = shard(t)
+            x = shard(x)
+            model_out = model_predict_ema(self.state, x, t, x_self_cond)
+            model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
+            x = einops.rearrange(x, 'n b h w c->(n b) h w c')
+            t = einops.rearrange(t, 'n b ->(n b) ')
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -269,10 +212,10 @@ class test:
     def generate_nosie(self, key, shape):
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, params, x, t):
+    def p_sample(self, key, params, x, t, x_self_cond=None):
         b, c, h, w = x.shape
         batch_times = jnp.full((b,), t)
-        model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times)
+        model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times, x_self_cond)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
@@ -285,7 +228,8 @@ class test:
         x_start = None
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
-            img, x_start = self.p_sample(normal_key, params, img, t)
+            x_self_cond = x_start if self.self_condition else None
+            img, x_start = self.p_sample(normal_key, params, img, t, x_self_cond)
 
         ret = img
 
@@ -298,10 +242,11 @@ class test:
 
         times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
         times = list(reversed(times))
-
+        x_start = None
         for time, time_next in tqdm(zip(times[:-1], times[1:]), total=self.sampling_timesteps):
             batch_times = jnp.full((b,), time)
-            pred_noise, x_start = self.model_predictions(None, img, batch_times)
+            x_self_cond = x_start if self.self_condition else None
+            pred_noise, x_start = self.model_predictions(None, img, batch_times, x_self_cond)
 
             if time_next < 0:
                 img = x_start
@@ -309,6 +254,12 @@ class test:
                 key, key_noise = jax.random.split(key, 2)
                 # noise = self.generate_nosie(key_noise, shape=shape)
                 noise = pred_noise
+
+                # if time_next > 100:
+                #     noise = self.generate_nosie(key_noise, shape=shape)
+                # else:
+                #     noise = pred_noise
+
                 batch_times_next = jnp.full((b,), time_next)
                 img = self.q_sample(x_start, batch_times_next, noise)
 
@@ -327,11 +278,21 @@ class test:
         )
 
     def p_loss(self, key, state, params, x_start, t):
+        key, cond_key = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         # noise sample
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x, t)
+
+        def estimate(_):
+            return jax.lax.stop_gradient(self.model_predictions(None, x, t, state=state)).pred_x_start
+
+        zeros = jnp.zeros_like(x)
+        x_self_cond = None
+        if self.self_condition:
+            x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,None)
+
+        model_output = state.apply_fn({"params": params}, x, t, x_self_cond)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -354,125 +315,3 @@ class test:
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
         return self.p_loss(key_noise, state, params, img, t)
-
-
-def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64):
-    # d = get_dataloader(batch_size.)
-    d = get_dataloader(batch_size, file_path, cache=True, image_size=image_size)
-    while True:
-        for data in d:
-            # x, y = data
-            x = data
-            x = x.numpy()
-            x = jnp.asarray(x)
-            # x = einops.rearrange(x, 'b c h w-> b h w c')
-            # b, h, w, c = x.shape
-            # x = jax.image.resize(x, (b, 32, 32, c), method='bicubic')
-            yield x
-
-
-def temp(x, y):
-    ema = 0.9999
-
-    z1 = ema*x + (1-ema)*y
-
-    return z1
-
-
-def temp2(x, y):
-    x2 = jnp.dot(x, 0.9999, precision='float32')
-    y2 = jnp.dot(y, 1 - 0.9999, precision='float32')
-    z2 = x2 + y2
-    return z2
-
-
-@partial(jax.pmap, static_broadcasted_argnums=(1,))
-def update_ema(state: TrainState, ema_decay=0.999,):
-    new_ema_params = jax.tree_map(temp, state.ema_params,
-                                  state.params)
-    state = state.replace(ema_params=new_ema_params)
-    return state
-
-@partial(jax.pmap, static_broadcasted_argnums=(1,))
-def update_ema2(state: TrainState, ema_decay=0.999,):
-    new_ema_params = jax.tree_map(temp2, state.ema_params,
-                                  state.params)
-    state = state.replace(ema_params=new_ema_params)
-    return state
-
-
-def sample_save_image(key, c, steps, state: TrainState):
-    c.set_state(state)
-    sample = c.sample(key, state.ema_params, batch_size=64)
-    sample = sample / 2 + 0.5
-    c.state = None
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'./result/{steps}.png')
-
-
-if __name__ == "__main__":
-    # if os.path.exists('./nohup.out'):
-    #    os.remove('./nohup.out')
-
-    os.makedirs('./result', exist_ok=True)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./ae4.yaml')
-    # parser.add_argument('-ct', '--continues',action=True ,)
-    args = parser.parse_args()
-    print(args)
-
-    config = read_yaml(args.config_path)
-
-    train_config = config['train']
-    unet_config = config['Unet']
-    gaussian_config = config['Gaussian']
-
-    key = jax.random.PRNGKey(seed=43)
-
-    image_size, seed, batch_size, data_path, \
-        learning_rate, optimizer, sample_steps = train_config.values()
-
-    print(train_config.values())
-
-    input_shape = (1, image_size, image_size, 3)
-
-    c = test(**gaussian_config, image_size=image_size)
-
-    state = create_state(rng=key, model_cls=Unet, input_shape=input_shape, learning_rate=1e-5, optimizer=optimizer,
-                         train_state=TrainState, model_kwargs=unet_config)
-
-    model_ckpt = {'model': state, 'steps': 0}
-    save_path = './check_points'
-    checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=50)
-    if len(os.listdir(save_path)) > 0:
-        model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
-
-    state = model_ckpt['model']
-    state = flax.jax_utils.replicate(model_ckpt['model'])
-    import copy
-    state2 = copy.deepcopy(state)
-
-    total=10000
-    for i in tqdm(range(total),total=total):
-
-        state = update_ema(state, 0.9999)
-
-        state2 = update_ema2(state2, 0.9999)
-
-
-    jax.tree_map(lambda x,y:print((x-y).sum()),state.ema_params,state2.ema_params)
-
-
-    """
-    c.set_state(state)
-    sample = c.sample(key, state.params, batch_size=64)
-    c.state = None
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'./result/test.png')
-
-    """
