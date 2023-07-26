@@ -4,43 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/modules/gaussian/gaussianSR.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/models/attention.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/models/autoencoder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/models/embedding.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/models/unet_block.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/state_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/schedules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/schedules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/Diffusion/test_diff.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discriminator.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/discriminator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gaussian.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gaussian_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/infer.py" beforeDir="false" afterPath="$PROJECT_DIR$/infers/infer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ldm/autoencoder.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/loss/loss.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_nosie.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedules.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/schedules.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test yaml.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_google.py" beforeDir="false" afterPath="$PROJECT_DIR$/upload/test_google.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_google2.py" beforeDir="false" afterPath="$PROJECT_DIR$/upload/test_google2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_sr.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/SR/test_sr.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/torch_diffusion.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/torch_diffusion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder_gan.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_autoencoder_gan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder_gan_shadow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_sr.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unet_block.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" />
-    </list>
+    <list default="true" id="53ac2f06-ac61-48d3-833f-651da20fa655" name="Changes" comment="commit" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -283,6 +247,7 @@
       <workItem from="1690192169303" duration="296000" />
       <workItem from="1690246188070" duration="5449000" />
       <workItem from="1690335346005" duration="1268000" />
+      <workItem from="1690333361515" duration="328000" />
     </task>
     <task id="LOCAL-00003" summary="fix yaml bug">
       <option name="closed" value="true" />
