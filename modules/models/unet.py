@@ -1,13 +1,10 @@
 import math
 from functools import partial
-
 import einops
 import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
-
-from diffusers import AutoencoderKL
 
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample,UpSample
