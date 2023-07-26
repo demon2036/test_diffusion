@@ -5,10 +5,6 @@ import numpy as np
 import jax.numpy as jnp
 
 
-@jax.pmap
-def model_predict(model, x, time):
-    return model.apply_fn({"params": model.ema_params}, x, time)
-
 class GaussianSR(Gaussian):
     def __init__(
             self,
