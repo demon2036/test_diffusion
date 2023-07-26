@@ -5,12 +5,9 @@ import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
-
+from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample,UpSample
-
-
-
 
 
 class Unet(nn.Module):
@@ -80,7 +77,6 @@ class Unet(nn.Module):
         x = nn.Conv(self.out_channels, (1, 1), dtype="float32")(x)
         return x
 
-
 class MultiUnet(nn.Module):
     dim: int = 32
     out_channels: int = 3
@@ -106,4 +102,53 @@ class MultiUnet(nn.Module):
 
         for _ in range(self.num_unets - 1):
             x = Unet(**unet_configs)(x, time, x_self_cond) + x
+        return x
+
+
+
+
+
+
+class UVit(nn.Module):
+    dim: int = 384
+    patch :int =2
+    out_channels: int = 3
+    depth: int =12
+    # resnet_block_groups: int = 8,
+    dtype: Any = jnp.bfloat16
+    self_condition: bool = False
+
+    @nn.compact
+    def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
+
+        if x_self_cond is not None and self.self_condition:
+            x = jnp.concatenate([x, x_self_cond], axis=3)
+        elif self.self_condition :
+            x = jnp.concatenate([x, jnp.zeros_like(x)], axis=3)
+        print(x.shape)
+
+        time_dim = self.dim * 4
+        t = nn.Sequential([
+            SinusoidalPosEmb(self.dim),
+            nn.Dense(time_dim, dtype=self.dtype),
+            nn.gelu,
+            nn.Dense(time_dim, dtype=self.dtype)
+        ])(time)
+
+        x = nn.Conv(self.dim, (self.patch, self.patch), (self.patch, self.patch),padding="SAME", dtype=self.dtype)(x)
+        r = x
+
+        h = []
+
+        for _ in range(self.depth//2):
+            x=Transformer(self.dim,self.dtype)(x)
+            h.append(x)
+
+        for _ in range(self.depth // 2):
+            x=jnp.concatenate([x,h.pop()],axis=-1)
+            x=nn.Dense(self.dim,dtype=self.dtype)(x)
+            x = Transformer(self.dim, self.dtype)(x)
+
+        x=einops.rearrange(x,'b h w (c p1 p2)->b (h p1) (w p2) c',p1=self.patch,p2=self.patch)
+        x = nn.Conv(self.out_channels, (3, 3), dtype="float32")(x)
         return x

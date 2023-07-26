@@ -1,0 +1,41 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 64,
+      batch_size: 8,
+      file_path: '/home/john/data/celeba-512'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+
+  },
+  "Unet": {
+    target: modules.models.unet.UVit,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 1.0e-4
+      }
+    },
+    params:{
+      self_condition: True
+    }
+  },
+  "Gaussian": {
+    loss: 'l2',
+    timesteps: 1000,
+    sampling_timesteps: 200,
+    objective: 'predict_noise',
+    beta_schedule: 'sigmoid',
+    min_snr_loss_weight: True,
+    scale_shift: True,
+    self_condition: True,
+
+  }
+
+}
