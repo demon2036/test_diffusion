@@ -21,9 +21,8 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
     if disc_start:
-        fake_logit, _ = discriminator_state.apply_fn(
-            {'params': discriminator_state.params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
-            mutable=['batch_stats'])
+        fake_logit = discriminator_state.apply_fn(
+            {'params': discriminator_state.params,}, reconstruct)
         return -fake_logit.mean()
     else:
         return 0
@@ -54,24 +53,20 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState)
         fake_image = state.apply_fn({'params': state.params}, x)
         real_image = x
 
-        logit_real, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': discriminator_state.batch_stats}, real_image, True,
-            mutable=['batch_stats'])
-
-        logit_fake, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': mutable['batch_stats']}, fake_image, True,
-            mutable=['batch_stats'])
+        logit_real = discriminator_state.apply_fn({'params': params, }, real_image)
+        logit_fake = discriminator_state.apply_fn({'params': params}, fake_image)
 
         disc_loss = hinge_d_loss(logit_real, logit_fake)
-        return disc_loss, mutable
+        return disc_loss,disc_loss
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (disc_loss, mutable), grads = grad_fn(discriminator_state.params, )
+    (disc_loss,_), grads = grad_fn(discriminator_state.params, )
     grads = jax.lax.pmean(grads, axis_name='batch')
-    new_disc_state = discriminator_state.apply_gradients(grads=grads, batch_stats=mutable['batch_stats'])
+    new_disc_state = discriminator_state.apply_gradients(grads=grads)
     disc_loss = jax.lax.pmean(disc_loss, axis_name='batch')
     metric = {'disc_loss': disc_loss}
     return new_disc_state, metric
+
 
 
 

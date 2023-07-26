@@ -2,16 +2,16 @@
   "train": {
     dataloader_configs: {
       image_size: 256,
-      batch_size: 8,
-      file_path: '/home/john/data/celeba-512'
+      batch_size: 64,
+      file_path: '/root/data/celeba-512'
     },
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 100,
+      sample_steps: 10000,
       save_path: 'result/AutoEncoder',
       model_path: 'check_points/AutoEncoder',
-      disc_start : 200
+      disc_start : 50000
     },
 
 
