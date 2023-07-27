@@ -22,10 +22,16 @@
         learning_rate: 1.0e-4
       }
     },
-    params:{
+    params: {
+      dim: 32,
       out_channels: 3,
-      dtype: 'bfloat16',
-      self_condition: True
+      dim_mults: [ 1, 2, 4, 4, 8, 8 ],
+      self_condition: True,
+      use_encoder: True,
+      encoder_configs: {
+        dims: [ 64,128,256,256 ],
+        dtype: 'bfloat16',
+      }
     }
   },
   "Gaussian": {
