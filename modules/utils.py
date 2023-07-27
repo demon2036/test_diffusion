@@ -15,7 +15,8 @@ import orbax
 import yaml
 import json
 
-
+from modules.gaussian.gaussian import Gaussian
+from modules.gaussian.gaussianSR import GaussianSR
 
 
 class EMATrainState(train_state.TrainState):
@@ -92,10 +93,10 @@ def sample_save_image_autoencoder(state, save_path, steps, data):
     save_image(all_image, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_diffusion(key, c, steps, state: EMATrainState,save_path):
+def sample_save_image_diffusion(key, c:Gaussian, steps, state: EMATrainState,save_path):
     os.makedirs(save_path, exist_ok=True)
-    c.set_state(state)
-    sample = c.sample(key, state.ema_params, batch_size=64)
+    #c.set_state(state)
+    sample = c.sample(key, state, batch_size=64)
     sample = sample / 2 + 0.5
     c.state = None
     sample = einops.rearrange(sample, 'b h w c->b c h w')
@@ -103,17 +104,17 @@ def sample_save_image_diffusion(key, c, steps, state: EMATrainState,save_path):
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
 
-def sample_save_image_sr(key, diffusion, steps, state: EMATrainState, batch, save_path):
+def sample_save_image_sr(key, diffusion:GaussianSR, steps, state: EMATrainState, batch, save_path):
     os.makedirs(save_path,exist_ok=True)
     b, h, w, c = batch.shape
     lr_image = jax.image.resize(batch, (b, h // diffusion.sr_factor, w // diffusion.sr_factor, c), method='bilinear')
     os.makedirs(save_path, exist_ok=True)
     diffusion.set_state(state)
-    sample = diffusion.sample(key, state.ema_params, lr_image)
+    sample = diffusion.sample(key, state, lr_image)
     all_image = jnp.concatenate([sample, batch], axis=0)
     sample = all_image / 2 + 0.5
     diffusion.state = None
-    sample = einops.rearrange(sample, '（b n） h w c->(n b) c h w',n=2)
+    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w',n=2)
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')

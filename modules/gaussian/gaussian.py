@@ -19,12 +19,11 @@ def extract(a, t, x_shape):
     out = a[t]
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
-@jax.pmap
+
 def model_predict_ema(model, x, time, x_self_cond=None):
     return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond)
 
 
-@jax.jit
 def model_predict(model, x, time, x_self_cond=None):
     return model.apply_fn({"params": model.params}, x, time, x_self_cond)
 
@@ -120,6 +119,9 @@ class Gaussian:
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
 
+        self.pmap_q_sample = jax.pmap(self.q_sample)
+        self.pmap_model_predictions = jax.pmap(self.model_predictions)
+
     def set_state(self, state):
         self.state = state
 
@@ -157,22 +159,9 @@ class Gaussian:
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
         pass
 
-    def model_predictions(self, params, x, t=None, x_self_cond=None, rederive_pred_noise=False, state=None, *args,
-                          **kwargs):
-
-        if state is not None:
-            model_output = model_predict(state, x, t, x_self_cond)
-        else:
-            if x_self_cond is not None:
-                x_self_cond = shard(x_self_cond)
-
-            if t is not None:
-                t = shard(t)
-            x = shard(x)
-            model_out = model_predict_ema(self.state, x, t, x_self_cond)
-            model_output = einops.rearrange(model_out, 'n b h w c->(n b) h w c')
-            x = einops.rearrange(x, 'n b h w c->(n b) h w c')
-            t = einops.rearrange(t, 'n b ->(n b) ')
+    def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
+        # model_output = model_predict(state, x, t, x_self_cond)
+        model_output = model_predict_ema(state, x, t, x_self_cond)
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -198,8 +187,8 @@ class Gaussian:
 
         return ModelPrediction(pred_noise, x_start)
 
-    def p_mean_variance(self, params, x, t, x_self_cond=None, *args, **kwargs):
-        preds = self.model_predictions(params, x, t)
+    def p_mean_variance(self, x, t, x_self_cond=None, *args, **kwargs):
+        preds = self.model_predictions(x, t)
         x_start = preds.pred_x_start
 
         # x_start = jnp.clip(x_start, 0, 1)
@@ -212,16 +201,16 @@ class Gaussian:
     def generate_nosie(self, key, shape):
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, params, x, t, x_self_cond=None):
+    def p_sample(self, key, x, t, x_self_cond=None):
         b, c, h, w = x.shape
         batch_times = jnp.full((b,), t)
-        model_mean, _, model_log_variance, x_start = self.p_mean_variance(params, x, batch_times, x_self_cond)
+        model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
         return pred_image, x_start
 
-    def p_sample_loop(self, key, params, shape):
+    def p_sample_loop(self, key, shape):
         key, normal_key = jax.random.split(key, 2)
         img = self.generate_nosie(normal_key, shape)
 
@@ -229,30 +218,49 @@ class Gaussian:
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
             x_self_cond = x_start if self.self_condition else None
-            img, x_start = self.p_sample(normal_key, params, img, t, x_self_cond)
+            img, x_start = self.p_sample(normal_key, img, t, x_self_cond)
 
         ret = img
 
         return ret
 
-    def ddim_sample(self, key, shape):
+    def ddim_sample(self, key, state, self_condition=None, shape=None):
+        print(shape)
         b, *_ = shape
         key, key_image = jax.random.split(key, 2)
         img = self.generate_nosie(key_image, shape=shape)
 
         times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
         times = list(reversed(times))
+
+        img = shard(img)
+
+        x_self_cond = self_condition
+        has_condition = False
+        if x_self_cond is not None:
+            x_self_cond = shard(x_self_cond)
+            has_condition = True
+
         x_start = None
         for time, time_next in tqdm(zip(times[:-1], times[1:]), total=self.sampling_timesteps):
             batch_times = jnp.full((b,), time)
-            x_self_cond = x_start if self.self_condition else None
-            pred_noise, x_start = self.model_predictions(None, img, batch_times, x_self_cond)
+
+            if has_condition:
+                pass
+            elif self.self_condition:
+                x_self_cond = x_start
+            else:
+                x_self_cond = None
+
+            batch_times = shard(batch_times)
+
+            pred_noise, x_start = self.pmap_model_predictions(x=img, t=batch_times, x_self_cond=x_self_cond,
+                                                              state=state)
 
             if time_next < 0:
                 img = x_start
             else:
                 key, key_noise = jax.random.split(key, 2)
-                # noise = self.generate_nosie(key_noise, shape=shape)
                 noise = pred_noise
 
                 # if time_next > 100:
@@ -261,15 +269,21 @@ class Gaussian:
                 #     noise = pred_noise
 
                 batch_times_next = jnp.full((b,), time_next)
-                img = self.q_sample(x_start, batch_times_next, noise)
+                batch_times_next = shard(batch_times_next)
+                img = self.pmap_q_sample(x_start, batch_times_next, noise)
+
+        img = einops.rearrange(img, 'n b h w c->(n b ) h w c', n=img.shape[0])
 
         return img
 
-    def sample(self, key, params, batch_size=16):
-        if self.num_timesteps > self.sampling_timesteps:
-            return self.ddim_sample(key, (batch_size, self.image_size, self.image_size, 3))
-        else:
-            return self.p_sample_loop(key, params, (batch_size, self.image_size, self.image_size, 3))
+    def sample(self, key, state, self_condition=None, batch_size=16):
+
+        return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+
+        # if self.num_timesteps > self.sampling_timesteps:
+        #     return self.ddim_sample(key, (batch_size, self.image_size, self.image_size, 3))
+        # else:
+        #     return self.p_sample_loop(key, (batch_size, self.image_size, self.image_size, 3))
 
     def q_sample(self, x_start, t, noise):
         return (
@@ -290,7 +304,8 @@ class Gaussian:
         zeros = jnp.zeros_like(x)
         x_self_cond = None
         if self.self_condition:
-            x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,None)
+            x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,
+                                       None)
 
         model_output = state.apply_fn({"params": params}, x, t, x_self_cond)
 

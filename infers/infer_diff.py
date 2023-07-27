@@ -75,8 +75,6 @@ def train():
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
             key, train_step_key = jax.random.split(key, num=2)
-            train_step_key = shard_prng_key(train_step_key)
-            batch = next(dl)
             sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
 
 

@@ -41,7 +41,7 @@ def train_step(state: EMATrainState, batch, train_key, cls):
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/SR/test_sr.yaml')
+    parser.add_argument('-cp', '--config_path', default='../configs/SR/test_sr.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -80,27 +80,13 @@ def train():
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
 
-            batch = shard(batch)
-            state, metrics = train_step(state, batch, train_step_key, diffusion)
-            for k, v in metrics.items():
-                metrics.update({k: v[0]})
 
-            pbar.set_postfix(metrics)
-            pbar.update(1)
+            sample_save_image_sr(key, diffusion, steps, state, batch, save_path=trainer_configs['save_path'])
 
-            if steps > 100:
-                state = update_ema(state, 0.9999)
 
-            if steps % trainer_configs['sample_steps'] == 0:
-                batch = einops.rearrange(batch, 'n b h w c -> (n b ) h w c')
-                try:
-                    sample_save_image_sr(key, diffusion, steps, state, batch, save_path=trainer_configs['save_path'])
-                except Exception as e:
-                    print(e)
-                unreplicate_state = flax.jax_utils.unreplicate(state)
-                model_ckpt = {'model': unreplicate_state, 'steps': steps}
-                save_args = orbax_utils.save_args_from_target(model_ckpt)
-                checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
+
+
+
 
 
 if __name__ == "__main__":

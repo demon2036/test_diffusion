@@ -1,4 +1,4 @@
-from modules.gaussian.gaussian import Gaussian, extract,ModelPrediction
+from modules.gaussian.gaussian import Gaussian, extract, ModelPrediction
 import jax
 from tqdm import tqdm
 import numpy as np
@@ -32,46 +32,31 @@ class GaussianSR(Gaussian):
             ret += x_self_cond
         return ret
 
-    def ddim_sample(self, key, shape, x_self_cond=None):
-        b, *_ = shape
-        key, key_image = jax.random.split(key, 2)
-        img = self.generate_nosie(key_image, shape=shape)
+    def sample(self, key, state, lr_image):
 
-        times = np.asarray(np.linspace(-1, 999, num=self.sampling_timesteps + 1), dtype=np.int32)
-        times = list(reversed(times))
-
-        for time, time_next in tqdm(zip(times[:-1], times[1:]), total=self.sampling_timesteps):
-            batch_times = jnp.full((b,), time)
-            pred_noise, x_start = self.model_predictions(None, img, batch_times, x_self_cond)
-
-            if time_next < 0:
-                img = x_start
-            else:
-                key, key_noise = jax.random.split(key, 2)
-                noise = pred_noise
-
-                # if time_next > 100:
-                #     noise = self.generate_nosie(key_noise, shape=shape)
-                # else:
-                #     noise = pred_noise
-
-                batch_times_next = jnp.full((b,), time_next)
-                img = self.q_sample(x_start, batch_times_next, noise)
-        ret = img
-        if self.predict_residual:
-            ret += x_self_cond
-
-        return ret
-
-    def sample(self, key, params, lr_image):
         b, h, w, c = lr_image.shape
         lr_image = jax.image.resize(lr_image, (b, h * self.sr_factor, w * self.sr_factor, c), method='bicubic')
         noise_shape = lr_image.shape
+        print(noise_shape)
+        # if self.num_timesteps > self.sampling_timesteps:
+        #     return self.ddim_sample(key, noise_shape, lr_image)
+        # else:
+        #     return self.p_sample_loop(key, params, noise_shape, lr_image)
+        res = self.ddim_sample(key, state, lr_image, noise_shape)
+        if self.predict_residual:
+            res += lr_image
 
-        if self.num_timesteps > self.sampling_timesteps:
-            return self.ddim_sample(key, noise_shape, lr_image)
-        else:
-            return self.p_sample_loop(key, params, noise_shape, lr_image)
+        return res
+
+    # def sample(self, key, params, lr_image):
+    #     b, h, w, c = lr_image.shape
+    #     lr_image = jax.image.resize(lr_image, (b, h * self.sr_factor, w * self.sr_factor, c), method='bicubic')
+    #     noise_shape = lr_image.shape
+    #
+    #     if self.num_timesteps > self.sampling_timesteps:
+    #         return self.ddim_sample(key, noise_shape, lr_image)
+    #     else:
+    #         return self.p_sample_loop(key, params, noise_shape, lr_image)
 
     def p_loss(self, key, state, params, x_start, t):
         noise = self.generate_nosie(key, shape=x_start.shape)
