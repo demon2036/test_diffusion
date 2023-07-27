@@ -370,7 +370,6 @@ if __name__ == "__main__":
     state = model_ckpt['model']
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
-    state = flax.jax_utils.replicate(model_ckpt['model'])
     time_steps = [20, 25, 35, 50, 75, 100, 200, 250, 500, 1000]
     for time in time_steps:
         c.sampling_timesteps = time
