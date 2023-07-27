@@ -113,7 +113,7 @@ def sample_save_image_sr(key, diffusion, steps, state: EMATrainState, batch, sav
     all_image = jnp.concatenate([sample, batch], axis=0)
     sample = all_image / 2 + 0.5
     diffusion.state = None
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
+    sample = einops.rearrange(sample, '（b n） h w c->(n b) c h w',n=2)
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')

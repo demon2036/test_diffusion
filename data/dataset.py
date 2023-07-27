@@ -4,6 +4,7 @@ import einops
 import flax.linen
 import numpy as np
 import cv2
+import torch
 import torchvision.utils
 import tqdm
 from torch.utils.data import DataLoader, Dataset
@@ -76,7 +77,7 @@ def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-12
 
 if __name__ == '__main__':
     start = time.time()
-    dl = get_dataloader(1, '/home/john/data/flowers', cache=False, image_size=2,repeat=2)
+    dl = get_dataloader(64, '/home/john/data/s', cache=False, image_size=256,repeat=2)
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     # for _ in range(100):
@@ -89,14 +90,12 @@ if __name__ == '__main__':
         data = data / 2 + 0.5
         data=data.numpy()
         data=jnp.asarray(data)
+        data=np.asarray(data)
+        data=torch.Tensor(data)
 
-        #sm=flax.linen.softmax(data,axis=2)
-        sm=flax.linen.softmax(data,axis=(1,2))
-        print(sm.sum())
-        print(sm)
 
-        # data = einops.rearrange(data, '(n b) h w c->(b n) c h w',n=2)
-        # torchvision.utils.save_image(data, './test2.png')
+        data = einops.rearrange(data, '(n b) h w c->(b n) c h w',n=2)
+        torchvision.utils.save_image(data, './test2.png')
         break
 
     print(end - start)

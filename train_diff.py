@@ -91,7 +91,7 @@ def train():
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image_diffusion(key, c, steps, state, save_path)
+                    sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 except Exception as e:
                     print(e)
 
