@@ -26,11 +26,12 @@ class Unet(nn.Module):
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
 
-        if self.use_encoder :
-            b,h,w,c=x.shape
-            x_self_cond=Encoder(**self.encoder_configs)(x_self_cond)
-            x_self_cond=jax.image.resize(x_self_cond,(b,h,w,x_self_cond.shape[-1]),'bicubic')
-
+        if self.use_encoder:
+            n = 2 ** 3
+            x_self_cond = Encoder(**self.encoder_configs)(x_self_cond)
+            x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
+            x = einops.rearrange('b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
+            x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
