@@ -21,7 +21,7 @@ from modules.gaussian.gaussianSR import GaussianSR
 
 
 class EMATrainState(train_state.TrainState):
-    batch_stats:Any=None
+    batch_stats: Any = None
     ema_params: Any = None
 
 
@@ -38,9 +38,6 @@ def update_ema(state, ema_decay=0.999):
                                   state.params)
     state = state.replace(ema_params=new_ema_params)
     return state
-
-
-
 
 
 def create_checkpoint_manager(save_path, max_to_keep=10, ):
@@ -75,6 +72,7 @@ def vanilla_d_loss(logits_real, logits_fake):
 
 def sample_save_image_autoencoder(state, save_path, steps, data):
     os.makedirs(save_path, exist_ok=True)
+
     @jax.pmap
     def infer(state, params, data):
         sample = state.apply_fn({'params': params}, data)
@@ -94,25 +92,20 @@ def sample_save_image_autoencoder(state, save_path, steps, data):
     save_image(all_image, f'{save_path}/{steps}.png')
 
 
-
-
-def sample_save_image_diffusion_encoder(key, c:GaussianDecoder, steps, state: EMATrainState,save_path,batch):
+def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: EMATrainState, save_path, batch):
     os.makedirs(save_path, exist_ok=True)
     c.set_state(state)
-    sample = c.sample(key, state,batch, batch_size=64)
+    sample = c.sample(key, state, batch, batch_size=64)
     c.state = None
     sample = jnp.concatenate([sample, batch], axis=0)
     sample = sample / 2 + 0.5
-    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w',n=2)
+    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w', n=2)
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-
-
-
-def sample_save_image_diffusion(key, c:Gaussian, steps, state: EMATrainState,save_path):
+def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path):
     os.makedirs(save_path, exist_ok=True)
     c.set_state(state)
     sample = c.sample(key, state, batch_size=64)
@@ -123,8 +116,9 @@ def sample_save_image_diffusion(key, c:Gaussian, steps, state: EMATrainState,sav
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
 
-def sample_save_image_sr(key, diffusion:GaussianSR, steps, state: EMATrainState, batch, save_path):
-    os.makedirs(save_path,exist_ok=True)
+
+def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):
+    os.makedirs(save_path, exist_ok=True)
     b, h, w, c = batch.shape
     lr_image = jax.image.resize(batch, (b, h // diffusion.sr_factor, w // diffusion.sr_factor, c), method='bilinear')
     os.makedirs(save_path, exist_ok=True)
@@ -133,13 +127,12 @@ def sample_save_image_sr(key, diffusion:GaussianSR, steps, state: EMATrainState,
     all_image = jnp.concatenate([sample, batch], axis=0)
     sample = all_image / 2 + 0.5
     diffusion.state = None
-    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w',n=2)
+    sample = einops.rearrange(sample, '(n b) h w c->b c (n h) w', n=2)
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-
-def get_obj_from_str(string:str):
-    module,cls=string.rsplit('.',1)
-    return getattr(importlib.import_module(module),cls)
+def get_obj_from_str(string: str):
+    module, cls = string.rsplit('.', 1)
+    return getattr(importlib.import_module(module), cls)

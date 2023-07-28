@@ -14,7 +14,7 @@ class Encoder(nn.Module):
     def __call__(self, x, *args, **kwargs):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
         for i, dim in enumerate(self.dims):
-            x = EncoderDownBlock(dim, self.num_blocks, True if i != len(self.dims) else False, dtype=self.dtype, )(x)
+            x = EncoderDownBlock(dim, self.num_blocks, True if i != len(self.dims)-1 else False, dtype=self.dtype, )(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
         x = nn.tanh(x)
         return x
@@ -30,7 +30,7 @@ class Decoder(nn.Module):
     def __call__(self, x, *args, **kwargs):
         x = nn.Conv(self.dims[0], (7, 7), dtype=self.dtype, padding="same")(x)
         for i, dim in enumerate(self.dims):
-            x = DecoderUpBlock(dim, self.num_blocks, True if i != len(self.dims) else False, dtype=self.dtype, )(x)
+            x = DecoderUpBlock(dim, self.num_blocks, True if i != len(self.dims)-1 else False, dtype=self.dtype, )(x)
         x = nn.Conv(3, (3, 3), dtype='float32', padding='SAME')(x)
         x = nn.tanh(x)
         return x
@@ -41,9 +41,7 @@ class AutoEncoder(nn.Module):
     num_blocks: int = 2
     dtype: str = 'bfloat16'
     latent: int = 3
-
     # use_attn:bool =False
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = Encoder(self.dims, self.num_blocks, self.dtype, self.latent)(x)
