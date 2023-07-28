@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     model_ckpt = {'model': state, 'discriminator': discriminator_state, 'steps': 0}
     save_path = trainer_configs['model_path']
-    checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=10)
+    checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=1)
     if len(os.listdir(save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
