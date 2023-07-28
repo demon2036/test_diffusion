@@ -27,8 +27,9 @@ class Unet(nn.Module):
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
 
         if self.use_encoder :
+            b,h,w,c=x.shape
             x_self_cond=Encoder(**self.encoder_configs)(x_self_cond)
-            x_self_cond=jax.image.resize(x_self_cond,x.shape,'bicubic')
+            x_self_cond=jax.image.resize(x_self_cond,(b,h,w,x_self_cond.shape[-1]),'bicubic')
 
 
         if x_self_cond is not None and self.self_condition:
