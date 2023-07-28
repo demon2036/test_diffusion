@@ -16,6 +16,7 @@ import yaml
 import json
 
 from modules.gaussian.gaussian import Gaussian
+from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.gaussian.gaussianSR import GaussianSR
 
 
@@ -93,9 +94,27 @@ def sample_save_image_autoencoder(state, save_path, steps, data):
     save_image(all_image, f'{save_path}/{steps}.png')
 
 
+
+
+def sample_save_image_diffusion_encoder(key, c:GaussianDecoder, steps, state: EMATrainState,save_path,batch):
+    os.makedirs(save_path, exist_ok=True)
+    c.set_state(state)
+    sample = c.sample(key, state,batch, batch_size=64)
+    c.state = None
+    sample = jnp.concatenate([sample, batch], axis=0)
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w',n=2)
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
+
+
+
 def sample_save_image_diffusion(key, c:Gaussian, steps, state: EMATrainState,save_path):
     os.makedirs(save_path, exist_ok=True)
-    #c.set_state(state)
+    c.set_state(state)
     sample = c.sample(key, state, batch_size=64)
     sample = sample / 2 + 0.5
     c.state = None

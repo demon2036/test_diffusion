@@ -5,7 +5,7 @@ from data.dataset import generator
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.state_utils import create_state
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
-    sample_save_image_diffusion, get_obj_from_str
+    sample_save_image_diffusion, get_obj_from_str, sample_save_image_diffusion_encoder
 import flax
 import os
 from functools import partial
@@ -91,8 +91,9 @@ def train():
                 state = update_ema(state, 0.995)
 
             if steps % trainer_configs['sample_steps'] == 0:
+                batch=flax.jax_utils.unreplicate(batch)
                 try:
-                    sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
+                    sample_save_image_diffusion_encoder(key, c, steps, state, trainer_configs['save_path'],batch)
                 except Exception as e:
                     print(e)
 
