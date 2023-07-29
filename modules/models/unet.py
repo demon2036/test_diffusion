@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
-
+from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder
 from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
@@ -22,6 +22,7 @@ class Unet(nn.Module):
     self_condition: bool = False
     use_encoder: bool = False
     encoder_configs: Any = None
+    res_type: Any = 'default'
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
@@ -30,7 +31,7 @@ class Unet(nn.Module):
             n = 2 ** 3
             x_self_cond = Encoder(**self.encoder_configs)(x_self_cond)
             x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
-            x_self_cond = einops.rearrange(x_self_cond,'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
+            x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
             x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
         print(x.shape)
         if x_self_cond is not None and self.self_condition:
@@ -52,21 +53,28 @@ class Unet(nn.Module):
 
         h = []
 
+        if self.res_type == 'default':
+            res_block = ResBlock
+        elif self.res_type == "NAF":
+            res_block = NAFBlock
+        else:
+            res_block = None
+
         for i, dim_mul in enumerate(self.dim_mults):
             dim = self.dim * dim_mul
 
-            x = ResBlock(dim, dtype=self.dtype)(x, t)
+            x = res_block(dim, dtype=self.dtype)(x, t)
             h.append(x)
-            x = ResBlock(dim, dtype=self.dtype)(x, t)
+            x = res_block(dim, dtype=self.dtype)(x, t)
             h.append(x)
             if i != len(self.dim_mults) - 1:
-                x = DownSample(dim, dtype=self.dtype)(x)
+                x = DownSample(self.dim * self.dim_mults[i], dtype=self.dtype)(x)
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 
-        x = ResBlock(dim, dtype=self.dtype)(x, t)
+        x = res_block(dim, dtype=self.dtype)(x, t)
         # x = self.mid_attn(x) + x
-        x = ResBlock(dim, dtype=self.dtype)(x, t)
+        x = res_block(dim, dtype=self.dtype)(x, t)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
 
@@ -74,17 +82,17 @@ class Unet(nn.Module):
             dim = self.dim * dim_mul
 
             x = jnp.concatenate([x, h.pop()], axis=3)
-            x = ResBlock(dim, dtype=self.dtype)(x, t)
+            x = res_block(dim, dtype=self.dtype)(x, t)
             x = jnp.concatenate([x, h.pop()], axis=3)
-            x = ResBlock(dim, dtype=self.dtype)(x, t)
+            x = res_block(dim, dtype=self.dtype)(x, t)
 
             if i != len(self.dim_mults) - 1:
-                x = UpSample(dim, dtype=self.dtype)(x)
+                x = UpSample(self.dim * self.dim_mults[i+1], dtype=self.dtype)(x)
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 
         x = jnp.concatenate([x, r], axis=3)
-        x = ResBlock(dim, dtype=self.dtype)(x, t)
+        x = res_block(dim, dtype=self.dtype)(x, t)
         x = nn.Conv(self.out_channels, (1, 1), dtype="float32")(x)
         return x
 

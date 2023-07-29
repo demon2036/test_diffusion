@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 128,
-      batch_size: 8,
-      file_path: '/home/john/data/s'
+      image_size: 256,
+      batch_size: 64,
+      file_path: '/root/data/s'
     },
     trainer_configs: {
       seed: 43,
