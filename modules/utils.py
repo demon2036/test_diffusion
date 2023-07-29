@@ -124,13 +124,14 @@ def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState
     os.makedirs(save_path, exist_ok=True)
     diffusion.set_state(state)
     sample = diffusion.sample(key, state, lr_image)
-    all_image = jnp.concatenate([sample, batch], axis=0)
-    sample = all_image / 2 + 0.5
+    sample.append(batch)
+    all_image = jnp.concatenate(sample, axis=0)
+    all_image = all_image / 2 + 0.5
     diffusion.state = None
-    sample = einops.rearrange(sample, '(n b) h w c->b c (n h) w', n=2)
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'{save_path}/{steps}.png')
+    all_image = einops.rearrange(all_image, '(n b) h w c->b c (n h) w', n=len(sample))
+    all_image = np.array(all_image)
+    all_image = torch.Tensor(all_image)
+    save_image(all_image, f'{save_path}/{steps}.png')
 
 
 def get_obj_from_str(string: str):

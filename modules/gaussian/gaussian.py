@@ -121,6 +121,7 @@ class Gaussian:
 
         self.pmap_q_sample = jax.pmap(self.q_sample)
         self.pmap_model_predictions = jax.pmap(self.model_predictions)
+        self.pmap_p_sample = jax.pmap(self.p_sample)
 
     def set_state(self, state):
         self.state = state
@@ -276,7 +277,8 @@ class Gaussian:
 
         return img
 
-    def sample(self, key, state, self_condition=None, batch_size=16):
+    def sample(self, key, state, self_condition=None):
+        batch_size = self_condition.shape[0]
 
         return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
