@@ -1,8 +1,8 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
-      batch_size: 64,
+      image_size: 1024,
+      batch_size: 16,
       file_path: '/root/data/FFHQ2'
     },
     trainer_configs: {
@@ -18,13 +18,13 @@
     optimizer: {
       optimizer: optax.adamw,
       optimizer_configs: {
-        learning_rate: 1.0e-4
+        learning_rate: 7.0e-5
       }
     },
     params: {
       dim: 16,
       out_channels: 3,
-      dim_mults: [ 1, 2, 4, 8, 16, 32, 32, 32 ],
+      dim_mults: [ 1, 2, 4, 8, 16, 32,  ],
       self_condition: True
     }
   },
