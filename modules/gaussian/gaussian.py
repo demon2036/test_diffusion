@@ -4,7 +4,7 @@ import numpy as np
 from einops import einops
 from flax.training.common_utils import shard, shard_prng_key
 from tqdm import tqdm
-
+from modules.noise.noise import normal_noise, truncate_noise, pyramid_nosie, resize_noise, offset_noise
 from modules.gaussian.schedules import linear_beta_schedule, cosine_beta_schedule, sigmoid_beta_schedule
 from modules.loss.loss import l1_loss, l2_loss
 import jax
@@ -47,9 +47,11 @@ class Gaussian:
             ddim_sampling_eta=0.,
             min_snr_loss_weight=False,
             scale_shift=False,
-            self_condition=False
+            self_condition=False,
+            noise_type='normal'
 
     ):
+        self.noise_type = noise_type
         self.scale = 1
         self.state = None
         self.model = None
@@ -188,8 +190,8 @@ class Gaussian:
 
         return ModelPrediction(pred_noise, x_start)
 
-    def p_mean_variance(self, x, t, x_self_cond=None,state=None, *args, **kwargs):
-        preds = self.model_predictions(x, t,x_self_cond,state)
+    def p_mean_variance(self, x, t, x_self_cond=None, state=None, *args, **kwargs):
+        preds = self.model_predictions(x, t, x_self_cond, state)
         x_start = preds.pred_x_start
 
         # x_start = jnp.clip(x_start, 0, 1)
@@ -200,12 +202,23 @@ class Gaussian:
         return model_mean, posterior_variance, posterior_log_variance, x_start
 
     def generate_nosie(self, key, shape):
+        if self.noise_type == 'normal':
+            return normal_noise(key, shape)
+        elif self.noise_type == 'truncate':
+            return truncate_noise(key, shape)
+        elif self.noise_type == 'resize':
+            return resize_noise(key, shape)
+        elif self.noise_type == 'offset':
+            return offset_noise(key, shape)
+        elif self.noise_type == 'pyramid':
+            return pyramid_nosie(key, shape)
+
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, x, batch_times, x_self_cond=None,state=None):
+    def p_sample(self, key, x, batch_times, x_self_cond=None, state=None):
         b, c, h, w = x.shape
 
-        model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond,state)
+        model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond, state)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
@@ -227,7 +240,7 @@ class Gaussian:
             key, normal_key = jax.random.split(key, 2)
             normal_key = shard_prng_key(normal_key)
             batch_times = jnp.full((shape[0],), t)
-            batch_times =shard(batch_times)
+            batch_times = shard(batch_times)
 
             if has_condition:
                 pass

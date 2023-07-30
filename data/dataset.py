@@ -20,7 +20,7 @@ def get_dataloader(batch_size=32, dataset='/home/john/data/s', cache=True, image
     data = MyDataSet(dataset, cache, image_size,repeat=repeat)
 
     dataloader = DataLoader(data, batch_size=batch_size,
-                            num_workers=min(os.cpu_count(), len(data.data) // batch_size // 2)
+                            num_workers=16#1#min(os.cpu_count(), len(data.data) // batch_size // 2)
                             , persistent_workers=True, pin_memory=True, shuffle=True,
                             drop_last=True)
     return dataloader
