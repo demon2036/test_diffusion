@@ -18,8 +18,10 @@ class RepBlock(nn.Module):
         x = nn.GroupNorm(num_groups=8,dtype=self.dtype)(x)
         x = nn.silu(x)
         x = nn.Conv(self.dim, (1, 1),dtype=self.dtype)(x)
-        x_large = nn.Conv(self.dim, (15, 15), padding="SAME", feature_group_count=self.dim,dtype=self.dtype)(x)
-        x_small = nn.Conv(self.dim, (5, 5), padding="SAME", feature_group_count=self.dim,dtype=self.dtype)(x)
+        # x_large = nn.Conv(self.dim, (15, 15), padding="SAME", feature_group_count=self.dim,dtype=self.dtype)(x)
+        # x_small = nn.Conv(self.dim, (5, 5), padding="SAME", feature_group_count=self.dim,dtype=self.dtype)(x)
+        x_large = nn.Conv(self.dim, (3, 3), padding="SAME",  dtype=self.dtype)(x)
+        x_small = nn.Conv(self.dim, (1, 1), padding="SAME", dtype=self.dtype)(x)
         x = x + x_large + x_small
         x = nn.Conv(self.dim, (1, 1),dtype=self.dtype)(x)
 
