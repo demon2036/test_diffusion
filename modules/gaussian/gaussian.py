@@ -188,8 +188,8 @@ class Gaussian:
 
         return ModelPrediction(pred_noise, x_start)
 
-    def p_mean_variance(self, x, t, x_self_cond=None, *args, **kwargs):
-        preds = self.model_predictions(x, t)
+    def p_mean_variance(self, x, t, x_self_cond=None,state=None, *args, **kwargs):
+        preds = self.model_predictions(x, t,x_self_cond,state)
         x_start = preds.pred_x_start
 
         # x_start = jnp.clip(x_start, 0, 1)
@@ -202,10 +202,10 @@ class Gaussian:
     def generate_nosie(self, key, shape):
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, x, batch_times, x_self_cond=None):
+    def p_sample(self, key, x, batch_times, x_self_cond=None,state=None):
         b, c, h, w = x.shape
 
-        model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond)
+        model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond,state)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
@@ -226,7 +226,7 @@ class Gaussian:
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
             normal_key = shard_prng_key(normal_key)
-            batch_times = jnp.full((b,), t)
+            batch_times = jnp.full((shape[0],), t)
             batch_times =shard(batch_times)
 
             if has_condition:

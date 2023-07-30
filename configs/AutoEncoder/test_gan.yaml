@@ -1,17 +1,17 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
+      image_size: 128,
       batch_size: 8,
-      file_path: '/home/john/data/celeba-512'
+      file_path: '/home/john/data/s'
     },
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 100,
+      sample_steps: 10000,
       save_path: 'result/AutoEncoder',
       model_path: 'check_points/AutoEncoder',
-      disc_start : 200
+      disc_start : 50000
     },
 
 
@@ -27,21 +27,20 @@
     params : {
       dims: [ 64,128,256,256 ],
       dtype: 'bfloat16',
-      #use_attn : True
+      #block_type : 'rep'
     }
   },
   "Discriminator": {
-      target : modules.models.discriminator.UnetDiscriminator,
+      target : modules.models.discriminator.NLayerDiscriminator,
       optimizer: {
         optimizer: optax.adamw,
         optimizer_configs: {
-          learning_rate: 1.0e-4
+          learning_rate: 1.0e-3
         }
       },
-      params: {
-        dim: 48,
-        dim_mults: [1,2,2,4]
-      },
+      params : {
+
+    }
 
   }
 

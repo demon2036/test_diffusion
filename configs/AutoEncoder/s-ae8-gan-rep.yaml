@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 128,
-      batch_size: 64,
-      file_path: '/root/data/celeba-512'
+      image_size: 256,
+      batch_size: 8,
+      file_path: '/root/data/s'
     },
     trainer_configs: {
       seed: 43,
@@ -25,9 +25,9 @@
         }
     },
     params : {
-      dims: [ 64,128,256 ],
+      dims: [ 64,128,256,256 ],
       dtype: 'bfloat16',
-      #use_attn : True
+      block_type : 'rep'
     }
   },
   "Discriminator": {

@@ -1,8 +1,8 @@
 import jax.numpy as jnp
 import flax.linen as nn
-from modules.models.resnet import ResBlock,DownSample,UpSample
+from modules.models.resnet import ResBlock, DownSample, UpSample
+from modules.models.repnet import RepBlock
 from modules.models.attention import Attention
-
 
 
 class EncoderDownBlock(nn.Module):
@@ -11,11 +11,18 @@ class EncoderDownBlock(nn.Module):
     add_down: bool
     dtype: str
     use_attn: bool = False
+    block_type: str = 'res'
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
+
+        if self.block_type == 'res':
+            block = ResBlock
+        elif self.block_type == 'rep':
+            block = RepBlock
+
         for _ in range(self.num_blocks):
-            x = ResBlock(self.dim, self.dtype)(x)
+            x = block(self.dim, self.dtype)(x)
 
         # if self.use_attn:
         #     x=Attention(self.dim,self.dtype)(x)+x
@@ -31,11 +38,17 @@ class DecoderUpBlock(nn.Module):
     add_up: bool
     dtype: str
     use_attn: bool = False
+    block_type: str = 'res'
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
+        if self.block_type == 'res':
+            block = ResBlock
+        elif self.block_type == 'rep':
+            block = RepBlock
+
         for _ in range(self.num_blocks):
-            x = ResBlock(self.dim, self.dtype)(x)
+            x = block(self.dim, self.dtype)(x)
 
         # if self.use_attn:
         #     x=Attention(self.dim,self.dtype)(x)+x
