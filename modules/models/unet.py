@@ -68,7 +68,7 @@ class Unet(nn.Module):
             x = res_block(dim, dtype=self.dtype)(x, t)
             h.append(x)
             if i != len(self.dim_mults) - 1:
-                x = DownSample(self.dim * self.dim_mults[i], dtype=self.dtype)(x)
+                x = DownSample(dim, dtype=self.dtype)(x)
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 

@@ -2,7 +2,7 @@ from collections import namedtuple
 from functools import partial
 import numpy as np
 from einops import einops
-from flax.training.common_utils import shard
+from flax.training.common_utils import shard, shard_prng_key
 from tqdm import tqdm
 
 from modules.gaussian.schedules import linear_beta_schedule, cosine_beta_schedule, sigmoid_beta_schedule
@@ -202,24 +202,41 @@ class Gaussian:
     def generate_nosie(self, key, shape):
         return jax.random.normal(key, shape) * self.scale
 
-    def p_sample(self, key, x, t, x_self_cond=None):
+    def p_sample(self, key, x, batch_times, x_self_cond=None):
         b, c, h, w = x.shape
-        batch_times = jnp.full((b,), t)
+
         model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
 
         return pred_image, x_start
 
-    def p_sample_loop(self, key, shape):
+    def p_sample_loop(self, key, state, self_condition=None, shape=None):
         key, normal_key = jax.random.split(key, 2)
         img = self.generate_nosie(normal_key, shape)
+        img = shard(img)
+
+        x_self_cond = self_condition
+        has_condition = False
+        if x_self_cond is not None:
+            x_self_cond = shard(x_self_cond)
+            has_condition = True
 
         x_start = None
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
-            x_self_cond = x_start if self.self_condition else None
-            img, x_start = self.p_sample(normal_key, img, t, x_self_cond)
+            normal_key = shard_prng_key(normal_key)
+            batch_times = jnp.full((b,), t)
+            batch_times =shard(batch_times)
+
+            if has_condition:
+                pass
+            elif self.self_condition:
+                x_self_cond = x_start
+            else:
+                x_self_cond = None
+
+            img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond)
 
         ret = img
 
@@ -280,12 +297,12 @@ class Gaussian:
     def sample(self, key, state, self_condition=None):
         batch_size = self_condition.shape[0]
 
-        return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+        # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
-        # if self.num_timesteps > self.sampling_timesteps:
-        #     return self.ddim_sample(key, (batch_size, self.image_size, self.image_size, 3))
-        # else:
-        #     return self.p_sample_loop(key, (batch_size, self.image_size, self.image_size, 3))
+        if self.num_timesteps > self.sampling_timesteps:
+            return self.ddim_sample(key, (batch_size, self.image_size, self.image_size, 3))
+        else:
+            return self.p_sample_loop(key, (batch_size, self.image_size, self.image_size, 3))
 
     def q_sample(self, x_start, t, noise):
         return (

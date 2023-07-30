@@ -95,7 +95,7 @@ def sample_save_image_autoencoder(state, save_path, steps, data):
 def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: EMATrainState, save_path, batch):
     os.makedirs(save_path, exist_ok=True)
     c.set_state(state)
-    sample = c.sample(key, state, batch, batch_size=64)
+    sample = c.sample(key, state, batch)
     c.state = None
     sample = jnp.concatenate([sample, batch], axis=0)
     sample = sample / 2 + 0.5
