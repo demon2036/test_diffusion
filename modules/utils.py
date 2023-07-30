@@ -99,7 +99,7 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
     c.state = None
     sample = jnp.concatenate([sample, batch], axis=0)
     sample = sample / 2 + 0.5
-    sample = einops.rearrange(sample, '(b n) h w c->(n b) c h w', n=2)
+    sample = einops.rearrange(sample, '(n b) h w c->(b n) c h w', n=2)
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
