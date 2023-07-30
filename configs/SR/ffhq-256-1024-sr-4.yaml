@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 1024,
-      batch_size: 64,
+      batch_size: 16,
       file_path: '/root/data/FFHQ2'
     },
     trainer_configs: {
