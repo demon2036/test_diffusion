@@ -18,6 +18,7 @@ initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
+
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
     def loss_fn(params):
@@ -34,8 +35,6 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-
-
 def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='../configs/Diffusion/test_diff.yaml')
@@ -43,7 +42,7 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str,model_optimizer, unet_config = config['Unet'].values()
+    model_cls_str, model_optimizer, unet_config = config['Unet'].values()
     model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
 
@@ -76,8 +75,6 @@ def train():
         for steps in range(finished_steps + 1, 1000000):
             key, train_step_key = jax.random.split(key, num=2)
             sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
-
-
 
 
 if __name__ == "__main__":

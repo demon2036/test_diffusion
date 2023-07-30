@@ -1,0 +1,40 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 256,
+      batch_size: 64,
+      file_path: '/root/data/FFHQ2'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/SR',
+      model_path: 'check_points/SR'
+    },
+  },
+  "Unet": {
+    target: modules.models.unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 1.0e-4
+      }
+    },
+    params: {
+      dim: 16,
+      out_channels: 3,
+      dim_mults: [ 1, 2, 4, 8, 16, 32, 32, 32 ],
+      self_condition: True
+    }
+  },
+  "Gaussian": {
+    loss: 'l1',
+    timesteps: 1000,
+    sampling_timesteps: 200,
+    objective: 'predict_noise',
+    beta_schedule : 'cosine',
+    sr_factor: 4
+  }
+
+}
