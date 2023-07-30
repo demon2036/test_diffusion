@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 import flax.linen as nn
-from modules.models.resnet import ResBlock, DownSample, UpSample
+from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
 from modules.models.repnet import RepBlock
 from modules.models.attention import Attention
 
@@ -20,6 +20,8 @@ class EncoderDownBlock(nn.Module):
             block = ResBlock
         elif self.block_type == 'rep':
             block = RepBlock
+        elif self.block_type == 'efficient':
+            block = EfficientBlock
 
         for _ in range(self.num_blocks):
             x = block(self.dim, self.dtype)(x)
@@ -46,6 +48,9 @@ class DecoderUpBlock(nn.Module):
             block = ResBlock
         elif self.block_type == 'rep':
             block = RepBlock
+        elif self.block_type == 'efficient':
+            block = EfficientBlock
+
 
         for _ in range(self.num_blocks):
             x = block(self.dim, self.dtype)(x)
