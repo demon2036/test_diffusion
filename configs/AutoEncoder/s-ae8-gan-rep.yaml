@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 256,
-      batch_size: 8,
+      batch_size: 64,
       file_path: '/root/data/s'
     },
     trainer_configs: {
@@ -19,13 +19,13 @@
   "AutoEncoder": {
     target : modules.models.autoencoder.AutoEncoder,
     optimizer :{
-        optimizer: optax.adamw,
+        optimizer: optax.lion,
         optimizer_configs: {
           learning_rate: 1.0e-4
         }
     },
     params : {
-      dims: [ 64,128,256,256 ],
+      dims: [ 32,64,128,256 ],
       dtype: 'bfloat16',
       block_type : 'rep'
     }
