@@ -19,7 +19,7 @@
   "AutoEncoder": {
     target : modules.models.autoencoder.AutoEncoder,
     optimizer :{
-        optimizer: optax.lion,
+        optimizer: optax.adamw,
         optimizer_configs: {
           learning_rate: 1.0e-4
         }
@@ -27,7 +27,7 @@
     params : {
       dims: [ 32,64,128,256 ],
       dtype: 'bfloat16',
-      block_type : 'efficient'
+      #block_type : 'efficient'
     }
   },
   "Discriminator": {
