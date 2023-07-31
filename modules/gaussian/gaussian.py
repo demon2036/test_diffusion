@@ -75,6 +75,7 @@ class Gaussian:
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
             alphas = 1 - 1 / (1 + (scale) ** 1 * snr)
+            betas = 1-alphas
 
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
@@ -313,9 +314,9 @@ class Gaussian:
         # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
         if self.num_timesteps > self.sampling_timesteps:
-            return self.ddim_sample(key, (batch_size, self.image_size, self.image_size, 3))
+            return self.ddim_sample(key, state,self_condition,(batch_size, self.image_size, self.image_size, 3))
         else:
-            return self.p_sample_loop(key, (batch_size, self.image_size, self.image_size, 3))
+            return self.p_sample_loop(key, state,self_condition,(batch_size, self.image_size, self.image_size, 3))
 
     def q_sample(self, x_start, t, noise):
         return (

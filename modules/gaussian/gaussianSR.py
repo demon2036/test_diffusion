@@ -22,7 +22,7 @@ class GaussianSR(Gaussian):
         self.sr_factor = sr_factor
         self.predict_residual = predict_residual
 
-    def p_sample_loop(self, key, shape, x_self_cond=None):
+    def p_sample_loop(self, key,state, x_self_cond=None,shape=None):
         key, normal_key = jax.random.split(key, 2)
         img = self.generate_nosie(normal_key, shape)
         img=shard(img)
@@ -46,9 +46,9 @@ class GaussianSR(Gaussian):
         noise_shape = lr_image.shape
 
         if self.num_timesteps > self.sampling_timesteps:
-            res = self.ddim_sample(key, noise_shape, lr_image)
+            res = self.ddim_sample(key,state , lr_image,noise_shape)
         else:
-            res = self.p_sample_loop(key, noise_shape, lr_image)
+            res = self.p_sample_loop(key,state , lr_image,noise_shape)
         #res = self.ddim_sample(key, state, lr_image, noise_shape)
         if self.predict_residual:
             ret = res+lr_image
