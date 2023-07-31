@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 256,
-      batch_size: 64,
+      batch_size: 256,
       file_path: '/root/data/FFHQ'
     },
     trainer_configs: {
@@ -19,9 +19,10 @@
   "AutoEncoder": {
     target : modules.models.autoencoder.AutoEncoder,
     optimizer :{
-        optimizer: optax.adamw,
+        optimizer: optax.lion,
         optimizer_configs: {
-          learning_rate: 1.0e-4
+          learning_rate: 3.0e-5,
+          weight_decay : 0.1
         }
     },
     params : {

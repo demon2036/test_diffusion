@@ -18,6 +18,8 @@ from tqdm import tqdm
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
+
+
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
     if disc_start:
         fake_logit = discriminator_state.apply_fn(
