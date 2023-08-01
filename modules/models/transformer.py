@@ -10,7 +10,11 @@ class Transformer(nn.Module):
     dtype: Any = 'bfloat16'
 
     @nn.compact
-    def __call__(self, x):
+    def __call__(self, x,time_emb=None):
+
+
+
+
         y = x
         x = nn.LayerNorm(dtype=self.dtype)(x)
         x = MyAttention(self.dim,dtype=self.dtype)(x) + y

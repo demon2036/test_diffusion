@@ -3,7 +3,7 @@
     dataloader_configs: {
       image_size: 64,
       batch_size: 64,
-      file_path: '/root/data/celeba-align'
+      file_path: '/root/data/img_align_celeba'
     },
     trainer_configs: {
       seed: 43,

@@ -25,7 +25,7 @@
     params:{
       dim: 384,
       depth : 28,
-      self_condition: True
+      #self_condition: True
     }
   },
   "Gaussian": {
@@ -34,9 +34,9 @@
     sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'sigmoid',
-    min_snr_loss_weight: True,
-    scale_shift: True,
-    self_condition: True,
+    #min_snr_loss_weight: True,
+    #scale_shift: True,
+    #self_condition: True,
 
   }
 
