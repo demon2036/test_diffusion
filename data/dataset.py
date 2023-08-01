@@ -16,13 +16,13 @@ import albumentations as A
 import jax.numpy as jnp
 
 
-def get_dataloader(batch_size=32, dataset='/home/john/data/s', cache=True, image_size=64,repeat=1):
-    data = MyDataSet(dataset, cache, image_size,repeat=repeat)
+def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64,repeat=1,drop_last=True):
+    data = MyDataSet(file_path, cache, image_size,repeat=repeat)
 
     dataloader = DataLoader(data, batch_size=batch_size,
                             num_workers=16#1#min(os.cpu_count(), len(data.data) // batch_size // 2)
                             , persistent_workers=True, pin_memory=True, shuffle=True,
-                            drop_last=True)
+                            drop_last=drop_last)
     return dataloader
 
 
