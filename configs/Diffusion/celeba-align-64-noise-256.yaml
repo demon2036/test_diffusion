@@ -26,7 +26,7 @@
       out_channels: 3,
       dtype: 'bfloat16',
       dim : 256,
-      scale: 2,
+      patch_size: 2,
       #self_condition: True
     }
   },

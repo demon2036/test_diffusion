@@ -96,7 +96,7 @@ class Unet(nn.Module):
         x = jnp.concatenate([x, r], axis=3)
         x = res_block(dim, dtype=self.dtype)(x, t)
         x = nn.Conv(self.out_channels*self.patch_size**2, (1, 1), dtype="float32")(x)
-        x=einops.rearrange(x,'b h w (c p1 p2)->b (h p1) (w p2) c')
+        x=einops.rearrange(x,'b h w (c p1 p2)->b (h p1) (w p2) c',p1=self.patch_size,p2=self.patch_size)
 
         return x
 
