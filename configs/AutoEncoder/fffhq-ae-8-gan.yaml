@@ -3,7 +3,7 @@
     dataloader_configs: {
       image_size: 256,
       batch_size: 256,
-      file_path: '/root/data/FFHQ'
+      file_path: '/root/data/celeba-512'
     },
     trainer_configs: {
       seed: 43,
