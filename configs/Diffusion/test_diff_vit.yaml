@@ -3,7 +3,7 @@
     dataloader_configs: {
       image_size: 64,
       batch_size: 8,
-      file_path: '/home/john/data/celeba-512'
+      file_path: '/home/john/data/s'
     },
     trainer_configs: {
       seed: 43,
@@ -27,10 +27,10 @@
     }
   },
   "Gaussian": {
-    loss: 'l2',
+    loss: 'l1',
     timesteps: 1000,
     sampling_timesteps: 200,
-    objective: 'predict_noise',
+    objective: 'predict_x0',
     beta_schedule: 'cosine',
 
 

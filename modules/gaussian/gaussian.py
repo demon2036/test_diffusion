@@ -308,8 +308,9 @@ class Gaussian:
 
         return img
 
-    def sample(self, key, state, self_condition=None):
-        batch_size = self_condition.shape[0]
+    def sample(self, key, state, self_condition=None,batch_size=64):
+        if self_condition is not  None:
+            batch_size = self_condition.shape[0]
 
         # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
