@@ -88,7 +88,6 @@ def sample_save_image_autoencoder(state, save_path, steps, data):
     all_image = einops.rearrange(all_image, 'n b h w c->(n b) c h w')
     all_image = np.array(all_image)
     all_image = torch.Tensor(all_image)
-
     save_image(all_image, f'{save_path}/{steps}.png')
 
 
