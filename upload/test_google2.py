@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', default='./check_points')
 parser.add_argument('-cn', '--code_name', )
-parser.add_argument('-bk', '--bucket',default='jtitor-eu' )
+parser.add_argument('-b', '--bucket',default='dutalota-eu' )
 args = parser.parse_args()
 print(args)
 
