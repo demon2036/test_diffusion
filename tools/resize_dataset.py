@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 def save_image(x,count,save_path='/home/john/data/FFHQ256'):
     try:
-        x=x.numpy()
+        x=np.array(x)
         x=x/2+0.5
         x=x*255
         x=np.clip(x,0,255).astype('uint8')
