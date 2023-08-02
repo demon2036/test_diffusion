@@ -5,6 +5,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', default='./check_points')
 parser.add_argument('-cn', '--code_name', )
+parser.add_argument('-bk', '--bucket', )
 args = parser.parse_args()
 print(args)
 
@@ -20,4 +21,4 @@ print(last_file_path)
 
 os.system(f'rar a ./{args.code_name}.rar {last_file_path}')
 
-os.system(f'gsutil cp  {args.code_name}.rar  gs://jw4-bucket-1/{args.code_name}.rar')
+os.system(f'gsutil cp  {args.code_name}.rar  gs://{args.bucket}/{args.code_name}.rar')
