@@ -1,7 +1,6 @@
 import einops
 import numpy as np
-import torch
-from torchvision.utils import save_image
+from concurrent.futures import ThreadPoolExecutor
 
 from data.dataset import generator, get_dataloader
 from modules.models.autoencoder import AutoEncoder
@@ -18,72 +17,21 @@ import os
 
 from tqdm import tqdm
 
-
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-def adoptive_weight(disc_start, discriminator_state, reconstruct):
-    if disc_start:
-        fake_logit, _ = discriminator_state.apply_fn(
-            {'params': discriminator_state.params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
-            mutable=['batch_stats'])
-        return -fake_logit.mean()
-    else:
-        return 0
+def save_latent(x,count,save_path):
+    np.save(file=f'{save_path}/{count}.npy',arr=x)
 
-
-@partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,))  # static_broadcasted_argnums=(3),
-def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool):
-    def loss_fn(params):
-        reconstruct = state.apply_fn({'params': params}, x)
-        gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
-        rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + gan_loss * 0.1, (rec_loss, gan_loss)
-
-    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (loss, (rec_loss, gan_loss)), grads = grad_fn(state.params)
-    grads = jax.lax.pmean(grads, axis_name='batch')
-
-    new_state = state.apply_gradients(grads=grads)
-    rec_loss = jax.lax.pmean(rec_loss, axis_name='batch')
-    gan_loss = jax.lax.pmean(gan_loss, axis_name='batch')
-    metric = {"rec_loss": rec_loss, 'gan_loss': gan_loss}
-    return new_state, metric
-
-
-@partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState):
-    def loss_fn(params):
-        fake_image = state.apply_fn({'params': state.params}, x)
-        real_image = x
-
-        logit_real, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': discriminator_state.batch_stats}, real_image, True,
-            mutable=['batch_stats'])
-
-        logit_fake, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': mutable['batch_stats']}, fake_image, True,
-            mutable=['batch_stats'])
-
-        disc_loss = hinge_d_loss(logit_real, logit_fake)
-        return disc_loss, mutable
-
-    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (disc_loss, mutable), grads = grad_fn(discriminator_state.params, )
-    grads = jax.lax.pmean(grads, axis_name='batch')
-    new_disc_state = discriminator_state.apply_gradients(grads=grads, batch_stats=mutable['batch_stats'])
-    disc_loss = jax.lax.pmean(disc_loss, axis_name='batch')
-    metric = {'disc_loss': disc_loss}
-    return new_disc_state, metric
 
 
 @partial(jax.jit)
-def encode( state:EMATrainState, x):
+def encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.encode)
 
 
 @partial(jax.jit)
-def decode( state:EMATrainState, x):
+def decode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.decode)
 
 
@@ -127,24 +75,25 @@ if __name__ == "__main__":
     # state = flax.jax_utils.replicate(model_ckpt['model'])
 
     dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
-    params = state.ema_params
-    print(params)
     ae = AutoEncoder(**model_configs)
+    save_path='/home/john/data/latent'
+    os.makedirs(save_path,exist_ok=True)
+    count=0
+    with ThreadPoolExecutor() as pool:
+        for data in tqdm(dl):
+            x = data
+            x = x.numpy()
+            x = jnp.asarray(x)
+            latent = encode(state, x)
+            latent=np.array(latent)
+            for x in latent:
+                pool.submit(save_latent,x,count,save_path)
+                count+=1
 
-    apply_fn = ae.apply
-    encoder = ae.encode
-
-    for data in tqdm(dl):
-        x = data
-        x = x.numpy()
-        x = jnp.asarray(x)
-        latent = encode( state, x)
-        y = decode(state, latent)
-        sample = y / 2 + 0.5
-        sample = einops.rearrange(sample, '( b) h w c->(b ) c h w', )
-        sample = np.array(sample)
-        sample = torch.Tensor(sample)
-        save_image(sample, f'test.png')
-        break
-
-
+        # y = decode(state, latent)
+        # sample = y / 2 + 0.5
+        # sample = einops.rearrange(sample, '( b) h w c->(b ) c h w', )
+        # sample = np.array(sample)
+        # sample = torch.Tensor(sample)
+        # save_image(sample, f'test.png')
+        # break

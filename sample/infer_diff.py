@@ -1,7 +1,9 @@
 import argparse
+from concurrent.futures import ThreadPoolExecutor
+
 from tqdm import tqdm
 import jax.random
-from data.dataset import generator
+from data.dataset import generator, get_dataloader, torch_to_jax
 from modules.state_utils import create_state
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
     sample_save_image_diffusion, get_obj_from_str
@@ -13,6 +15,8 @@ from flax.training.common_utils import shard, shard_prng_key
 from jax_smi import initialise_tracking
 from modules.gaussian.gaussian import Gaussian
 import jax.numpy as jnp
+
+from tools.resize_dataset import save_image
 
 initialise_tracking()
 
@@ -37,7 +41,7 @@ def train_step(state, batch, train_key, cls):
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='../configs/Diffusion/test_diff.yaml')
+    parser.add_argument('-cp', '--config_path', default='../configs/Sample/Diffusion/test_diff.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -67,14 +71,16 @@ def train():
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
-    dl = generator(**dataloader_configs)  # file_path
-    finished_steps = model_ckpt['steps']
-
-    with tqdm(total=trainer_configs['total_steps']) as pbar:
-        pbar.update(finished_steps)
-        for steps in range(finished_steps + 1, 1000000):
+    count = 0
+    with ThreadPoolExecutor() as pool:
+        with tqdm(total=30000//dataloader_configs['batch_size']) as pbar2:
             key, train_step_key = jax.random.split(key, num=2)
-            sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
+            sample=c.sample(key,state,None,batch_size=128)
+            for x in sample:
+                pool.submit(save_image, x, count, './data')
+                count += 1
+
+            pbar2.update(1)
 
 
 if __name__ == "__main__":

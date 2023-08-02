@@ -71,10 +71,11 @@ if __name__ == "__main__":
     state = flax.jax_utils.replicate(model_ckpt['model'])
     discriminator_state = flax.jax_utils.replicate(model_ckpt['discriminator'])
 
-    dl = get_dataloader(**dataloader_configs)  # file_path
+    dl = generator(**dataloader_configs)  # file_path
     count = 0
     with ThreadPoolExecutor() as pool:
         for data in tqdm(dl):
+            key, train_step_key = jax.random.split(key, num=2)
             x = torch_to_jax(data)
             x = shard(x)
             latent = encode(state, x)
@@ -83,7 +84,7 @@ if __name__ == "__main__":
             y = y / 2 + 0.5
             for x in y:
                 pool.submit(save_image, x, count, args.save_path)
-            count += 1
+                count += 1
 
             # save_image_from_jax(y,'./test')
             # break
