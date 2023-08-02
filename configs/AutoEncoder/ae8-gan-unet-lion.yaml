@@ -1,0 +1,48 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 256,
+      batch_size: 64,
+      file_path: '/root/data/FFHQ'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/AutoEncoder',
+      model_path: 'check_points/AutoEncoder',
+      disc_start : 25000
+    },
+
+
+  },
+  "AutoEncoder": {
+    target : modules.models.autoencoder.AutoEncoder,
+    optimizer :{
+        optimizer: optax.lion,
+        optimizer_configs: {
+          learning_rate: 2.0e-5
+        }
+    },
+    params : {
+      dims: [ 64,128,256,256 ],
+      dtype: 'bfloat16',
+      #use_attn : True
+    }
+  },
+  "Discriminator": {
+      target : modules.models.discriminator.UnetDiscriminator,
+      optimizer: {
+        optimizer: optax.adamw,
+        optimizer_configs: {
+          learning_rate: 1.0e-4
+        }
+      },
+      params : {
+        dim: 48,
+        dim_mults: [ 1,2,2,4 ]
+      }
+
+  }
+
+}
