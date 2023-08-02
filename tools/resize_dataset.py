@@ -1,6 +1,5 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-
 import numpy as np
 from PIL import Image
 from data.dataset import get_dataloader
