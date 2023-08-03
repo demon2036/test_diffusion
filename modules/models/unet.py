@@ -12,6 +12,29 @@ from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample
 
 
+def split_array_into_overlapping_patches(arr, patch_size, stride):
+    # Get the array's shape
+    batch_size, height, width, num_channels = arr.shape
+    num_patches_vertical = (height - patch_size) // stride + 1
+    num_patches_horizontal = (width - patch_size) // stride + 1
+
+    # Create an array of indices for extracting patches
+    y_indices = stride * jnp.arange(num_patches_vertical)
+    x_indices = stride * jnp.arange(num_patches_horizontal)
+    yy, xx = jnp.meshgrid(y_indices, x_indices)
+    yy = yy.reshape(-1, 1)
+    xx = xx.reshape(-1, 1)
+
+    # Calculate the indices for patches extraction
+    y_indices = yy + jnp.arange(patch_size)
+    x_indices = xx + jnp.arange(patch_size)
+
+    # Extract the patches using advanced indexing
+    patches = arr[:, y_indices[:, :, None], x_indices[:, None, :]]
+
+    return patches
+
+
 class Unet(nn.Module):
     dim: int = 64
     out_channels: int = 3
@@ -49,8 +72,10 @@ class Unet(nn.Module):
             nn.Dense(time_dim, dtype=self.dtype)
         ])(time)
 
+        b,h,w,c=x.shape
+        x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
 
-        x = nn.Conv(self.dim, (7, 7),(self.patch_size,self.patch_size), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.dim, (7, 7), (1, 1), padding="SAME", dtype=self.dtype)(x)
         r = x
 
         h = []
@@ -95,8 +120,8 @@ class Unet(nn.Module):
 
         x = jnp.concatenate([x, r], axis=3)
         x = res_block(dim, dtype=self.dtype)(x, t)
-        x = nn.Conv(self.out_channels*self.patch_size**2, (1, 1), dtype="float32")(x)
-        x=einops.rearrange(x,'b h w (c p1 p2)->b (h p1) (w p2) c',p1=self.patch_size,p2=self.patch_size)
+        x = nn.Conv(self.out_channels * self.patch_size ** 2, (1, 1), dtype="float32")(x)
+        x = einops.rearrange(x, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=self.patch_size, p2=self.patch_size)
 
         return x
 
