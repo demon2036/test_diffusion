@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 128,
+      image_size: 64,
       batch_size: 8,
-      file_path: '/home/john/data/celeba-512'
+      file_path: '/home/john/data/celeba-128/celeba-128'
     },
     trainer_configs: {
       seed: 43,
@@ -23,9 +23,10 @@
       }
     },
     params:{
+      dim : 64,
       out_channels: 3,
       dtype: 'bfloat16',
-      self_condition: True
+      #self_condition: True
     }
   },
   "Gaussian": {
@@ -36,7 +37,7 @@
     beta_schedule: 'sigmoid',
     min_snr_loss_weight: True,
     scale_shift: True,
-    self_condition: True,
+    #self_condition: True,
 
   }
 

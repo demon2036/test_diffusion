@@ -21,7 +21,7 @@ def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, im
     data = MyDataSet(file_path, cache, image_size,repeat=repeat)
 
     dataloader = DataLoader(data, batch_size=batch_size,
-                            num_workers=4#1#min(os.cpu_count(), len(data.data) // batch_size // 2)
+                            num_workers=jax.device_count()*2
                             , persistent_workers=False, pin_memory=False, shuffle=True,
                             drop_last=drop_last)
     return dataloader

@@ -38,7 +38,7 @@ def train_step(state, batch, train_key, cls):
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='configs/Diffusion/test_diff_vit.yaml')
+    parser.add_argument('-cp', '--config_path', default='configs/Diffusion/test_diff.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
