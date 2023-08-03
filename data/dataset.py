@@ -14,6 +14,7 @@ import os
 from PIL import Image
 import albumentations as A
 import jax.numpy as jnp
+import jax
 
 
 def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64,repeat=1,drop_last=True):
@@ -80,13 +81,33 @@ def torch_to_jax(x):
 
 
 
+def split_array_into_overlapping_patches(arr, patch_size, stride):
+    # Get the array's shape
+    batch_size, height, width, num_channels = arr.shape
+    num_patches_vertical = (height - patch_size) // stride + 1
+    num_patches_horizontal = (width - patch_size) // stride + 1
 
+    # Create an array of indices for extracting patches
+    y_indices = stride * jnp.arange(num_patches_vertical)
+    x_indices = stride * jnp.arange(num_patches_horizontal)
+    yy, xx = jnp.meshgrid(y_indices, x_indices)
+    yy = yy.reshape(-1, 1)
+    xx = xx.reshape(-1, 1)
+
+    # Calculate the indices for patches extraction
+    y_indices = yy + jnp.arange(patch_size)
+    x_indices = xx + jnp.arange(patch_size)
+
+    # Extract the patches using advanced indexing
+    patches = arr[:, y_indices[:, :, None], x_indices[:, None, :]]
+
+    return patches
 
 
 
 if __name__ == '__main__':
     start = time.time()
-    dl = get_dataloader(64, '/home/john/data/s', cache=False, image_size=256,repeat=2)
+    dl = get_dataloader(1, '/home/john/data/s', cache=False, image_size=256,repeat=2)
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     # for _ in range(100):
@@ -98,13 +119,26 @@ if __name__ == '__main__':
         print(data.shape)
         data = data / 2 + 0.5
         data=data.numpy()
-        data=jnp.asarray(data)
+        y=jnp.asarray(data)
+
+        data=jnp.array(split_array_into_overlapping_patches(y,16,16))
+
         data=np.asarray(data)
         data=torch.Tensor(data)
+        print(data.shape)
+
+        data = einops.rearrange(data, 'b (n) h w c->(b n) c w h',)
+        torchvision.utils.save_image(data, './test2.png',nrow=256//16)
+
+        data = np.asarray(y)
+        data = torch.Tensor(data)
+        print(data.shape)
+
+        data = einops.rearrange(data, 'b h w c->b c h w', )
+        torchvision.utils.save_image(data, './test3.png', nrow=256 // 16)
 
 
-        data = einops.rearrange(data, '(n b) h w c->(b n) c h w',n=2)
-        torchvision.utils.save_image(data, './test2.png')
+
         break
 
     print(end - start)

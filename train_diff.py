@@ -63,7 +63,7 @@ def train():
     model_ckpt = {'model': state, 'steps': 0}
     model_save_path = trainer_configs['model_path']
 
-    checkpoint_manager = create_checkpoint_manager(model_save_path, max_to_keep=1)
+    checkpoint_manager = create_checkpoint_manager(model_save_path, max_to_keep=5)
     if len(os.listdir(model_save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 

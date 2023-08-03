@@ -1,9 +1,9 @@
 celeba-align-64-noise-128.yaml{
   "train": {
     dataloader_configs: {
-      image_size: 64,
+      image_size: 128,
       batch_size: 64,
-      file_path: '/root/data/img_align_celeba'
+      file_path: '/root/data/celeba-128'
     },
     trainer_configs: {
       seed: 43,
@@ -25,7 +25,7 @@ celeba-align-64-noise-128.yaml{
     params:{
       out_channels: 3,
       dtype: 'bfloat16',
-      dim : 128
+      dim : 64
       #self_condition: True
     }
   },
