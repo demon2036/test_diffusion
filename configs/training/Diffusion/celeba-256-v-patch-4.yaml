@@ -1,4 +1,4 @@
-{
+celeba-256-v-patch-4.yaml{
   "train": {
     dataloader_configs: {
       image_size: 256,
