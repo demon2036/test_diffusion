@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
+      image_size: 128,
       batch_size: 64,
-      file_path: '/root/data/celeba-512'
+      file_path: '/root/data/mg_align_celeba'
     },
     trainer_configs: {
       seed: 43,
