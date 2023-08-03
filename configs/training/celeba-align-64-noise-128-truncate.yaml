@@ -1,4 +1,4 @@
-celeba-align-64-noise-128.yaml{
+{
   "train": {
     dataloader_configs: {
       image_size: 128,
