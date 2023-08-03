@@ -1,0 +1,45 @@
+celeba-align-64-noise-128.yaml{
+  "train": {
+    dataloader_configs: {
+      image_size: 64,
+      batch_size: 64,
+      file_path: '/root/data/img_align_celeba'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+
+  },
+  "Unet": {
+    target: modules.models.unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 1.0e-4
+      }
+    },
+    params:{
+      out_channels: 3,
+      dtype: 'bfloat16',
+      dim : 128
+      #self_condition: True
+    }
+  },
+  "Gaussian": {
+    loss: 'l2',
+    timesteps: 1000,
+    sampling_timesteps: 200,
+    objective: 'predict_noise',
+    beta_schedule: 'cosine',
+    min_snr_loss_weight: True,
+    scale_shift: True,
+    noise_type: 'pyramid'
+    #self_condition: True,
+
+  }
+
+}
