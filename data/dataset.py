@@ -24,7 +24,7 @@ def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, im
 
     dataloader = DataLoader(data, batch_size=batch_size,
                             num_workers=jax.device_count() * 2
-                            , persistent_workers=False, pin_memory=False, shuffle=True,
+                            , persistent_workers=True, pin_memory=True, shuffle=True,
                             drop_last=drop_last)
     return dataloader
 
