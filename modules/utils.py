@@ -3,6 +3,7 @@ import importlib
 import einops
 import numpy as np
 import torch
+from flax.training.common_utils import shard
 from torchvision.utils import save_image
 from flax.training import train_state
 from typing import Any
@@ -114,6 +115,34 @@ def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, s
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
+
+
+
+@jax.pmap
+def encode(state: EMATrainState, x):
+    return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.encode)
+
+
+@jax.pmap
+def decode(state: EMATrainState, x):
+    return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.decode)
+
+
+
+def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,ae_state:EMATrainState):
+    os.makedirs(save_path, exist_ok=True)
+    sample = c.sample(key, state, )
+    sample = sample / 2 + 0.5
+    latent=shard(sample)
+    sample=decode(ae_state,latent)
+    sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
+
+
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):

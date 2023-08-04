@@ -6,12 +6,13 @@ from data.dataset import get_dataloader
 from tqdm import tqdm
 
 
-def save_image(x,count,save_path='/home/john/data/FFHQ256'):
+def save_image(x,count,save_path='/home/john/data/test'):
     try:
         x=np.array(x)
         x=x/2+0.5
         x=x*255
         x=np.clip(x,0,255).astype('uint8')
+        # print(x.shape)
         img=Image.fromarray(x)
         img.save(f'{save_path}/{count}.png')
     except Exception as e:
