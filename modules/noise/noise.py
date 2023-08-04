@@ -21,7 +21,7 @@ def offset_noise(key, shape, offset=0.1):
     return jax.random.normal(key1, shape) + jax.random.normal(key2, (b, 1, 1, c)) * offset
 
 
-def truncate_noise(key, shape, low=-1.5, high=1.5):
+def truncate_noise(key, shape, low=-2.5, high=2.5):
     return jax.random.truncated_normal(key, low, high, shape)
 
 

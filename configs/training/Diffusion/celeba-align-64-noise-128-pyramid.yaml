@@ -25,7 +25,8 @@
     params:{
       out_channels: 3,
       dtype: 'bfloat16',
-      dim : 64
+      dim : 64,
+      num_res_blocks : [1,1,1,5],
       #self_condition: True
     }
   },
