@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
             if steps > 0 and steps % 1 == 0:
                 decay=min(0.9999,(1+steps)/(10+steps))
-                decay=shard(jnp.array([decay]))
+                decay=flax.jax_utils.replicate(jnp.array([decay]))
                 state = update_ema(state, decay)
 
 
