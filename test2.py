@@ -116,6 +116,8 @@ if __name__ == "__main__":
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
 
+            print(batch.shape,batch.min(),batch.max())
+
             batch = shard(batch)
             state, metrics = train_step(state, batch, train_step_key, c)
             for k, v in metrics.items():

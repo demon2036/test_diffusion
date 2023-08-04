@@ -72,10 +72,10 @@ class Unet(nn.Module):
             nn.Dense(time_dim, dtype=self.dtype)
         ])(time)
 
-        b,h,w,c=x.shape
-        x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
-        x=einops.rearrange(x,'b n h w c ->b w h (n c)')
-        print(x.shape)
+        # b,h,w,c=x.shape
+        # x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
+        # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
+        # print(x.shape)
         x = nn.Conv(self.dim, (7, 7), (1, 1), padding="SAME", dtype=self.dtype)(x)
         r = x
 
