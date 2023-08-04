@@ -12,7 +12,6 @@ from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample
 
 
-from diffusers import UNet2DModel
 
 def split_array_into_overlapping_patches(arr, patch_size, stride):
     # Get the array's shape
