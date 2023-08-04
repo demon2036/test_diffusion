@@ -1,0 +1,78 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 32,
+      batch_size: 64,
+      file_path: '/root/data/latent',
+      data_type: 'np'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+
+  },
+  "Unet": {
+    target: modules.models.unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 5.0e-5
+      }
+    },
+    params:{
+      dim : 128,
+      num_res_blocks : [1,1,1,5],
+      out_channels: 3,
+      dtype: 'bfloat16',
+      patch_size: 1
+      #self_condition: True
+    }
+  },
+  "Gaussian": {
+    loss: 'l2',
+    timesteps: 1000,
+    sampling_timesteps: 200,
+    objective: 'predict_noise',
+    beta_schedule: 'linear',
+    min_snr_loss_weight: True,
+    #scale_shift: True,
+    #self_condition: True,
+  },
+  "FirstStage":{
+    "AutoEncoder": {
+      target: modules.models.autoencoder.AutoEncoder,
+      optimizer: {
+        optimizer: optax.lion,
+        optimizer_configs: {
+          learning_rate: 3.0e-5,
+          weight_decay: 0.1
+        }
+      },
+      params: {
+        dims: [ 64,128,256,256 ],
+        dtype: 'bfloat16',
+        #use_attn : True
+      }
+    },
+    "Discriminator": {
+      target: modules.models.discriminator.NLayerDiscriminator,
+      optimizer: {
+        optimizer: optax.adamw,
+        optimizer_configs: {
+          learning_rate: 1.0e-3
+        }
+      },
+      params: {
+      }
+    }
+
+
+  }
+
+
+
+}
