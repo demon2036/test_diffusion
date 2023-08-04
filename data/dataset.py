@@ -16,7 +16,6 @@ import albumentations as A
 import jax.numpy as jnp
 import jax
 
-from diffusers.schedulers import EulerDiscreteScheduler
 
 
 def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64, repeat=1, drop_last=True,
