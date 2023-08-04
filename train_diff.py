@@ -77,6 +77,7 @@ def train():
             key, train_step_key = jax.random.split(key, num=2)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
+            print(batch.shape)
 
             batch = shard(batch)
             state, metrics = train_step(state, batch, train_step_key, c)
@@ -86,8 +87,8 @@ def train():
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps > 100 and steps % 10 == 0:
-                state = update_ema(state, 0.995)
+            if steps > 100 and steps % 1 == 0:
+                state = update_ema(state, 0.9999)
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:

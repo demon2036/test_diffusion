@@ -19,6 +19,7 @@ import json
 from modules.gaussian.gaussian import Gaussian
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.gaussian.gaussianSR import GaussianSR
+from modules.models.autoencoder import AutoEncoder
 
 
 class EMATrainState(train_state.TrainState):
@@ -132,9 +133,9 @@ def decode(state: EMATrainState, x):
 def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,ae_state:EMATrainState):
     os.makedirs(save_path, exist_ok=True)
     sample = c.sample(key, state, )
-    sample = sample / 2 + 0.5
     latent=shard(sample)
     sample=decode(ae_state,latent)
+    sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)

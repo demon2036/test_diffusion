@@ -12,6 +12,8 @@ from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample
 
 
+from diffusers import UNet2DModel
+
 def split_array_into_overlapping_patches(arr, patch_size, stride):
     # Get the array's shape
     batch_size, height, width, num_channels = arr.shape
@@ -37,10 +39,11 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
 
 class Unet(nn.Module):
     dim: int = 64
+    dim_mults: Sequence = (1, 2, 4, 4)
+    num_res_blocks: Optional[int | Sequence] = 2
     out_channels: int = 3
     resnet_block_groups: int = 8,
     channels: int = 3,
-    dim_mults: Sequence = (1, 2, 4, 8)
     dtype: Any = jnp.bfloat16
     self_condition: bool = False
     use_encoder: bool = False
@@ -51,13 +54,19 @@ class Unet(nn.Module):
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, *args, **kwargs):
 
+        if type(self.num_res_blocks) == int:
+            num_res_blocks = (self.num_res_blocks,) * len(self.dim_mults)
+        else:
+            assert len(self.num_res_blocks) == len(self.dim_mults)
+            num_res_blocks=self.num_res_blocks
+
         if self.use_encoder:
             n = 2 ** 3
             x_self_cond = Encoder(**self.encoder_configs)(x_self_cond)
             x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
             x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
             x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
-        print(x.shape)
+
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
         elif self.self_condition:
@@ -79,7 +88,7 @@ class Unet(nn.Module):
         x = nn.Conv(self.dim, (7, 7), (1, 1), padding="SAME", dtype=self.dtype)(x)
         r = x
 
-        h = []
+        h = [x]
 
         if self.res_type == 'default':
             res_block = ResBlock
@@ -88,31 +97,35 @@ class Unet(nn.Module):
         else:
             res_block = None
 
-        for i, dim_mul in enumerate(self.dim_mults):
+        for i, (dim_mul, num_res_block) in enumerate(zip(self.dim_mults, num_res_blocks)):
             dim = self.dim * dim_mul
+            for _ in range(num_res_block):
+                x = res_block(dim, dtype=self.dtype)(x, t)
+                h.append(x)
 
-            x = res_block(dim, dtype=self.dtype)(x, t)
-            h.append(x)
-            x = res_block(dim, dtype=self.dtype)(x, t)
-            h.append(x)
             if i != len(self.dim_mults) - 1:
                 x = DownSample(dim, dtype=self.dtype)(x)
+                h.append(x)
             else:
                 x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
+
+
+        # for m in h:
+        #     print(m.shape)
+
 
         x = res_block(dim, dtype=self.dtype)(x, t)
         # x = self.mid_attn(x) + x
         x = res_block(dim, dtype=self.dtype)(x, t)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
+        reversed_num_res_blocks = list(reversed(num_res_blocks))
 
-        for i, dim_mul in enumerate(reversed_dim_mults):
+        for i, (dim_mul, num_res_block) in enumerate(zip(reversed_dim_mults, reversed_num_res_blocks)):
             dim = self.dim * dim_mul
-
-            x = jnp.concatenate([x, h.pop()], axis=3)
-            x = res_block(dim, dtype=self.dtype)(x, t)
-            x = jnp.concatenate([x, h.pop()], axis=3)
-            x = res_block(dim, dtype=self.dtype)(x, t)
+            for _ in range(num_res_block+1):
+                x = jnp.concatenate([x, h.pop()], axis=3)
+                x = res_block(dim, dtype=self.dtype)(x, t)
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(self.dim * self.dim_mults[i + 1], dtype=self.dtype)(x)
