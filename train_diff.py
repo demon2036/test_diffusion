@@ -77,7 +77,6 @@ def train():
             key, train_step_key = jax.random.split(key, num=2)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
-            print(batch.shape)
 
             batch = shard(batch)
             state, metrics = train_step(state, batch, train_step_key, c)
