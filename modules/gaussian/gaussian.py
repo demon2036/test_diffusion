@@ -70,7 +70,6 @@ class Gaussian:
         betas = beta_schedule_fn(timesteps)
 
         alphas = 1 - betas
-
         if scale_shift:
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
