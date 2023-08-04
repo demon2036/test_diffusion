@@ -40,7 +40,7 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
 class Unet(nn.Module):
     dim: int = 64
     dim_mults: Sequence = (1, 2, 4, 4)
-    num_res_blocks: Optional[int | Sequence] = 2
+    num_res_blocks: Any = 2
     out_channels: int = 3
     resnet_block_groups: int = 8,
     channels: int = 3,
