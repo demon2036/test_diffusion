@@ -121,10 +121,9 @@ if __name__ == "__main__":
             pbar.update(1)
 
             if steps > 0 and steps % 1 == 0:
-                decay=min(0.9999,(1+steps)/(10+steps))
-                decay=flax.jax_utils.replicate(jnp.array([decay]))
+                decay = min(0.9999, (1 + steps) / (10 + steps))
+                decay = flax.jax_utils.replicate(jnp.array([decay]))
                 state = update_ema(state, decay)
-
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
