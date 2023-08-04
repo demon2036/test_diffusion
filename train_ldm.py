@@ -24,9 +24,6 @@ from concurrent.futures import ThreadPoolExecutor
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-
-
-
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
     def loss_fn(params):
@@ -41,8 +38,6 @@ def train_step(state, batch, train_key, cls):
     loss = jax.lax.pmean(loss, axis_name='batch')
     metric = {"loss": loss}
     return new_state, metric
-
-
 
 
 def get_auto_encoder(config):
@@ -82,7 +77,7 @@ if __name__ == "__main__":
     model_cls_str, model_optimizer, unet_config = config['Unet'].values()
     model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
-    first_stage_config=config['FirstStage']
+    first_stage_config = config['FirstStage']
 
     ae_state = get_auto_encoder(first_stage_config)
     key = jax.random.PRNGKey(seed=43)
@@ -108,10 +103,9 @@ if __name__ == "__main__":
     state = flax.jax_utils.replicate(model_ckpt['model'])
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
-
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
-        for steps in range(finished_steps + 1, trainer_configs['total_steps']+1):
+        for steps in range(finished_steps + 1, trainer_configs['total_steps'] + 1):
             key, train_step_key = jax.random.split(key, num=2)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
@@ -126,12 +120,15 @@ if __name__ == "__main__":
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps > 100 and steps % 1 == 0:
-                state = update_ema(state, 0.9999)
+            if steps > 0 and steps % 1 == 0:
+                decay=min(0.9999,(1+steps)/(10+steps))
+                decay=shard(jnp.array([decay]))
+                state = update_ema(state, decay)
+
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image_latent_diffusion(key, c, steps, state, trainer_configs['save_path'],ae_state)
+                    sample_save_image_latent_diffusion(key, c, steps, state, trainer_configs['save_path'], ae_state)
                 except Exception as e:
                     print(e)
 

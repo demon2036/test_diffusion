@@ -34,8 +34,8 @@ def read_yaml(config_path):
         return res
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(1,))
-def update_ema(state, ema_decay=0.999):
+@partial(jax.pmap, )
+def update_ema(state, ema_decay=0.999,):
     new_ema_params = jax.tree_map(lambda ema, normal: ema * ema_decay + (1 - ema_decay) * normal, state.ema_params,
                                   state.params)
     state = state.replace(ema_params=new_ema_params)
@@ -118,7 +118,6 @@ def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, s
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-
 @jax.pmap
 def encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.encode)
@@ -129,21 +128,17 @@ def decode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.decode)
 
 
-
-def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,ae_state:EMATrainState):
+def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,
+                                       ae_state: EMATrainState):
     os.makedirs(save_path, exist_ok=True)
     sample = c.sample(key, state, )
-    latent=shard(sample)
-    sample=decode(ae_state,latent)
+    latent = shard(sample)
+    sample = decode(ae_state, latent)
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
-
-
-
-
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):
