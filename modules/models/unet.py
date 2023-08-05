@@ -10,7 +10,7 @@ from modules.models.autoencoder import Encoder
 from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample
-from .attention import Attention
+# from .attention import Attention
 
 
 def split_array_into_overlapping_patches(arr, patch_size, stride):
@@ -112,10 +112,9 @@ class Unet(nn.Module):
         # for m in h:
         #     print(m.shape)
 
-
         x = res_block(dim, dtype=self.dtype)(x, t)
         # x = self.mid_attn(x) + x
-        x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
+        #x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
         x = res_block(dim, dtype=self.dtype)(x, t)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
@@ -134,7 +133,6 @@ class Unet(nn.Module):
 
         #x = jnp.concatenate([x, r], axis=3)
         #x = res_block(dim, dtype=self.dtype)(x, t)
-
         x=nn.GroupNorm()(x)
         x=nn.silu(x)
         x = nn.Conv(self.out_channels * self.patch_size ** 2, (3, 3), dtype="float32")(x)

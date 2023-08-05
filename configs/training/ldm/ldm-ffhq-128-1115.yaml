@@ -39,7 +39,7 @@
     sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'linear',
-    min_snr_loss_weight: True,
+    #min_snr_loss_weight: True,
     #scale_shift: True,
     #self_condition: True,
   },
