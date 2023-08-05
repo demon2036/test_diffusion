@@ -5,7 +5,7 @@ import einops
 import flax.linen as nn
 import jax.numpy as jnp
 import jax.random
-from memory_efficient_attention import efficient_dot_product_attention_jax
+
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
@@ -23,7 +23,7 @@ class MyAttention(nn.Module):
         x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
         return x
 
-"""
+
 class Attention(nn.Module):
     dim: int
     head: int = 4
@@ -45,30 +45,8 @@ class Attention(nn.Module):
         out = einops.rearrange(out, 'b (x y) h d->b x y (h d)', x=h)
         out = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(out)
         return out
-"""
 
 
-class Attention(nn.Module):
-    dim: int
-    head: int = 4
-    dtype: str = 'bfloat16'
-
-    @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        b, h, w, c = x.shape
-        qkv = nn.Conv(self.dim * 3, (1, 1), dtype=self.dtype, use_bias=False)(x)
-        qkv = einops.rearrange(qkv, 'b x y (h d)->b h (x y)  d', h=self.head)
-
-        q, k, v = jnp.split(qkv, 3, -1)
-        attn=efficient_dot_product_attention_jax(q,k,v)
-
-
-        attn = einops.rearrange(attn, 'b h (x y)  d->b x y (h d)', x=h)
-        print(attn.shape)
-        out = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(attn)
-
-
-        return out
 
 
 
