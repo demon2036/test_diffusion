@@ -13,24 +13,24 @@ from PIL import Image
 random.seed(42)
 
 
-def linear_beta_schedule(timesteps):
-    """
-    linear schedule, proposed in original ddpm paper
-    """
-    scale = 1000 / timesteps
-    beta_start = scale * 0.0001
-    beta_end = scale * 0.02
-    return jnp.linspace(beta_start, beta_end, timesteps)  # , dtype = jnp.float64
-
-
 # def linear_beta_schedule(timesteps):
 #     """
 #     linear schedule, proposed in original ddpm paper
 #     """
 #     scale = 1000 / timesteps
-#     beta_start = scale * 0.0015
-#     beta_end = scale * 0.0195
+#     beta_start = scale * 0.0001
+#     beta_end = scale * 0.02
 #     return jnp.linspace(beta_start, beta_end, timesteps)  # , dtype = jnp.float64
+
+
+def linear_beta_schedule(timesteps):
+    """
+    linear schedule, proposed in original ddpm paper
+    """
+    scale = 1000 / timesteps
+    beta_start = scale * 0.0015
+    beta_end = scale * 0.0195
+    return jnp.linspace(beta_start, beta_end, timesteps)  # , dtype = jnp.float64
 
 
 def cosine_beta_schedule(timesteps, s=0.008):
@@ -88,45 +88,7 @@ def generate_nosie(key, shape):
 
 if __name__ == "__main__":
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-    betas = cosine_beta_schedule(1000)
+    betas = linear_beta_schedule(1000)
     alphas = 1. - betas
     alphas_cumprod = jnp.cumprod(alphas, )
-    # print(alphas_cumprod)
-    img = Image.open('/home/john/data/celeba-128/celeba-128/183375.jpg.jpg')
-
-    img = np.array(img)
-    img = jnp.array(img)
-    scale = 2
-    img = jax.image.resize(img, method="bilinear", shape=(64 * scale, 64 * scale, 3))
-    img = img / 255
-    img = img * 2 - 1
-
-    t = 600
-    alphas = alphas_cumprod[t]
-
-
-    snr=alphas/(1-alphas)
-
-    alphas=1- 1/(1+(1/scale)**1*snr)
-
-
-    seed = jax.random.key(42)
-
-    # noise = jax.random.normal(seed, img.shape)
-    noise = g_noise(seed, img.shape)
-    x = jnp.sqrt(alphas) * img + jnp.sqrt(1-alphas) * noise
-
-    # x=x/x.std()
-    print(alphas,snr)
-    x = np.array(x)
-   # x = x/x.std()
-
-    print(x.max())
-
-    x = x /2 + 0.5
-    plt.subplot(121)
-    plt.imshow(x)
-    plt.subplot(122)
-    plt.imshow(noise)
-
-    plt.show()
+    print(alphas_cumprod)

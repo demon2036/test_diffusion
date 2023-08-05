@@ -5,9 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+      <change afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-224-2222.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussian.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ldm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ldm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-1115.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-1115.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-2222.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-2222.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-64-1115.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-64-1115.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/gaussian/schedules.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/schedules.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/attention.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/attention.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,15 +39,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/ldm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/ldm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs/training/ldm" />
@@ -56,27 +61,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.train_ldm">
-    <configuration name="dataset" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="diffusion" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/dataset.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="preprocess" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -90,6 +74,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/preprocess.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="schedules" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="diffusion" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/modules/gaussian" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/modules/gaussian/schedules.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -164,10 +169,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.train_ldm" />
+        <item itemvalue="Python.schedules" />
         <item itemvalue="Python.train_diff" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.preprocess" />
-        <item itemvalue="Python.dataset" />
       </list>
     </recent_temporary>
   </component>
@@ -388,8 +393,75 @@
       <option name="project" value="LOCAL" />
       <updated>1691172899938</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691173000849</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1691173000849</updated>
+    </task>
+    <task id="LOCAL-00028" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691173023574</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1691173023574</updated>
+    </task>
+    <task id="LOCAL-00029" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691173226953</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1691173226953</updated>
+    </task>
+    <task id="LOCAL-00030" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691173461980</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1691173461980</updated>
+    </task>
+    <task id="LOCAL-00031" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691239826956</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1691239826956</updated>
+    </task>
+    <task id="LOCAL-00032" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691240050485</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1691240050485</updated>
+    </task>
+    <task id="LOCAL-00033" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691245929837</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1691245929837</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="commit" />

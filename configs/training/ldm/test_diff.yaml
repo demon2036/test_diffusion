@@ -24,7 +24,7 @@
       }
     },
     params:{
-      dim : 224,
+      dim : 128,
       num_res_blocks : [2,2,2,2],
       dim_mults: [1,2,3,4],
       out_channels: 3,
