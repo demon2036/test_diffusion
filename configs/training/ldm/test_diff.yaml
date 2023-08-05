@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 32,
-      batch_size: 64,
+      batch_size: 1,
       file_path: '/home/john/data/latent',
       data_type: 'np'
     },
@@ -24,8 +24,8 @@
       }
     },
     params:{
-      dim : 64,
-      num_res_blocks : [1,1,1,5],
+      dim : 224,
+      num_res_blocks : [1,2,3,4],
       out_channels: 3,
       dtype: 'bfloat16',
       patch_size: 1
