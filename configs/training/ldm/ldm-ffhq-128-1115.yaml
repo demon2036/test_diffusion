@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 32,
-      batch_size: 128,
+      batch_size: 64,
       file_path: '/root/data/latent',
       data_type: 'np'
     },
@@ -20,7 +20,7 @@
     optimizer: {
       optimizer: optax.adamw,
       optimizer_configs: {
-        learning_rate: 5.0e-5
+        learning_rate: 1.0e-4
       }
     },
     params:{
