@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-1115.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-1115.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-2222.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-128-2222.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-224-2222.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-224-2222.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-64-1115.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-ffhq-64-1115.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussian.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,16 +39,16 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/ldm&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/Diffusion&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/configs/training/ldm" />
       <recent name="$PROJECT_DIR$/check_points/AutoEncoder" />
       <recent name="$PROJECT_DIR$/model/ldm" />
-      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/configs/training" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -456,7 +452,31 @@
       <option name="project" value="LOCAL" />
       <updated>1691246988965</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691253098324</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1691253098324</updated>
+    </task>
+    <task id="LOCAL-00036" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691253263770</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1691253263770</updated>
+    </task>
+    <task id="LOCAL-00037" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691253320334</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1691253320334</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

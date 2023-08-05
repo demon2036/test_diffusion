@@ -79,6 +79,7 @@ class Gaussian:
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
 
+
         self.num_timesteps = int(timesteps)
 
         self.sampling_timesteps = sampling_timesteps
@@ -216,8 +217,6 @@ class Gaussian:
         return jax.random.normal(key, shape) * self.scale
 
     def p_sample(self, key, x, batch_times, x_self_cond=None, state=None):
-        b, c, h, w = x.shape
-
         model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond, state)
         noise = self.generate_nosie(key, x.shape)
         pred_image = model_mean + jnp.exp(0.5 * model_log_variance) * noise
@@ -256,7 +255,6 @@ class Gaussian:
         return ret
 
     def ddim_sample(self, key, state, self_condition=None, shape=None):
-        print(shape)
         b, *_ = shape
         key, key_image = jax.random.split(key, 2)
         img = self.generate_nosie(key_image, shape=shape)
