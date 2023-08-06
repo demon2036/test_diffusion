@@ -19,6 +19,7 @@
     target: modules.models.test_unet.Unet,
     optimizer: {
       optimizer: optax.adamw,
+
       optimizer_configs: {
         learning_rate: 1.0e-4
       }
@@ -49,6 +50,7 @@
       target: modules.models.autoencoder.AutoEncoder,
       optimizer: {
         optimizer: optax.lion,
+         clip_norm: True,
         optimizer_configs: {
           learning_rate: 3.0e-5,
           weight_decay: 0.1
@@ -64,6 +66,7 @@
       target: modules.models.discriminator.NLayerDiscriminator,
       optimizer: {
         optimizer: optax.adamw,
+         clip_norm: True,
         optimizer_configs: {
           learning_rate: 1.0e-3
         }

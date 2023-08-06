@@ -23,9 +23,13 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
     variables = model.init(rng, *inputs,z_rng=rng)
     optimizer = get_obj_from_str(optimizer_dict['optimizer'])
 
+    args=tuple()
+    if 'clip_norm' in optimizer_dict and optimizer_dict['clip_norm']:
+        args+=( optax.clip_by_global_norm(1)  ,)
+
+    args+=(optimizer(**optimizer_dict['optimizer_configs']),)
     tx = optax.chain(
-        #optax.clip_by_global_norm(1),
-        optimizer(**optimizer_dict['optimizer_configs'])
+        *args
     )
     return train_state.create(apply_fn=model.apply,
                               params=variables['params'],

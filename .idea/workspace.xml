@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-224-noise-128-truncate.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-224-noise-128-truncate.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-test-64.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-test-64.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/state_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/state_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,22 +35,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/ldm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/configs/training/ldm" />
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/check_points/AutoEncoder" />
       <recent name="$PROJECT_DIR$/model/ldm" />
-      <recent name="$PROJECT_DIR$/configs/training" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
@@ -507,7 +509,15 @@
       <option name="project" value="LOCAL" />
       <updated>1691347204472</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691347618489</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1691347618489</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
