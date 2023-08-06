@@ -17,7 +17,7 @@
 
   },
   "AutoEncoder": {
-    target : modules.models.autoencoder.AutoEncoder,
+    target : modules.models.autoencoder.AutoEncoderKL,
     optimizer :{
         optimizer: optax.adamw,
         optimizer_configs: {
