@@ -72,12 +72,12 @@ def vanilla_d_loss(logits_real, logits_fake):
     return d_loss
 
 
-def sample_save_image_autoencoder(state, save_path, steps, data):
+def sample_save_image_autoencoder(state, save_path, steps, data,z_rng):
     os.makedirs(save_path, exist_ok=True)
 
     @jax.pmap
     def infer(state, params, data):
-        sample = state.apply_fn({'params': params}, data)
+        sample = state.apply_fn({'params': params}, data,z_rng=z_rng)
         return sample
 
     if steps < 50000:

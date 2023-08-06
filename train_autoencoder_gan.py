@@ -20,7 +20,7 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 def kl_divergence(mean, logvar):
-    return -0.5 * jnp.sum(1 + logvar - jnp.square(mean) - jnp.exp(logvar))
+    return 0.5 * jnp.sum(jnp.pow(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, dim=[1, 2, 3])
 
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
@@ -34,33 +34,33 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
 
 
 @partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,))  # static_broadcasted_argnums=(3),
-def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool,z_rng):
+def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool, z_rng):
     def loss_fn(params):
-        reconstruct, intermediate = state.apply_fn({'params': params}, x,z_rng=z_rng, mutable=['intermediate'])
+        reconstruct, intermediate = state.apply_fn({'params': params}, x, z_rng=z_rng, mutable=['intermediate'])
 
         z_mean = intermediate['intermediate']['mean'][0]
         z_variance = intermediate['intermediate']['variance'][0]
-        kl_loss =kl_divergence(z_mean,z_variance)
+        kl_loss = kl_divergence(z_mean, z_variance).mean()
 
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + 0.1*gan_loss+1e-5*kl_loss, (rec_loss, gan_loss,kl_loss)
+        return rec_loss + 0.1 * gan_loss + 1e-5 * kl_loss, (rec_loss, gan_loss, kl_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (loss, (rec_loss, gan_loss,kl_loss)), grads = grad_fn(state.params)
+    (loss, (rec_loss, gan_loss, kl_loss)), grads = grad_fn(state.params)
     grads = jax.lax.pmean(grads, axis_name='batch')
 
     new_state = state.apply_gradients(grads=grads)
     rec_loss = jax.lax.pmean(rec_loss, axis_name='batch')
     gan_loss = jax.lax.pmean(gan_loss, axis_name='batch')
-    metric = {"rec_loss": rec_loss, 'gan_loss': gan_loss,'kl_loss':kl_loss}
+    metric = {"rec_loss": rec_loss, 'gan_loss': gan_loss, 'kl_loss': kl_loss}
     return new_state, metric
 
 
 @partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,z_rng):
+def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState, z_rng):
     def loss_fn(params):
-        fake_image = state.apply_fn({'params': state.params}, x,z_rng=z_rng)
+        fake_image = state.apply_fn({'params': state.params}, x, z_rng=z_rng)
         real_image = x
 
         logit_real, mutable = discriminator_state.apply_fn(
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             batch = next(dl)
 
             batch = shard(batch)
-            state, metrics = train_step(state, batch, discriminator_state, disc_start,train_step_key)
+            state, metrics = train_step(state, batch, discriminator_state, disc_start, train_step_key)
             for k, v in metrics.items():
                 metrics.update({k: v[0]})
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
                 disc_start = True
 
             if steps > trainer_configs['disc_start']:
-                discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state,train_step_key)
+                discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state, train_step_key)
                 for k, v in metrics_disc.items():
                     metrics_disc.update({k: v[0]})
                 metrics.update(metrics_disc)
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
             if steps % trainer_configs['sample_steps'] == 0:
                 save_path = f"{trainer_configs['save_path']}"
-                sample_save_image_autoencoder(state, save_path, steps, batch)
+                sample_save_image_autoencoder(state, save_path, steps, batch,key)
                 un_replicate_state = flax.jax_utils.unreplicate(state)
                 un_replicate_disc_state = flax.jax_utils.unreplicate(discriminator_state)
                 model_ckpt = {'model': un_replicate_state, 'discriminator': un_replicate_disc_state, 'steps': steps}
