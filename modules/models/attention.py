@@ -5,7 +5,7 @@ import einops
 import flax.linen as nn
 import jax.numpy as jnp
 import jax.random
-
+from einops import rearrange
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
@@ -24,6 +24,7 @@ class MyAttention(nn.Module):
         return x
 
 
+"""
 class Attention(nn.Module):
     dim: int
     head: int = 4
@@ -45,12 +46,60 @@ class Attention(nn.Module):
         out = einops.rearrange(out, 'b (x y) h d->b x y (h d)', x=h)
         out = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(out)
         return out
+"""
 
 
+def l2norm(t, axis=1, eps=1e-12):
+    """Performs L2 normalization of inputs over specified axis.
+
+    Args:
+      t: jnp.ndarray of any shape
+      axis: the dimension to reduce, default -1
+      eps: small value to avoid division by zero. Default 1e-12
+    Returns:
+      normalized array of same shape as t
 
 
+    """
+    denom = jnp.clip(jnp.linalg.norm(t, ord=2, axis=axis, keepdims=True), eps)
+    out = t / denom
+    return (out)
 
 
+class Attention(nn.Module):
+    dim: int
+    scale: int = 10
+    dtype: Any = jnp.float32
+
+    @nn.compact
+    def __call__(self, x):
+        x = nn.LayerNorm(epsilon=1e-5, use_bias=False,dtype=self.dtype)(x)
+        B, H, W, C = x.shape
+        dim = self.dim  # self.dim_head * self.heads
+        dim_head = 64
+        heads = dim // dim_head
+
+        qkv = nn.Conv(features=dim * 3, kernel_size=(1, 1),
+                      use_bias=False, dtype=self.dtype, name='to_qkv.conv_0')(x)  # [B, H, W, dim *3]
+        q, k, v = jnp.split(qkv, 3, axis=-1)  # [B, H, W, dim]
+        q, k, v = map(lambda t: rearrange(
+            t, 'b x y (h d) -> b (x y) h d', h=heads), (q, k, v))
+
+        assert q.shape == k.shape == v.shape == (
+            B, H * W, heads, dim_head)
+
+        q, k = map(l2norm, (q, k))
+
+        sim = jnp.einsum('b i h d, b j h d -> b h i j', q, k) * self.scale
+        attn = nn.softmax(sim, axis=-1)
+        assert attn.shape == (B, heads, H * W, H * W)
+
+        out = jnp.einsum('b h i j , b j h d  -> b h i d', attn, v)
+        out = rearrange(out, 'b h (x y) d -> b x y (h d)', x=H)
+        assert out.shape == (B, H, W, dim)
+
+        out = nn.Conv(features=C, kernel_size=(1, 1), dtype=self.dtype, name='to_out.conv_0')(out)
+        return (out)
 
 
 if __name__ == "__main__":

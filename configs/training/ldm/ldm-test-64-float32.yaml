@@ -2,8 +2,8 @@
   "train": {
     dataloader_configs: {
       image_size: 32,
-      batch_size: 16,
-      file_path: '/home/john/data/latent',
+      batch_size: 64,
+      file_path: '/root/data/latent',
       data_type: 'np'
     },
     trainer_configs: {
@@ -29,7 +29,7 @@
       #dim_mults: [1,2,3,4],
       out_dim: 3,
       #out_channels: 3,
-      dtype: 'bfloat16',
+      dtype: 'float32',
       #patch_size: 1
       #self_condition: True
     }

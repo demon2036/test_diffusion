@@ -100,8 +100,9 @@ class AutoEncoderKL(nn.Module):
 
     def encode(self,x,z_rng):
         x=self.encoder(x)
-
         mean, variance = jnp.split(x, 2, 3)
+        mean=mean.clip(-3,3)
+        variance=variance.clip(-3,3)
         self.sow('intermediate', 'mean', mean)
         self.sow('intermediate', 'variance', variance)
         z=self.reparameter(z_rng,mean,variance)

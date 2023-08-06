@@ -5,6 +5,8 @@ import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
+
+from modules.models.attention import Attention
 from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder
 from modules.models.transformer import Transformer
@@ -100,6 +102,7 @@ class Unet(nn.Module):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
                 x = res_block(dim, dtype=self.dtype)(x, t)
+                x=Attention(dim=self.dim,dtype=self.dtype)(x)+x
                 h.append(x)
 
             if i != len(self.dim_mults) - 1:
@@ -113,6 +116,7 @@ class Unet(nn.Module):
         #     print(m.shape)
 
         x = res_block(dim, dtype=self.dtype)(x, t)
+        x = Attention(dim=self.dim, dtype=self.dtype)(x) + x
         # x = self.mid_attn(x) + x
         #x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
         x = res_block(dim, dtype=self.dtype)(x, t)
@@ -125,6 +129,7 @@ class Unet(nn.Module):
             for _ in range(num_res_block+1):
                 x = jnp.concatenate([x, h.pop()], axis=3)
                 x = res_block(dim, dtype=self.dtype)(x, t)
+                x = Attention(dim=self.dim, dtype=self.dtype)(x) + x
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(dim, dtype=self.dtype)(x)

@@ -5,11 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+      <change afterPath="$PROJECT_DIR$/modules/models/test_unet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/AutoEncoder/test_gan.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/AutoEncoder/test_gan.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-offset.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-offset.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-pyramid.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-pyramid.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-resize.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-resize.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-truncate.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-truncate.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/test_diff.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/attention.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/attention.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/models/autoencoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/autoencoder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/discriminator.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/discriminator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/state_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/state_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train_autoencoder_gan.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_autoencoder_gan.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -58,7 +64,7 @@
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train_autoencoder_gan">
+  <component name="RunManager" selected="Python.train_ldm">
     <configuration name="schedules" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -166,8 +172,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_autoencoder_gan" />
         <item itemvalue="Python.train_ldm" />
+        <item itemvalue="Python.train_autoencoder_gan" />
         <item itemvalue="Python.schedules" />
         <item itemvalue="Python.train_diff" />
         <item itemvalue="Python.test" />
@@ -487,7 +493,15 @@
       <option name="project" value="LOCAL" />
       <updated>1691261998372</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691338557934</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1691338557934</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

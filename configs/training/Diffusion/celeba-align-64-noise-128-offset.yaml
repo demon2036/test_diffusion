@@ -25,8 +25,8 @@
     params:{
       out_channels: 3,
       dtype: 'bfloat16',
-      dim : 64,
-      num_res_blocks : [1,1,1,5],
+      num_res_blocks: 2,
+      dim_mults: [ 1,2,2,4,4 ],
       #self_condition: True
     }
   },
@@ -36,7 +36,7 @@
     sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
-    min_snr_loss_weight: True,
+    #min_snr_loss_weight: True,
     scale_shift: True,
     noise_type: 'offset'
     #self_condition: True,
