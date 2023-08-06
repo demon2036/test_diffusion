@@ -1,8 +1,8 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
-      batch_size: 8,
+      image_size: 128,
+      batch_size: 16,
       file_path: '/home/john/data/FFHQ'
     },
     trainer_configs: {
@@ -17,15 +17,15 @@
 
   },
   "AutoEncoder": {
-    target : modules.models.autoencoder.AutoEncoder,
+    target : modules.models.autoencoder.AutoEncoderKL,
     optimizer :{
-        optimizer: optax.lion,
+        optimizer: optax.adamw,
         optimizer_configs: {
           learning_rate: 1.0e-4
         }
     },
     params : {
-      dims: [ 64,128,256,256 ],
+      dims: [ 64,128,256 ],
       dtype: 'bfloat16',
       #block_type : 'rep'
     }

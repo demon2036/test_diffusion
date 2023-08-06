@@ -1,7 +1,10 @@
 import flax.linen as nn
 from typing import *
-from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
 
+import jax
+
+from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
+import jax.numpy as jnp
 
 class Encoder(nn.Module):
     dims: Sequence
@@ -65,16 +68,55 @@ class AutoEncoder(nn.Module):
     def decode(self, x):
         return self.decoder(x)
 
-
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         x = self.encoder(x)
-
         x = self.decoder(x)
         return x
 
 
-    # def encode(self, x):
-    #     return self.encoder(x)
-    #
+
+
+
+
+
+
+
+
+class AutoEncoderKL(nn.Module):
+    dims: Sequence = (64, 128, 256)
+    num_blocks: int = 2
+    dtype: str = 'bfloat16'
+    latent: int = 3
+    block_type: str = 'res'
+
+    # use_attn:bool =False
+
+    def setup(self) -> None:
+        self.encoder = Encoder(self.dims, self.num_blocks, self.dtype, self.latent*2, block_type=self.block_type,
+                               name='Encoder_0')
+        reversed_dims = list(reversed(self.dims))
+        self.decoder=Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type,name='Decoder_0' )
+
+    def encode(self,x,z_rng):
+        x=self.encoder(x)
+
+        mean, variance = jnp.split(x, 2, 3)
+        self.sow('intermediate', 'mean', mean)
+        self.sow('intermediate', 'variance', variance)
+        z=self.reparameter(z_rng,mean,variance)
+        return z
+    def decode(self, x):
+        return self.decoder(x)
+    @nn.compact
+    def __call__(self, x,z_rng, *args, **kwargs):
+        z = self.encode(x,z_rng)
+        x = self.decoder(z)
+        return x
+
+    def reparameter(self,rng, mean, logvar):
+        std = jnp.exp(0.5 * logvar)
+        eps = jax.random.normal(rng, logvar.shape)
+        return mean + eps * std
+
 

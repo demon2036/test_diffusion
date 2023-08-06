@@ -11,12 +11,16 @@ import argparse
 
 from modules.state_utils import create_state
 from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
-    get_obj_from_str,EMATrainState
+    get_obj_from_str, EMATrainState
 import os
 import flax
 from tqdm import tqdm
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+
+
+def kl_divergence(mean, logvar):
+    return -0.5 * jnp.sum(1 + logvar - jnp.square(mean) - jnp.exp(logvar))
 
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
@@ -30,28 +34,33 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
 
 
 @partial(jax.pmap, axis_name='batch', static_broadcasted_argnums=(3,))  # static_broadcasted_argnums=(3),
-def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool):
+def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test: bool,z_rng):
     def loss_fn(params):
-        reconstruct = state.apply_fn({'params': params}, x)
+        reconstruct, intermediate = state.apply_fn({'params': params}, x,z_rng=z_rng, mutable=['intermediate'])
+
+        z_mean = intermediate['intermediate']['mean'][0]
+        z_variance = intermediate['intermediate']['variance'][0]
+        kl_loss =kl_divergence(z_mean,z_variance)
+
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + gan_loss * 0.1, (rec_loss, gan_loss)
+        return rec_loss + 0.1*gan_loss+1e-5*kl_loss, (rec_loss, gan_loss,kl_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (loss, (rec_loss, gan_loss)), grads = grad_fn(state.params)
+    (loss, (rec_loss, gan_loss,kl_loss)), grads = grad_fn(state.params)
     grads = jax.lax.pmean(grads, axis_name='batch')
 
     new_state = state.apply_gradients(grads=grads)
     rec_loss = jax.lax.pmean(rec_loss, axis_name='batch')
     gan_loss = jax.lax.pmean(gan_loss, axis_name='batch')
-    metric = {"rec_loss": rec_loss, 'gan_loss': gan_loss}
+    metric = {"rec_loss": rec_loss, 'gan_loss': gan_loss,'kl_loss':kl_loss}
     return new_state, metric
 
 
 @partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState):
+def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,z_rng):
     def loss_fn(params):
-        fake_image = state.apply_fn({'params': state.params}, x)
+        fake_image = state.apply_fn({'params': state.params}, x,z_rng=z_rng)
         real_image = x
 
         logit_real, mutable = discriminator_state.apply_fn(
@@ -72,9 +81,6 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState)
     disc_loss = jax.lax.pmean(disc_loss, axis_name='batch')
     metric = {'disc_loss': disc_loss}
     return new_disc_state, metric
-
-
-
 
 
 if __name__ == "__main__":
@@ -129,7 +135,7 @@ if __name__ == "__main__":
             batch = next(dl)
 
             batch = shard(batch)
-            state, metrics = train_step(state, batch, discriminator_state, disc_start)
+            state, metrics = train_step(state, batch, discriminator_state, disc_start,train_step_key)
             for k, v in metrics.items():
                 metrics.update({k: v[0]})
 
@@ -137,7 +143,7 @@ if __name__ == "__main__":
                 disc_start = True
 
             if steps > trainer_configs['disc_start']:
-                discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state)
+                discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state,train_step_key)
                 for k, v in metrics_disc.items():
                     metrics_disc.update({k: v[0]})
                 metrics.update(metrics_disc)

@@ -11,7 +11,7 @@ class NLayerDiscriminator(nn.Module):
     dtype: str = 'bfloat16'
 
     @nn.compact
-    def __call__(self, x, train: bool = True):
+    def __call__(self, x, train: bool = True,*args,**kwargs):
         norm_layer = nn.BatchNorm
         x = nn.Conv(self.ndf, (4, 4), strides=(2, 2), padding="SAME", dtype=self.dtype)(x)
         x = nn.leaky_relu(x, negative_slope=0.2)

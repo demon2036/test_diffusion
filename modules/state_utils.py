@@ -16,14 +16,15 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
     model = model_cls(**model_kwargs)
     inputs = list(map(lambda shape: jnp.empty(shape), input_shapes))
 
-    if print_model:
-        print(model.tabulate(rng, *inputs, depth=2, console_kwargs={'width': 200}))
 
-    variables = model.init(rng, *inputs)
+    if print_model:
+        print(model.tabulate(rng, *inputs,z_rng=rng, depth=2, console_kwargs={'width': 200}))
+
+    variables = model.init(rng, *inputs,z_rng=rng)
     optimizer = get_obj_from_str(optimizer_dict['optimizer'])
 
     tx = optax.chain(
-        optax.clip_by_global_norm(1),
+        #optax.clip_by_global_norm(1),
         optimizer(**optimizer_dict['optimizer_configs'])
     )
     return train_state.create(apply_fn=model.apply,
