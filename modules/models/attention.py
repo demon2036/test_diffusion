@@ -9,7 +9,6 @@ from einops import rearrange
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
-
 class MyAttention(nn.Module):
     dim: int
     dtype: str = 'bfloat16'
