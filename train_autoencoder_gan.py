@@ -44,7 +44,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
 
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + 0.1 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
+        return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss, kl_loss)), grads = grad_fn(state.params)
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     input_shapes = (input_shape,)
 
     state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
-                         optimizer_dict=model_optimizer,
+                         optimizer_dict=model_optimizer,batch_size=dataloader_configs['batch_size'],
                          train_state=EMATrainState, model_kwargs=model_configs)
 
     discriminator_state = create_state(rng=key, model_cls=disc_cls, input_shapes=input_shapes,
