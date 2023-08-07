@@ -110,7 +110,7 @@ if __name__ == "__main__":
                          train_state=EMATrainState, model_kwargs=model_configs)
 
     discriminator_state = create_state(rng=key, model_cls=disc_cls, input_shapes=input_shapes,
-                                       optimizer_dict=disc_optimizer,
+                                       optimizer_dict=disc_optimizer,batch_size=dataloader_configs['batch_size'],
                                        train_state=EMATrainState, model_kwargs=disc_configs)
 
     model_ckpt = {'model': state, 'discriminator': discriminator_state, 'steps': 0}
