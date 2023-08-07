@@ -6,6 +6,7 @@ import jax
 from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
 import jax.numpy as jnp
 
+
 class Encoder(nn.Module):
     dims: Sequence
     num_blocks: int = 2
@@ -23,7 +24,7 @@ class Encoder(nn.Module):
                                  block_type=self.block_type,
                                  dtype=self.dtype, )(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
-        x = nn.tanh(x)
+
         return x
 
 
@@ -60,27 +61,22 @@ class AutoEncoder(nn.Module):
         self.encoder = Encoder(self.dims, self.num_blocks, self.dtype, self.latent, block_type=self.block_type,
                                name='Encoder_0')
         reversed_dims = list(reversed(self.dims))
-        self.decoder=Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type,name='Decoder_0' )
+        self.decoder = Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type, name='Decoder_0')
 
-    def encode(self,x):
-        return self.encoder(x)
+    def encode(self, x):
+        x = self.encoder(x)
+        x = nn.tanh(x)
+
+        return x
 
     def decode(self, x):
         return self.decoder(x)
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = self.encoder(x)
+        x = self.encode(x)
         x = self.decoder(x)
         return x
-
-
-
-
-
-
-
-
 
 
 class AutoEncoderKL(nn.Module):
@@ -93,31 +89,31 @@ class AutoEncoderKL(nn.Module):
     # use_attn:bool =False
 
     def setup(self) -> None:
-        self.encoder = Encoder(self.dims, self.num_blocks, self.dtype, self.latent*2, block_type=self.block_type,
+        self.encoder = Encoder(self.dims, self.num_blocks, self.dtype, self.latent * 2, block_type=self.block_type,
                                name='Encoder_0')
         reversed_dims = list(reversed(self.dims))
-        self.decoder=Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type,name='Decoder_0' )
+        self.decoder = Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type, name='Decoder_0')
 
-    def encode(self,x,z_rng):
-        x=self.encoder(x)
+    def encode(self, x, z_rng):
+        x = self.encoder(x)
         mean, variance = jnp.split(x, 2, 3)
-        mean=mean.clip(-3,3)
-        variance=variance.clip(-3,3)
+        mean = mean.clip(-3, 3)
+        variance = variance.clip(-3, 3)
         self.sow('intermediate', 'mean', mean)
         self.sow('intermediate', 'variance', variance)
-        z=self.reparameter(z_rng,mean,variance)
+        z = self.reparameter(z_rng, mean, variance)
         return z
+
     def decode(self, x):
         return self.decoder(x)
+
     @nn.compact
-    def __call__(self, x,z_rng, *args, **kwargs):
-        z = self.encode(x,z_rng)
+    def __call__(self, x, z_rng, *args, **kwargs):
+        z = self.encode(x, z_rng)
         x = self.decoder(z)
         return x
 
-    def reparameter(self,rng, mean, logvar):
+    def reparameter(self, rng, mean, logvar):
         std = jnp.exp(0.5 * logvar)
         eps = jax.random.normal(rng, logvar.shape)
         return mean + eps * std
-
-
