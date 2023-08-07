@@ -32,7 +32,7 @@
       #out_channels: 3,
       dtype: 'bfloat16',
       #patch_size: 1
-      #self_condition: True
+      self_condition: True
     }
   },
   "Gaussian": {
@@ -41,9 +41,9 @@
     sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
-    #min_snr_loss_weight: True,
+    min_snr_loss_weight: True,
     #cale_shift: True,
-    #self_condition: True,
+    self_condition: True,
   },
   "FirstStage":{
     "AutoEncoder": {
