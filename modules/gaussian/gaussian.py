@@ -51,6 +51,7 @@ class Gaussian:
             noise_type='normal'
 
     ):
+        self.train_state=True
         self.noise_type = noise_type
         self.scale = 1
         self.state = None
@@ -74,11 +75,10 @@ class Gaussian:
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
             alphas = 1 - 1 / (1 + (scale) ** 2 * snr)
-            betas = 1-alphas
+            betas = 1 - alphas
 
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
-
 
         self.num_timesteps = int(timesteps)
 
@@ -121,6 +121,11 @@ class Gaussian:
             self.loss_weight = maybe_clipped_snr
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
+
+        p2_loss_weight_gamma = 1
+        p2_loss_weight_k = 1
+        p2_loss_weight = (p2_loss_weight_k + alphas_cumprod / (1 - alphas_cumprod)) ** -p2_loss_weight_gamma
+        self.loss_weight = p2_loss_weight
 
         self.pmap_q_sample = jax.pmap(self.q_sample)
         self.pmap_model_predictions = jax.pmap(self.model_predictions)
@@ -165,7 +170,10 @@ class Gaussian:
 
     def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
         # model_output = model_predict(state, x, t, x_self_cond)
-        model_output = model_predict_ema(state, x, t, x_self_cond)
+        if self.train_state:
+            model_output = model_predict(state, x, t, x_self_cond)
+        else:
+            model_output = model_predict_ema(state, x, t, x_self_cond)
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -305,16 +313,16 @@ class Gaussian:
 
         return img
 
-    def sample(self, key, state, self_condition=None,batch_size=64):
-        if self_condition is not  None:
+    def sample(self, key, state, self_condition=None, batch_size=64):
+        if self_condition is not None:
             batch_size = self_condition.shape[0]
 
         # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
         if self.num_timesteps > self.sampling_timesteps:
-            return self.ddim_sample(key, state,self_condition,(batch_size, self.image_size, self.image_size, 3))
+            return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
         else:
-            return self.p_sample_loop(key, state,self_condition,(batch_size, self.image_size, self.image_size, 3))
+            return self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
     def q_sample(self, x_start, t, noise):
         return (
@@ -330,7 +338,7 @@ class Gaussian:
         x = self.q_sample(x_start, t, noise)
 
         def estimate(_):
-            return jax.lax.stop_gradient(self.model_predictions(None, x, t, state=state)).pred_x_start
+            return jax.lax.stop_gradient(self.model_predictions( x, t, state=state)).pred_x_start
 
         zeros = jnp.zeros_like(x)
         x_self_cond = None
@@ -361,3 +369,10 @@ class Gaussian:
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
         return self.p_loss(key_noise, state, params, img, t)
+
+
+    def train(self):
+        self.train_state=True
+
+    def eval(self):
+        self.train_state=False

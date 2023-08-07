@@ -14,13 +14,13 @@ def save_image(x,count,save_path='/home/john/data/test'):
         x=np.clip(x,0,255).astype('uint8')
         # print(x.shape)
         img=Image.fromarray(x)
-        img.save(f'{save_path}/{count}.png')
+        img.save(f'{save_path}/{count}.jpg')
     except Exception as e:
         print(e)
 
 
 if __name__=='__main__':
-    dl = get_dataloader(batch_size=32, file_path='/home/john/data/FFHQ', image_size=256, drop_last=False)
+    dl = get_dataloader(batch_size=128, file_path='/home/john/data/FFHQ', image_size=256, drop_last=False)
     save_path='/home/john/data/FFHQ256'
     os.makedirs(save_path,exist_ok=True)
     count = 0
@@ -28,6 +28,6 @@ if __name__=='__main__':
         for data in tqdm(dl):
             for x in data:
                 pool.submit(save_image,x,count,save_path)
-            count += 1
+                count += 1
 
 

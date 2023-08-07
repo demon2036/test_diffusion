@@ -131,7 +131,9 @@ def decode(state: EMATrainState, x):
 def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,
                                        ae_state: EMATrainState):
     os.makedirs(save_path, exist_ok=True)
+    c.eval()
     sample = c.sample(key, state, )
+    c.train()
     latent = shard(sample)
     sample = decode(ae_state, latent)
     sample = sample / 2 + 0.5

@@ -2,7 +2,7 @@
   "train": {
     dataloader_configs: {
       image_size: 32,
-      batch_size: 16,
+      batch_size: 32,
       file_path: '/home/john/data/latent',
       data_type: 'np'
     },
@@ -16,7 +16,7 @@
 
   },
   "Unet": {
-    target: modules.models.test_unet.Unet,
+    target: modules.models.unet.Unet,
     optimizer: {
       optimizer: optax.adamw,
       optimizer_configs: {
@@ -27,11 +27,11 @@
       dim : 64,
       #num_res_blocks : [2,2,2,2],
       #dim_mults: [1,2,3,4],
-      out_dim: 3,
+      out_channels: 3,
       #out_channels: 3,
       dtype: 'bfloat16',
       #patch_size: 1
-      #self_condition: True
+      self_condition: True
     }
   },
   "Gaussian": {
@@ -40,6 +40,7 @@
     sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
+    self_condition: True
     #min_snr_loss_weight: True,
     #cale_shift: True,
     #self_condition: True,

@@ -68,6 +68,7 @@ class Unet(nn.Module):
             x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
             x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
 
+        print(x_self_cond)
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
         elif self.self_condition:
@@ -102,7 +103,6 @@ class Unet(nn.Module):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
                 x = res_block(dim, dtype=self.dtype)(x, t)
-                x=Attention(dim=self.dim,dtype=self.dtype)(x)+x
                 h.append(x)
 
             if i != len(self.dim_mults) - 1:
@@ -116,7 +116,6 @@ class Unet(nn.Module):
         #     print(m.shape)
 
         x = res_block(dim, dtype=self.dtype)(x, t)
-        x = Attention(dim=self.dim, dtype=self.dtype)(x) + x
         # x = self.mid_attn(x) + x
         #x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
         x = res_block(dim, dtype=self.dtype)(x, t)
@@ -129,7 +128,6 @@ class Unet(nn.Module):
             for _ in range(num_res_block+1):
                 x = jnp.concatenate([x, h.pop()], axis=3)
                 x = res_block(dim, dtype=self.dtype)(x, t)
-                x = Attention(dim=self.dim, dtype=self.dtype)(x) + x
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(dim, dtype=self.dtype)(x)
