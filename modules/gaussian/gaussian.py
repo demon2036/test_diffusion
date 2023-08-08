@@ -113,7 +113,7 @@ class Gaussian:
 
         maybe_clipped_snr = snr.clone()
         if min_snr_loss_weight:
-            maybe_clipped_snr = jnp.clip(maybe_clipped_snr, a_min=5)
+            maybe_clipped_snr = jnp.clip(maybe_clipped_snr, a_max=5)
 
         if objective == 'predict_noise':
             self.loss_weight = maybe_clipped_snr / snr
