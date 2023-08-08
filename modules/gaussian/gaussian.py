@@ -125,7 +125,7 @@ class Gaussian:
         p2_loss_weight_gamma = 1
         p2_loss_weight_k = 1
         p2_loss_weight = (p2_loss_weight_k + alphas_cumprod / (1 - alphas_cumprod)) ** -p2_loss_weight_gamma
-        #self.loss_weight = p2_loss_weight
+        self.loss_weight = p2_loss_weight
 
         self.pmap_q_sample = jax.pmap(self.q_sample)
         self.pmap_model_predictions = jax.pmap(self.model_predictions)
