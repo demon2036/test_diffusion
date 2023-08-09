@@ -20,7 +20,7 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 def kl_divergence(mean, logvar):
-    return 0.5 * jnp.sum(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
+    return 0.5 * jnp.mean(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
 
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
