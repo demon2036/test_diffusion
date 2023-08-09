@@ -30,7 +30,7 @@
       #out_channels: 3,
       dtype: 'bfloat16',
       #patch_size: 1
-      self_condition: True
+      #self_condition: True
     }
   },
   "Gaussian": {
