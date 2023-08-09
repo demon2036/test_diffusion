@@ -360,7 +360,7 @@ class Unet(nn.Module):
         default_out_dim = C * (1 if not self.learned_variance else 2)
         out_dim = default_out_dim if self.out_dim is None else self.out_dim
 
-        return (nn.Conv(out_dim, kernel_size=(1, 1), dtype=self.dtype, name='final.conv_0')(out))
+        return (nn.Conv(out_dim, kernel_size=(1, 1), dtype='float32', name='final.conv_0')(out))
 
 
 
