@@ -52,10 +52,10 @@ class MyDataSet(Dataset):
     def _preprocess(self, data_path):
         if self.data_type == 'img':
             img = Image.open(data_path)
-            img = np.array(img) / 255.0
-            img = 2 * img - 1
             img = A.smallest_max_size(img, self.image_size, interpolation=cv2.INTER_AREA)
             img = A.center_crop(img, self.image_size, self.image_size)
+            img = np.array(img) / 255.0
+            img = 2 * img - 1
             return img
         elif self.data_type == 'np':
 
@@ -63,7 +63,6 @@ class MyDataSet(Dataset):
             latent=np.load(data_path)
             try:
                 latent = np.array(latent,dtype=np.float32)
-                #print(latent.shape)
             except Exception as e:
                 print(latent.shape,type(latent),data_path)
             return latent

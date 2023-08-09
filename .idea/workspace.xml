@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/AutoEncoder/ae-8-gan-kl.yaml" afterDir="false" />
+    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug of min snr">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/AutoEncoder/test_gan.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/AutoEncoder/test_gan.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/state_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/state_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder_gan.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_autoencoder_gan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm/ldm-test-64.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm/ldm-test-64.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +39,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/AutoEncoder&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/john/denoising-diffusion-flax&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -188,62 +186,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00001" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690969768131</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1690969768131</updated>
-    </task>
-    <task id="LOCAL-00002" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690970489794</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1690970489794</updated>
-    </task>
-    <task id="LOCAL-00003" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690970570669</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1690970570669</updated>
-    </task>
-    <task id="LOCAL-00004" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690977727357</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1690977727357</updated>
-    </task>
-    <task id="LOCAL-00005" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690999344194</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1690999344194</updated>
-    </task>
-    <task id="LOCAL-00006" summary="commit">
-      <option name="closed" value="true" />
-      <created>1690999584829</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1690999584829</updated>
-    </task>
-    <task id="LOCAL-00007" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691073087147</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1691073087147</updated>
     </task>
     <task id="LOCAL-00008" summary="commit">
       <option name="closed" value="true" />
@@ -565,7 +507,79 @@
       <option name="project" value="LOCAL" />
       <updated>1691414527104</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691422028074</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1691422028074</updated>
+    </task>
+    <task id="LOCAL-00049" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691422526293</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1691422526293</updated>
+    </task>
+    <task id="LOCAL-00050" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691425398868</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1691425398868</updated>
+    </task>
+    <task id="LOCAL-00051" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691425716805</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1691425716805</updated>
+    </task>
+    <task id="LOCAL-00052" summary="fix bug of min snr">
+      <option name="closed" value="true" />
+      <created>1691438843783</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1691438843783</updated>
+    </task>
+    <task id="LOCAL-00053" summary="fix bug of min snr">
+      <option name="closed" value="true" />
+      <created>1691439125683</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1691439125683</updated>
+    </task>
+    <task id="LOCAL-00054" summary="fix bug of min snr">
+      <option name="closed" value="true" />
+      <created>1691483914520</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1691483914521</updated>
+    </task>
+    <task id="LOCAL-00055" summary="fix bug of min snr">
+      <option name="closed" value="true" />
+      <created>1691501396843</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1691501396843</updated>
+    </task>
+    <task id="LOCAL-00056" summary="fix bug of min snr">
+      <option name="closed" value="true" />
+      <created>1691501403976</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1691501403976</updated>
+    </task>
+    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -581,6 +595,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit" />
+    <MESSAGE value="fix bug of min snr" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix bug of min snr" />
   </component>
 </project>

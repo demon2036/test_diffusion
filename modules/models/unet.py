@@ -6,6 +6,8 @@ import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
 
+import optax
+
 from modules.models.attention import Attention
 from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder
