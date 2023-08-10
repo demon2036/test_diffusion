@@ -38,3 +38,27 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
                               ema_params=variables['params'])
+
+
+
+def copy_params_to_ema(state):
+   state = state.replace(ema_params = state.params)
+   return state
+
+def apply_ema_decay(state, ema_decay):
+    params_ema = jax.tree_map(lambda p_ema, p: p_ema * ema_decay + p * (1. - ema_decay), state.ema_params, state.params)
+    state = state.replace(ema_params = params_ema)
+    return state
+
+def ema_decay_schedule(step):
+    beta = 0.995
+    update_every = 10
+    update_after_step = 100
+    inv_gamma = 1.0
+    power = 2 / 3
+    min_value = 0.0
+
+    count = jnp.clip(step - update_after_step - 1, a_min=0.)
+    value = 1 - (1 + count / inv_gamma) ** - power
+    ema_rate = jnp.clip(value, a_min=min_value, a_max=beta)
+    return ema_rate

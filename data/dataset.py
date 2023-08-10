@@ -37,7 +37,7 @@ class MyDataSet(Dataset):
         self.cache = cache
         self.data = []
         self.count = 0
-        self.img_names = os.listdir(self.path)[:2000]
+        self.img_names = os.listdir(self.path)[:1080]
         self.data_type = data_type
 
         if self.cache:
@@ -82,7 +82,7 @@ class MyDataSet(Dataset):
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64, cache=False,
               data_type='img'):
-    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type)
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type,repeat=100)
     while True:
         for data in d:
             yield torch_to_jax(data)

@@ -1,8 +1,10 @@
 import argparse
+
+from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
-from modules.state_utils import create_state
+from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
     sample_save_image_diffusion, get_obj_from_str
 import flax
@@ -71,6 +73,9 @@ def train():
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
+    p_copy_params_to_ema=jax.pmap(copy_params_to_ema)
+    p_apply_ema=jax.pmap(apply_ema_decay)
+
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
@@ -88,10 +93,19 @@ def train():
 
             # if steps > 100 and steps % 1 == 0:
             #     state = update_ema(state, 0.9999)
-            if steps > 0 and steps % 1 == 0:
-                decay = min(0.9999, (1 + steps) / (10 + steps))
-                decay = flax.jax_utils.replicate(jnp.array([decay]))
-                state = update_ema(state, decay)
+            if steps <= 100:
+                state = p_copy_params_to_ema(state)
+            elif steps % 10 == 0:
+                ema_decay = ema_decay_schedule(steps)
+
+                state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
+
+
+
+            # if steps > 0 and steps % 1 == 0:
+            #     decay = min(0.9999, (1 + steps) / (10 + steps))
+            #     decay = flax.jax_utils.replicate(jnp.array([decay]))
+            #     state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
