@@ -17,9 +17,11 @@
   "Unet": {
     target: modules.models.test_unet.Unet,
     optimizer: {
-      optimizer: optax.adamw,
+      optimizer: optax.adam,
       optimizer_configs: {
-        learning_rate: 1.0e-4
+        learning_rate: 2.0e-4,
+        b1: 0.9,
+        b2: 0.99
       }
     },
     params:{
@@ -36,7 +38,7 @@
   "Gaussian": {
     loss: 'l1',
     timesteps: 1000,
-    sampling_timesteps: 200,
+    sampling_timesteps: 1000,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
     #min_snr_loss_weight: True,

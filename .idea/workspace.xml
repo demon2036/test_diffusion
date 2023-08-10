@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussian.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -185,14 +182,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00024" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691170377825</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1691170377825</updated>
     </task>
     <task id="LOCAL-00025" summary="commit">
       <option name="closed" value="true" />
@@ -578,7 +567,15 @@
       <option name="project" value="LOCAL" />
       <updated>1691686238177</updated>
     </task>
-    <option name="localTasksCounter" value="73" />
+    <task id="LOCAL-00073" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691690180377</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1691690180377</updated>
+    </task>
+    <option name="localTasksCounter" value="74" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

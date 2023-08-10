@@ -17,7 +17,7 @@
   "Unet": {
     target: modules.models.test_unet.Unet,
     optimizer: {
-      optimizer: optax.adamw,
+      optimizer: optax.adam,
       optimizer_configs: {
         learning_rate: 2.0e-4,
         b1: 0.9,
