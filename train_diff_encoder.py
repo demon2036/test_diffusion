@@ -22,17 +22,49 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
     def loss_fn(params):
-        loss = cls(train_key, state, params, batch)
-        return loss
+        p_loss,kl_loss = cls(train_key, state, params, batch)
+        return p_loss+kl_loss*1e-6,(p_loss,kl_loss)
 
-    grad_fn = jax.value_and_grad(loss_fn)
-    loss, grads = grad_fn(state.params)
+    grad_fn = jax.value_and_grad(loss_fn,has_aux=True)
+    (loss,(p_loss,kl_loss)), grads = grad_fn(state.params)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
     loss = jax.lax.pmean(loss, axis_name='batch')
-    metric = {"loss": loss}
+    metric = {"p_loss": loss,'kl_loss':kl_loss}
     return new_state, metric
+
+
+
+
+def copy_params_to_ema(state):
+   state = state.replace(ema_params = state.params)
+   return state
+
+def apply_ema_decay(state, ema_decay):
+    params_ema = jax.tree_map(lambda p_ema, p: p_ema * ema_decay + p * (1. - ema_decay), state.ema_params, state.params)
+    state = state.replace(ema_params = params_ema)
+    return state
+
+def ema_decay_schedule(step):
+    beta = 0.995
+    update_every = 10
+    update_after_step = 100
+    inv_gamma = 1.0
+    power = 2 / 3
+    min_value = 0.0
+
+    count = jnp.clip(step - update_after_step - 1, a_min=0.)
+    value = 1 - (1 + count / inv_gamma) ** - power
+    ema_rate = jnp.clip(value, a_min=min_value, a_max=beta)
+    return ema_rate
+
+
+
+
+
+
+
 
 
 def train():
@@ -70,6 +102,9 @@ def train():
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
+    p_copy_params_to_ema=jax.pmap(copy_params_to_ema)
+    p_apply_ema=jax.pmap(apply_ema_decay)
+
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
@@ -85,8 +120,16 @@ def train():
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps > 100 and steps % 10 == 0:
-                state = update_ema(state, 0.995)
+            if steps <= 100:
+                state = p_copy_params_to_ema(state)
+            elif steps % 10 == 0:
+                ema_decay = ema_decay_schedule(steps)
+
+                state = p_apply_ema(state, shard(jnp.array([ema_decay])))
+
+
+            # if steps > 100 and steps % 10 == 0:
+            #     state = update_ema(state, 0.995)
 
             if steps % trainer_configs['sample_steps'] == 0:
                 batch=flax.jax_utils.unreplicate(batch)

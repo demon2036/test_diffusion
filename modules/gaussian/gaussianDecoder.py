@@ -65,8 +65,8 @@ class GaussianDecoder(Gaussian):
 
         x = self.q_sample(x_start, t, noise)
         model_output,intermediate = state.apply_fn({"params": params}, x, t, x_start,z_rng=z_rng, mutable=['intermediate'])
-        z_mean = intermediate['intermediate']['mean'][0]
-        z_variance = intermediate['intermediate']['variance'][0]
+        z_mean = intermediate['intermediate']['AutoEncoderKL_0']['mean'][0]
+        z_variance = intermediate['intermediate']['AutoEncoderKL_0']['variance'][0]
         kl_loss = kl_divergence(z_mean, z_variance).mean()
 
 
@@ -83,7 +83,7 @@ class GaussianDecoder(Gaussian):
         p_loss = self.loss(target, model_output)
 
         p_loss = (p_loss * extract(self.loss_weight, t, p_loss.shape)).mean()
-        return p_loss+kl_loss*1e-6
+        return p_loss,kl_loss
 
     def __call__(self, key, state, params, img):
         key_times, key_noise = jax.random.split(key, 2)
