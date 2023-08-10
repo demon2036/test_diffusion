@@ -1,4 +1,6 @@
 import argparse
+
+from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
@@ -125,7 +127,7 @@ def train():
             elif steps % 10 == 0:
                 ema_decay = ema_decay_schedule(steps)
 
-                state = p_apply_ema(state, shard(jnp.array([ema_decay])))
+                state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
 
 
             # if steps > 100 and steps % 10 == 0:
