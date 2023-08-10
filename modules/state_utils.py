@@ -50,7 +50,7 @@ def apply_ema_decay(state, ema_decay):
     state = state.replace(ema_params = params_ema)
     return state
 
-def bema_decay_schedule(step):
+def ema_decay_schedule(step):
     beta = 0.995
     update_every = 10
     update_after_step = 100
