@@ -95,9 +95,9 @@ def sample_save_image_autoencoder(state, save_path, steps, data,z_rng):
 
 def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: EMATrainState, save_path, batch):
     os.makedirs(save_path, exist_ok=True)
-    c.set_state(state)
+    c.eval()
     sample = c.sample(key, state, batch)
-    c.state = None
+    c.train()
     sample = jnp.concatenate([sample, batch], axis=0)
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, '(n b) h w c->(b n) c h w', n=2)
@@ -108,7 +108,9 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
 
 def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path):
     os.makedirs(save_path, exist_ok=True)
+    c.eval()
     sample = c.sample(key, state, )
+    c.train()
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'b h w c->b c h w')
     sample = np.array(sample)
