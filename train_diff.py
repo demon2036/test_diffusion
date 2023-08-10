@@ -40,7 +40,7 @@ def train_step(state, batch, train_key, cls):
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='configs/Diffusion/test_diff.yaml')
+    parser.add_argument('-cp', '--config_path', default='configs/training/Diffusion/test.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -54,7 +54,7 @@ def train():
     dataloader_configs, trainer_configs = train_config.values()
 
     input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
-    input_shapes = (input_shape, input_shape[0])
+    input_shapes = (input_shape, input_shape[0],input_shape)
 
     c = Gaussian(**gaussian_config, image_size=dataloader_configs['image_size'])
 
@@ -97,7 +97,6 @@ def train():
                 state = p_copy_params_to_ema(state)
             elif steps % 10 == 0:
                 ema_decay = ema_decay_schedule(steps)
-
                 state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
 
 
@@ -108,6 +107,7 @@ def train():
             #     state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
+                sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 try:
                     sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 except Exception as e:

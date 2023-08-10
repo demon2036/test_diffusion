@@ -108,10 +108,8 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
 
 def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path):
     os.makedirs(save_path, exist_ok=True)
-    c.set_state(state)
     sample = c.sample(key, state, )
     sample = sample / 2 + 0.5
-    c.state = None
     sample = einops.rearrange(sample, 'b h w c->b c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)

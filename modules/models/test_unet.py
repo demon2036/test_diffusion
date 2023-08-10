@@ -279,9 +279,15 @@ class Unet(nn.Module):
     dtype: Any = jnp.float32
 
     @nn.compact
-    def __call__(self, x, time,*args,**kwargs):
+    def __call__(self, x, time,x_cond=None,*args,**kwargs):
+
+        if x_cond is not None:
+            x=jnp.concatenate([x,x_cond],axis=3)
+
         B, H, W, C = x.shape
 
+
+        print(f'shape:{x.shape}')
         init_dim = self.dim if self.init_dim is None else self.init_dim
         hs = []
         h = nn.Conv(

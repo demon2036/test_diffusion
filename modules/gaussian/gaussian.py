@@ -242,7 +242,7 @@ class Gaussian:
             x_self_cond = shard(x_self_cond)
             has_condition = True
 
-        x_start = None
+        x_start = jnp.zeros_like(img)
         for t in tqdm(reversed(range(0, self.num_timesteps)), total=self.num_timesteps):
             key, normal_key = jax.random.split(key, 2)
             normal_key = shard_prng_key(normal_key)
@@ -256,8 +256,9 @@ class Gaussian:
             else:
                 x_self_cond = None
 
-            img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond)
+            img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond,state)
 
+        img=einops.rearrange(img,'n b h w c->(n b) h w c')
         ret = img
 
         return ret
@@ -338,7 +339,7 @@ class Gaussian:
         x = self.q_sample(x_start, t, noise)
 
         def estimate(_):
-            return jax.lax.stop_gradient(self.model_predictions( x, t, state=state)).pred_x_start
+            return jax.lax.stop_gradient(self.model_predictions( x, t, state=state,x_self_cond=jnp.zeros_like(x))).pred_x_start
 
         zeros = jnp.zeros_like(x)
         x_self_cond = None
