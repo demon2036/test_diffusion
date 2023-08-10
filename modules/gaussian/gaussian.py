@@ -279,7 +279,7 @@ class Gaussian:
             x_self_cond = shard(x_self_cond)
             has_condition = True
 
-        x_start = None
+        x_start = jnp.zeros_like(img)
         for time, time_next in tqdm(zip(times[:-1], times[1:]), total=self.sampling_timesteps):
             batch_times = jnp.full((b,), time)
 

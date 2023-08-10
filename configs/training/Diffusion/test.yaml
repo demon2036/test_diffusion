@@ -38,7 +38,7 @@
   "Gaussian": {
     loss: 'l1',
     timesteps: 1000,
-    sampling_timesteps: 1000,
+    sampling_timesteps: 200,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
     #min_snr_loss_weight: True,

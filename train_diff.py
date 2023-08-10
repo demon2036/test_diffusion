@@ -107,7 +107,7 @@ def train():
             #     state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
-                sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
+                #sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 try:
                     sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 except Exception as e:
