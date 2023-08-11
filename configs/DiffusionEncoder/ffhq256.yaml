@@ -19,7 +19,9 @@
     optimizer: {
       optimizer: optax.adamw,
       optimizer_configs: {
-        learning_rate: 1.0e-4
+        learning_rate: 2.0e-4,
+        b1: 0.9,
+        b2: 0.99
       }
     },
     params: {
@@ -35,11 +37,11 @@
     }
   },
   "Gaussian": {
-    loss: 'l2',
+    loss: 'l1',
     timesteps: 1000,
     sampling_timesteps: 200,
-    objective: 'predict_noise',
-    beta_schedule: 'cosine',
+    objective: 'predict_x0',
+    beta_schedule: 'sigmoid',
     #min_snr_loss_weight: True,
     scale_shift: True,
     self_condition: True,
