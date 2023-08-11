@@ -63,10 +63,9 @@ class AutoEncoder(nn.Module):
         reversed_dims = list(reversed(self.dims))
         self.decoder = Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type, name='Decoder_0')
 
-    def encode(self, x):
+    def encode(self, x,*args,**kwargs):
         x = self.encoder(x)
         x = nn.tanh(x)
-
         return x
 
     def decode(self, x):

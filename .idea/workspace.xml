@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussianDecoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussianDecoder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/autoencoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/autoencoder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,54 +185,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00029" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691173226953</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1691173226953</updated>
-    </task>
-    <task id="LOCAL-00030" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691173461980</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1691173461980</updated>
-    </task>
-    <task id="LOCAL-00031" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691239826956</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1691239826956</updated>
-    </task>
-    <task id="LOCAL-00032" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691240050485</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1691240050485</updated>
-    </task>
-    <task id="LOCAL-00033" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691245929837</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1691245929837</updated>
-    </task>
-    <task id="LOCAL-00034" summary="commit">
-      <option name="closed" value="true" />
-      <created>1691246988965</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1691246988965</updated>
     </task>
     <task id="LOCAL-00035" summary="commit">
       <option name="closed" value="true" />
@@ -575,7 +530,55 @@
       <option name="project" value="LOCAL" />
       <updated>1691711344875</updated>
     </task>
-    <option name="localTasksCounter" value="78" />
+    <task id="LOCAL-00078" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691772125193</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1691772125193</updated>
+    </task>
+    <task id="LOCAL-00079" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691772768902</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1691772768902</updated>
+    </task>
+    <task id="LOCAL-00080" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691773997182</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1691773997182</updated>
+    </task>
+    <task id="LOCAL-00081" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691776241650</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1691776241650</updated>
+    </task>
+    <task id="LOCAL-00082" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691776386182</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1691776386182</updated>
+    </task>
+    <task id="LOCAL-00083" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691777137161</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1691777137161</updated>
+    </task>
+    <option name="localTasksCounter" value="84" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
