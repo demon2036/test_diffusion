@@ -63,7 +63,7 @@ class GaussianDecoder(Gaussian):
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         x = self.q_sample(x_start, t, noise)
-        model_output = x
+        model_output = state.apply_fn({"params": params}, x, t, x_start,)
         # model_output,intermediate = state.apply_fn({"params": params}, x, t, x_start,z_rng=z_rng, mutable=['intermediate'])
         # z_mean = intermediate['intermediate']['AutoEncoderKL_0']['mean'][0]
         # z_variance = intermediate['intermediate']['AutoEncoderKL_0']['variance'][0]
