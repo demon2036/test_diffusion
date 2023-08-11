@@ -1,0 +1,51 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 128,
+      batch_size: 64,
+      file_path: '/root/data/celeba-128/celeba-128'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+
+  },
+  "Unet": {
+    target: modules.models.test_unet.Unet,
+    optimizer: {
+      optimizer: optax.adamw,
+      optimizer_configs: {
+        learning_rate: 2.0e-4,
+        b1: 0.9,
+        b2: 0.99
+      }
+    },
+    params:{
+      dim: 128,
+      #num_res_blocks : [2,2,2,2],
+      dim_mults: [1,2,4,8],
+      out_dim: 3,
+      #out_channels: 3,
+      dtype: 'bfloat16',
+      #patch_size: 1
+      #self_condition: True
+    }
+  },
+  "Gaussian": {
+    loss: 'l1',
+    timesteps: 1000,
+    sampling_timesteps: 1000,
+    objective: 'predict_noise',
+    beta_schedule: 'cosine',
+    #min_snr_loss_weight: True,
+    #scale_shift: True,
+    noise_type: 'normal',
+    self_condition: True,
+
+  }
+
+}
