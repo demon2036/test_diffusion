@@ -57,7 +57,7 @@
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train_diff">
+  <component name="RunManager" selected="Python.train_diff_encoder">
     <configuration name="resize_dataset" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -168,8 +168,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_diff" />
         <item itemvalue="Python.train_diff_encoder" />
+        <item itemvalue="Python.train_diff" />
         <item itemvalue="Python.train_autoencoder_gan" />
         <item itemvalue="Python.train_ldm" />
         <item itemvalue="Python.resize_dataset" />

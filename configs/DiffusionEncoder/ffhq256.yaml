@@ -8,7 +8,7 @@
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 10000,
+      sample_steps: 100,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
     },
@@ -43,7 +43,7 @@
     objective: 'predict_x0',
     beta_schedule: 'sigmoid',
     #min_snr_loss_weight: True,
-    scale_shift: True,
+    #scale_shift: True,
     self_condition: True,
 
   }

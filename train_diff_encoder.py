@@ -106,7 +106,6 @@ def train():
                 state = p_copy_params_to_ema(state)
             elif steps % 10 == 0:
                 ema_decay = ema_decay_schedule(steps)
-
                 state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
 
 
