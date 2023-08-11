@@ -48,13 +48,13 @@ class Gaussian:
             min_snr_loss_weight=False,
             scale_shift=False,
             self_condition=False,
-            noise_type='normal'
+            noise_type='normal',
+            scale_factor=1,
 
     ):
-        self.train_state=True
+        self.train_state = True
         self.noise_type = noise_type
-        self.scale = 1
-        self.state = None
+        self.scale_factor = scale_factor
         self.model = None
         self.image_size = image_size
         self.self_condition = self_condition
@@ -256,9 +256,9 @@ class Gaussian:
             else:
                 x_self_cond = None
 
-            img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond,state)
+            img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond, state)
 
-        img=einops.rearrange(img,'n b h w c->(n b) h w c')
+        img = einops.rearrange(img, 'n b h w c->(n b) h w c')
         ret = img
 
         return ret
@@ -321,9 +321,11 @@ class Gaussian:
         # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
         if self.num_timesteps > self.sampling_timesteps:
-            return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+            samples = self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
         else:
-            return self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+            samples = self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+
+        return samples / self.scale_factor
 
     def q_sample(self, x_start, t, noise):
         return (
@@ -335,11 +337,13 @@ class Gaussian:
         key, cond_key = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
 
+        x_start=x_start*self.scale_factor
         # noise sample
         x = self.q_sample(x_start, t, noise)
 
         def estimate(_):
-            return jax.lax.stop_gradient(self.model_predictions( x, t, state=state,x_self_cond=jnp.zeros_like(x))).pred_x_start
+            return jax.lax.stop_gradient(
+                self.model_predictions(x, t, state=state, x_self_cond=jnp.zeros_like(x))).pred_x_start
 
         zeros = jnp.zeros_like(x)
         x_self_cond = None
@@ -371,9 +375,8 @@ class Gaussian:
 
         return self.p_loss(key_noise, state, params, img, t)
 
-
     def train(self):
-        self.train_state=True
+        self.train_state = True
 
     def eval(self):
-        self.train_state=False
+        self.train_state = False
