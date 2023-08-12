@@ -1,3 +1,9 @@
+import os
+import sys
+curpath=os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(curpath)
+
+
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 
@@ -8,7 +14,7 @@ from modules.state_utils import create_state
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
     sample_save_image_diffusion, get_obj_from_str
 import flax
-import os
+
 from functools import partial
 from flax.training import orbax_utils
 from flax.training.common_utils import shard, shard_prng_key
@@ -21,6 +27,12 @@ from tools.resize_dataset import save_image
 initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+
+
+
+
+print(curpath)
+
 
 
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
@@ -40,6 +52,7 @@ def train_step(state, batch, train_key, cls):
 
 
 def train():
+    os.makedirs('./data',exist_ok=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='../configs/Sample/Diffusion/test_diff.yaml')
     args = parser.parse_args()
@@ -72,15 +85,17 @@ def train():
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
     count = 0
+    batch_size=4096
     with ThreadPoolExecutor() as pool:
-        with tqdm(total=30000//dataloader_configs['batch_size']) as pbar2:
-            key, train_step_key = jax.random.split(key, num=2)
-            sample=c.sample(key,state,None,batch_size=128)
-            for x in sample:
-                pool.submit(save_image, x, count, './data')
-                count += 1
+        with tqdm(total=30000//batch_size) as pbar2:
+            for _ in range(30000//batch_size):
+                key, train_step_key = jax.random.split(key, num=2)
+                sample=c.sample(key,state,None,batch_size=batch_size)
+                for x in sample:
+                    pool.submit(save_image, x, count, './data')
+                    count += 1
 
-            pbar2.update(1)
+                pbar2.update(1)
 
 
 if __name__ == "__main__":

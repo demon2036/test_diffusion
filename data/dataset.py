@@ -58,8 +58,6 @@ class MyDataSet(Dataset):
             img = 2 * img - 1
             return img
         elif self.data_type == 'np':
-
-            #with open(data_path,'r') as f:
             latent=np.load(data_path)
             try:
                 latent = np.array(latent,dtype=np.float32)
