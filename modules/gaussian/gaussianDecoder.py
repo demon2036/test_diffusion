@@ -5,10 +5,6 @@ import numpy as np
 import jax.numpy as jnp
 
 
-def kl_divergence(mean, logvar):
-    return 0.5 * jnp.mean(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
-
-
 class GaussianDecoder(Gaussian):
     def __init__(
             self,
@@ -58,17 +54,11 @@ class GaussianDecoder(Gaussian):
     # #         return self.p_sample_loop(key, params, noise_shape, lr_image)
     # """
 
-    def p_loss(self, key, state, params, x_start, t, ):
-        key, z_rng = jax.random.split(key, 2)
+    def p_loss(self, key, state, params, x_start, t):
         noise = self.generate_nosie(key, shape=x_start.shape)
 
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x, t, x_start,)
-        # model_output,intermediate = state.apply_fn({"params": params}, x, t, x_start,z_rng=z_rng, mutable=['intermediate'])
-        # z_mean = intermediate['intermediate']['AutoEncoderKL_0']['mean'][0]
-        # z_variance = intermediate['intermediate']['AutoEncoderKL_0']['variance'][0]
-        # kl_loss = kl_divergence(z_mean, z_variance).mean()
-        kl_loss = 0
+        model_output = state.apply_fn({"params": params}, x, t, x_start)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -83,7 +73,7 @@ class GaussianDecoder(Gaussian):
         p_loss = self.loss(target, model_output)
 
         p_loss = (p_loss * extract(self.loss_weight, t, p_loss.shape)).mean()
-        return p_loss, kl_loss
+        return p_loss
 
     def __call__(self, key, state, params, img):
         key_times, key_noise = jax.random.split(key, 2)
