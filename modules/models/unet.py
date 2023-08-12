@@ -64,13 +64,11 @@ class Unet(nn.Module):
             num_res_blocks = self.num_res_blocks
 
         if self.use_encoder:
-            if x_self_cond is None:
-                x_self_cond = jnp.zeros_like(x)
-
             n = 2 ** 3
             if z_rng is None:
                 z_rng = jax.random.PRNGKey(seed=42)
-            x_self_cond = AutoEncoder(**self.encoder_configs).encode(x_self_cond, z_rng)
+            # x_self_cond = AutoEncoder(**self.encoder_configs).encode(x_self_cond, z_rng)
+            x_self_cond = Encoder(**self.encoder_configs)(x_self_cond)
             x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
             x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
             x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
