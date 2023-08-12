@@ -9,18 +9,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
 import jax.random
-from data.dataset import generator, get_dataloader, torch_to_jax
 from modules.state_utils import create_state
-from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
-    sample_save_image_diffusion, get_obj_from_str
+from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, get_obj_from_str
 import flax
 
 from functools import partial
-from flax.training import orbax_utils
-from flax.training.common_utils import shard, shard_prng_key
 from jax_smi import initialise_tracking
 from modules.gaussian.gaussian import Gaussian
-import jax.numpy as jnp
 
 from tools.resize_dataset import save_image
 
