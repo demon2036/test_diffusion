@@ -6,9 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import torch
 import torchvision
-from PIL import Image
 
-from data.dataset import get_dataloader
 
 
 def normal_noise(key, shape):
@@ -73,30 +71,31 @@ def pyramid_nosie(key, shape,discount = 0.9):
 
 
 if __name__ == '__main__':
+    pass
 
-    dl = get_dataloader(8, '/home/john/data/s', cache=False, image_size=1024, repeat=2)
-
-    os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-    # for _ in range(100):
-    #     for data in dl:
-    #         print(type(data))
-    #         # print(data.shape)
-    key = jax.random.PRNGKey(55)
-    alpha = 0.9
-    for data in dl:
-        print(data.shape)
-        data = data / 2 + 0.5
-        data = data.numpy()
-        data = jnp.asarray(data)
-
-        noise = pyramid_nosie(key, data.shape)
-
-        data = alpha * data + (1 - alpha) * noise
-        # data = noise
-
-        data = np.asarray(data)
-        data = torch.Tensor(data)
-
-        data = einops.rearrange(data, '(n b) h w c->(b n) c h w', n=2)
-        torchvision.utils.save_image(data, './test1.png')
-        break
+    # dl = get_dataloader(8, '/home/john/data/s', cache=False, image_size=1024, repeat=2)
+    #
+    # os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+    # # for _ in range(100):
+    # #     for data in dl:
+    # #         print(type(data))
+    # #         # print(data.shape)
+    # key = jax.random.PRNGKey(55)
+    # alpha = 0.9
+    # for data in dl:
+    #     print(data.shape)
+    #     data = data / 2 + 0.5
+    #     data = data.numpy()
+    #     data = jnp.asarray(data)
+    #
+    #     noise = pyramid_nosie(key, data.shape)
+    #
+    #     data = alpha * data + (1 - alpha) * noise
+    #     # data = noise
+    #
+    #     data = np.asarray(data)
+    #     data = torch.Tensor(data)
+    #
+    #     data = einops.rearrange(data, '(n b) h w c->(b n) c h w', n=2)
+    #     torchvision.utils.save_image(data, './test1.png')
+    #     break
