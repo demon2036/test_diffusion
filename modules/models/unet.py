@@ -64,6 +64,9 @@ class Unet(nn.Module):
             num_res_blocks = self.num_res_blocks
 
         if self.use_encoder:
+            if x_self_cond is None:
+                x_self_cond = jnp.zeros_like(x)
+
             n = 2 ** 3
             if z_rng is None:
                 z_rng = jax.random.PRNGKey(seed=42)
@@ -74,8 +77,7 @@ class Unet(nn.Module):
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
-        elif self.self_condition:
-            x = jnp.concatenate([x, jnp.zeros_like(x)], axis=3)
+
         print(x.shape)
 
         time_dim = self.dim * 4

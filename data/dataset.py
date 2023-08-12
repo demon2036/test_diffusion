@@ -37,7 +37,7 @@ class MyDataSet(Dataset):
         self.cache = cache
         self.data = []
         self.count = 0
-        self.img_names = os.listdir(self.path)[:5080]
+        self.img_names = os.listdir(self.path)[:10000]
         self.data_type = data_type
 
         if self.cache:
