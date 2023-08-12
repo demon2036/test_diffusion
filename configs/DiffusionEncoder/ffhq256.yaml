@@ -43,7 +43,7 @@
     objective: 'predict_noise',
     beta_schedule: 'sigmoid',
     #min_snr_loss_weight: True,
-    #scale_shift: True,
+    scale_shift: True,
     self_condition: True,
 
   }
