@@ -50,6 +50,7 @@ class Gaussian:
             self_condition=False,
             noise_type='normal',
             scale_factor=1,
+            p_loss=True
 
     ):
         self.train_state = True
@@ -74,7 +75,7 @@ class Gaussian:
         if scale_shift:
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
-            alphas = 1 - 1 / (1 + (scale) ** 2 * snr)
+            alphas = 1 - 1 / (1 + (scale) ** 1 * snr)
             betas = 1 - alphas
 
         alphas_cumprod = jnp.cumprod(alphas)
@@ -122,10 +123,11 @@ class Gaussian:
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
 
-        p2_loss_weight_gamma = 1
-        p2_loss_weight_k = 1
-        p2_loss_weight = (p2_loss_weight_k + alphas_cumprod / (1 - alphas_cumprod)) ** -p2_loss_weight_gamma
-        self.loss_weight = p2_loss_weight
+        if p_loss:
+            p2_loss_weight_gamma = 1
+            p2_loss_weight_k = 1
+            p2_loss_weight = (p2_loss_weight_k + alphas_cumprod / (1 - alphas_cumprod)) ** -p2_loss_weight_gamma
+            self.loss_weight = p2_loss_weight
 
         self.pmap_q_sample = jax.pmap(self.q_sample)
         self.pmap_model_predictions = jax.pmap(self.model_predictions)
@@ -221,8 +223,6 @@ class Gaussian:
             return offset_noise(key, shape)
         elif self.noise_type == 'pyramid':
             return pyramid_nosie(key, shape)
-
-        return jax.random.normal(key, shape) * self.scale
 
     def p_sample(self, key, x, batch_times, x_self_cond=None, state=None):
         model_mean, _, model_log_variance, x_start = self.p_mean_variance(x, batch_times, x_self_cond, state)
