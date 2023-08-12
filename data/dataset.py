@@ -82,7 +82,7 @@ class MyDataSet(Dataset):
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64, cache=False,
               data_type='img'):
-    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type,repeat=100)
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type,repeat=1)
     while True:
         for data in d:
             yield torch_to_jax(data)
