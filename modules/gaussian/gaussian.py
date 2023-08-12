@@ -44,6 +44,7 @@ class Gaussian:
             sampling_timesteps=1000,
             objective='predict_noise',
             beta_schedule='linear',
+            beta_schedule_configs={},
             ddim_sampling_eta=0.,
             min_snr_loss_weight=False,
             scale_shift=False,
@@ -69,7 +70,7 @@ class Gaussian:
         elif beta_schedule == 'sigmoid':
             beta_schedule_fn = sigmoid_beta_schedule
 
-        betas = beta_schedule_fn(timesteps)
+        betas = beta_schedule_fn(timesteps,**beta_schedule_configs)
 
         alphas = 1 - betas
         if scale_shift:

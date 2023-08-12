@@ -11,15 +11,13 @@ import numpy as np
 from PIL import Image
 
 
-
-
-def linear_beta_schedule(timesteps):
+def linear_beta_schedule(timesteps, start=0.0001, end=0.02):
     """
     linear schedule, proposed in original ddpm paper
     """
     scale = 1000 / timesteps
-    beta_start = scale * 0.0001
-    beta_end = scale * 0.02
+    beta_start = scale * start
+    beta_end = scale * end
     return jnp.linspace(beta_start, beta_end, timesteps)  # , dtype = jnp.float64
 
 
@@ -62,9 +60,9 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     return jnp.clip(betas, 0, 0.999)
 
 
-
-
-
-
 if __name__ == "__main__":
-    pass
+    os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+    beta = linear_beta_schedule(1000,end=0.013)
+    alphas = 1 - beta
+    alphas_cumprod = jnp.cumprod(alphas)
+    print(alphas_cumprod)
