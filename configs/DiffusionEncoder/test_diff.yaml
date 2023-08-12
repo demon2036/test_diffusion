@@ -1,8 +1,8 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 64,
-      batch_size: 1,
+      image_size: 32,
+      batch_size: 64,
       file_path: '/home/john/data/FFHQ256'
     },
     trainer_configs: {
