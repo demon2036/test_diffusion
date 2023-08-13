@@ -8,7 +8,7 @@
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 1,
+      sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
     },
@@ -25,14 +25,13 @@
       }
     },
     params:{
-      dim: 256,
+      dim: 64,
       #num_res_blocks : [2,2,2,2],
-      dim_mults: [1,2,2,4],
+      dim_mults: [1,2,4,4],
       #out_dim: 3,
-      res_type: "efficient",
       out_channels: 3,
       dtype: 'bfloat16',
-      patch_size: 8
+      patch_size: 1
       #self_condition: True
     }
   },

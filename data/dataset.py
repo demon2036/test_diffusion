@@ -1,5 +1,7 @@
 import os
 import time
+import random
+
 import einops
 import flax.linen
 import numpy as np
@@ -16,6 +18,7 @@ import albumentations as A
 import jax.numpy as jnp
 import jax
 
+os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64, repeat=1, drop_last=True,
@@ -58,11 +61,11 @@ class MyDataSet(Dataset):
             img = 2 * img - 1
             return img
         elif self.data_type == 'np':
-            latent=np.load(data_path)
+            latent = np.load(data_path)
             try:
-                latent = np.array(latent,dtype=np.float32)
+                latent = np.array(latent, dtype=np.float32)
             except Exception as e:
-                print(latent.shape,type(latent),data_path)
+                print(latent.shape, type(latent), data_path)
             return latent
         # img = A.random_crop(img, self.image_size, self.image_size, 0, 0)
 
@@ -80,10 +83,11 @@ class MyDataSet(Dataset):
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64, cache=False,
               data_type='img'):
-    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type,repeat=1)
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type, repeat=1)
     while True:
         for data in d:
-            yield torch_to_jax(data)
+            data = torch_to_jax(data)
+            yield data
 
 
 def torch_to_jax(x):
@@ -115,37 +119,77 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
     return patches
 
 
+import jax.numpy as jnp
+from jax import random, vmap, lax
+
+
+def random_crop_single(rng_key, image, crop_size):
+    image_height, image_width, _ = image.shape
+    crop_height, crop_width = crop_size
+
+    if image_height < crop_height or image_width < crop_width:
+        raise ValueError("Crop size must be smaller than image dimensions")
+
+    max_y = image_height - crop_height
+    max_x = image_width - crop_width
+
+    offset_y = random.randint(rng_key, (), 0, max_y + 1)
+    offset_x = random.randint(rng_key, (), 0, max_x + 1)
+
+    cropped_image = lax.dynamic_slice(image, (offset_y, offset_x, 0), (crop_height, crop_width, 3))
+
+    return cropped_image
+
+
+def random_crop_batch(rng_key, images, crop_size):
+    num_images = images.shape[0]
+
+    # Use vmap to apply random_crop_single to each image in the batch
+    rng_keys = random.split(rng_key, num_images)
+    cropped_images = vmap(random_crop_single, (0, 0, None))(rng_keys, images, crop_size)
+
+    return cropped_images
+
+
+# Example usage
+
+
 if __name__ == '__main__':
     start = time.time()
-    dl = get_dataloader(1, '/home/john/data/s', cache=False, image_size=256, repeat=2)
+    image_size = 256
+    dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-    # for _ in range(100):
-    #     for data in dl:
-    #         print(type(data))
-    #         # print(data.shape)
+    os.environ['XLA_FLAGS'] = 'TF_USE_NVLINK_FOR_PARALLEL_COMPILATION=0'
+    # os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
+    rng_key = random.PRNGKey(0)
+    count = 0
     for data in dl:
-        print(data.shape)
         data = data / 2 + 0.5
         data = data.numpy()
         y = jnp.asarray(data)
+        print(data.shape)
 
-        data = jnp.array(split_array_into_overlapping_patches(y, 16, 16))
+        crop_size = (128, 128)
+
+        # Create a random PRNG key
+        rng_key, crop_rng = jax.random.split(rng_key, 2)
+
+        crop = jax.random.choice(crop_rng, jnp.array([64, 256]), p=jnp.array([0.1, 0.9]))
+        crop_size = (crop, crop)
+
+        # Generate random crops for the batch of images
+        cropped_images = random_crop_batch(rng_key, data, crop_size)
+
+        data = cropped_images
 
         data = np.asarray(data)
         data = torch.Tensor(data)
         print(data.shape)
 
-        data = einops.rearrange(data, 'b (n) h w c->(b n) c w h', )
-        torchvision.utils.save_image(data, './test2.png', nrow=256 // 16)
-
-        data = np.asarray(y)
-        data = torch.Tensor(data)
-        print(data.shape)
-
-        data = einops.rearrange(data, 'b h w c->b c h w', )
-        torchvision.utils.save_image(data, './test3.png', nrow=256 // 16)
-        break
+        data = einops.rearrange(data, 'b  h w c->(b ) c h w', )
+        torchvision.utils.save_image(data, f'./test/{count}.png', nrow=4)
+        count += 1
 
     print(end - start)
