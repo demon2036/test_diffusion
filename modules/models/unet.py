@@ -54,11 +54,11 @@ class Unet(nn.Module):
     res_type: Any = 'default'
     patch_size: int = 1
 
-    def setup(self) :
+    def setup(self):
         if self.encoder_configs is None:
-            encoder_configs={'dims':1}
+            encoder_configs = {'dims': 1}
         else:
-            encoder_configs=self.encoder_configs
+            encoder_configs = self.encoder_configs
         self.encoder = Encoder(**encoder_configs)
 
     def encode(self, x, *args, **kwargs):
@@ -103,11 +103,8 @@ class Unet(nn.Module):
         # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
         # print(x.shape)
 
-        kernel_size=max(self.patch_size**2,3)
-        kernel_size=min(kernel_size,16)
-        print(kernel_size)
-
-        x = nn.Conv(self.dim, (kernel_size, kernel_size), (self.patch_size, self.patch_size), padding="SAME", dtype=self.dtype)(x)
+        x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), padding="SAME",
+                    dtype=self.dtype)(x)
         r = x
 
         h = [x]
