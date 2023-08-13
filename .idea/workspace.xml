@@ -183,30 +183,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
     </task>
-    <task id="LOCAL-00065" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691634778353</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
-      <option name="project" value="LOCAL" />
-      <updated>1691634778353</updated>
-    </task>
-    <task id="LOCAL-00066" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691669066593</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1691669066593</updated>
-    </task>
-    <task id="LOCAL-00067" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691669097882</created>
-      <option name="number" value="00067" />
-      <option name="presentableId" value="LOCAL-00067" />
-      <option name="project" value="LOCAL" />
-      <updated>1691669097882</updated>
-    </task>
     <task id="LOCAL-00068" summary="fix bug of min snr">
       <option name="closed" value="true" />
       <created>1691669219350</created>
@@ -575,7 +551,31 @@
       <option name="project" value="LOCAL" />
       <updated>1691938976153</updated>
     </task>
-    <option name="localTasksCounter" value="114" />
+    <task id="LOCAL-00114" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691939601426</created>
+      <option name="number" value="00114" />
+      <option name="presentableId" value="LOCAL-00114" />
+      <option name="project" value="LOCAL" />
+      <updated>1691939601426</updated>
+    </task>
+    <task id="LOCAL-00115" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691939785513</created>
+      <option name="number" value="00115" />
+      <option name="presentableId" value="LOCAL-00115" />
+      <option name="project" value="LOCAL" />
+      <updated>1691939785513</updated>
+    </task>
+    <task id="LOCAL-00116" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691939869712</created>
+      <option name="number" value="00116" />
+      <option name="presentableId" value="LOCAL-00116" />
+      <option name="project" value="LOCAL" />
+      <updated>1691939869712</updated>
+    </task>
+    <option name="localTasksCounter" value="117" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

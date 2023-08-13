@@ -100,6 +100,7 @@ class ResBlock(nn.Module):
     dim_out: int
     groups: int = 32
     dtype: Any = jnp.bfloat16
+
     @nn.compact
     def __call__(self, x, time_emb=None):
         _, _, _, c = x.shape
@@ -124,16 +125,22 @@ class EfficientBlock(nn.Module):
     factor: int = 4
 
     @nn.compact
-    def __call__(self, x,time_emb=None, *args, **kwargs):
+    def __call__(self, x, time_emb=None, *args, **kwargs):
         project_channels = self.features
 
         partial_channel = project_channels // self.factor
         conv = partial(nn.Conv, padding='SAME', dtype=self.dtype)
+
+        if x.shape[-1] == self.features:
+            y = x
+        else:
+            y = conv(project_channels, (1, 1))(x)
+
         x = conv(project_channels, (1, 1))(x)
-        y = x
+
         x = nn.GroupNorm(8)(x)
 
-        x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+        #x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
 
         if time_emb is not None:
             time_emb = nn.silu(time_emb)
@@ -142,7 +149,6 @@ class EfficientBlock(nn.Module):
             scale_shift = jnp.split(time_emb, indices_or_sections=2, axis=3)
             scale, shift = scale_shift
             x = x * (scale + 1) + shift
-
 
         out_put = []
         first_part = x[:, :, :, :partial_channel]
