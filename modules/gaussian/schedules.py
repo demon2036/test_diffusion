@@ -62,7 +62,7 @@ def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
 
 if __name__ == "__main__":
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-    beta = linear_beta_schedule(1000,end=0.013)
+    beta = linear_beta_schedule(1000,end=0.01,start=1e-5)
     alphas = 1 - beta
     alphas_cumprod = jnp.cumprod(alphas)
     print(alphas_cumprod)
