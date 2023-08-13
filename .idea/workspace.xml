@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/AutoEncoder/fffhq-ae-8-gan.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/AutoEncoder/fffhq-ae-8-gan.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_autoencoder_gan.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_autoencoder_gan.py" afterDir="false" />
-    </list>
+    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -182,22 +178,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00058" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691584555943</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1691584555943</updated>
-    </task>
-    <task id="LOCAL-00059" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691587006356</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1691587006356</updated>
     </task>
     <task id="LOCAL-00060" summary="fix bug of min snr">
       <option name="closed" value="true" />
@@ -575,7 +555,23 @@
       <option name="project" value="LOCAL" />
       <updated>1691872633858</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691885752073</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1691885752073</updated>
+    </task>
+    <task id="LOCAL-00108" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691885974794</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1691885974794</updated>
+    </task>
+    <option name="localTasksCounter" value="109" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

@@ -44,6 +44,7 @@
     beta_schedule_configs:{
       end: 0.01
     },
+    p_loss: False,
     #min_snr_loss_weight: True,
     #scale_shift: True,
     scale_factor: 0.05,
