@@ -42,7 +42,7 @@
     objective: 'predict_noise',
     beta_schedule: 'linear',
     beta_schedule_configs:{
-      end: 0.013
+      end: 0.01
     },
     #min_snr_loss_weight: True,
     #scale_shift: True,
