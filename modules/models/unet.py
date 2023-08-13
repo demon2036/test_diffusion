@@ -104,6 +104,7 @@ class Unet(nn.Module):
         # print(x.shape)
 
         kernel_size=max(self.patch_size**2,3)
+        kernel_size=max(kernel_size,16)
 
         x = nn.Conv(self.dim, (kernel_size, kernel_size), (self.patch_size, self.patch_size), padding="SAME", dtype=self.dtype)(x)
         r = x
