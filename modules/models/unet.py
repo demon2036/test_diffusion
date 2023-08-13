@@ -11,7 +11,7 @@ from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder
 from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
-from modules.models.resnet import ResBlock, DownSample, UpSample
+from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
 
 
 # from .attention import Attention
@@ -115,6 +115,8 @@ class Unet(nn.Module):
             res_block = ResBlock
         elif self.res_type == "NAF":
             res_block = NAFBlock
+        elif self.res_type == "efficient":
+            res_block = EfficientBlock
         else:
             res_block = None
 

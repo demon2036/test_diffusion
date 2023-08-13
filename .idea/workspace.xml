@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="fix bug">
-      <change afterPath="$PROJECT_DIR$/configs/DiffusionEncoder/ffhq256-x0.yaml" afterDir="false" />
+    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/gaussian/schedules.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/schedules.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -40,15 +39,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/DiffusionEncoder",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/Diffusion",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs/DiffusionEncoder" />
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
+      <recent name="$PROJECT_DIR$/configs/DiffusionEncoder" />
       <recent name="$PROJECT_DIR$/configs/AutoEncoder" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/configs/training/ldm" />
@@ -183,30 +182,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00062" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691589396842</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1691589396843</updated>
-    </task>
-    <task id="LOCAL-00063" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691632899355</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1691632899355</updated>
-    </task>
-    <task id="LOCAL-00064" summary="fix bug of min snr">
-      <option name="closed" value="true" />
-      <created>1691634406776</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1691634406777</updated>
     </task>
     <task id="LOCAL-00065" summary="fix bug of min snr">
       <option name="closed" value="true" />
@@ -576,7 +551,31 @@
       <option name="project" value="LOCAL" />
       <updated>1691934469964</updated>
     </task>
-    <option name="localTasksCounter" value="111" />
+    <task id="LOCAL-00111" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1691937285168</created>
+      <option name="number" value="00111" />
+      <option name="presentableId" value="LOCAL-00111" />
+      <option name="project" value="LOCAL" />
+      <updated>1691937285168</updated>
+    </task>
+    <task id="LOCAL-00112" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691938669901</created>
+      <option name="number" value="00112" />
+      <option name="presentableId" value="LOCAL-00112" />
+      <option name="project" value="LOCAL" />
+      <updated>1691938669901</updated>
+    </task>
+    <task id="LOCAL-00113" summary="commit">
+      <option name="closed" value="true" />
+      <created>1691938976152</created>
+      <option name="number" value="00113" />
+      <option name="presentableId" value="LOCAL-00113" />
+      <option name="project" value="LOCAL" />
+      <updated>1691938976153</updated>
+    </task>
+    <option name="localTasksCounter" value="114" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -602,9 +601,9 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="commit" />
     <MESSAGE value="fix bug of min snr" />
     <MESSAGE value="fix bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
+    <MESSAGE value="commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit" />
   </component>
 </project>

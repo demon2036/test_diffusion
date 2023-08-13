@@ -124,7 +124,7 @@ class EfficientBlock(nn.Module):
     factor: int = 4
 
     @nn.compact
-    def __call__(self, x, *args, **kwargs):
+    def __call__(self, x,time_emb=None, *args, **kwargs):
         project_channels = self.features
 
         partial_channel = project_channels // self.factor
@@ -134,6 +134,15 @@ class EfficientBlock(nn.Module):
         x = nn.GroupNorm(8)(x)
 
         x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+
+        if time_emb is not None:
+            time_emb = nn.silu(time_emb)
+            time_emb = nn.Dense(self.dim_out * 2, dtype=self.dtype)(time_emb)
+            time_emb = einops.rearrange(time_emb, 'b c -> b  1 1 c')
+            scale_shift = jnp.split(time_emb, indices_or_sections=2, axis=3)
+            scale, shift = scale_shift
+            x = x * (scale + 1) + shift
+
 
         out_put = []
         first_part = x[:, :, :, :partial_channel]
