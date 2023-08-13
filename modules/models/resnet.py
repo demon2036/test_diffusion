@@ -102,7 +102,7 @@ class ResBlock(nn.Module):
     dtype: Any = jnp.bfloat16
 
     @nn.compact
-    def __call__(self, x, time_emb=None):
+    def __call__(self, x, time_emb=None, cond_emb=None):
         _, _, _, c = x.shape
         scale_shift = None
         if time_emb is not None:
@@ -112,7 +112,13 @@ class ResBlock(nn.Module):
             scale_shift = jnp.split(time_emb, indices_or_sections=2, axis=3)
 
         h = Block(dim_out=self.dim_out, dtype=self.dtype)(x, scale_shift=scale_shift)
-        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h)
+
+        if cond_emb is not None:
+            cond_emb = nn.Dense(self.dim_out*2, dtype=self.dtype)(cond_emb)
+            cond_emb = einops.rearrange(cond_emb, 'b c -> b  1 1 c')
+            scale_shift = jnp.split(cond_emb, indices_or_sections=2, axis=3)
+
+        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h,scale_shift=scale_shift)
         if c != self.dim_out:
             x = nn.Conv(self.dim_out, (1, 1), dtype=self.dtype)(x)
 
@@ -140,7 +146,7 @@ class EfficientBlock(nn.Module):
 
         x = nn.GroupNorm(8)(x)
 
-        #x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
+        # x = einops.rearrange(x, 'b h w (c f)->b h w (f c)', f=self.factor)
 
         if time_emb is not None:
             time_emb = nn.silu(time_emb)

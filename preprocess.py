@@ -42,7 +42,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./configs/AutoEncoder/test_gan.yaml')
-
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)

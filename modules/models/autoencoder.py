@@ -1,3 +1,4 @@
+import einops
 import flax.linen as nn
 from typing import *
 
@@ -14,6 +15,7 @@ class Encoder(nn.Module):
     latent: int = 4
     use_attn: bool = False
     block_type: str = 'res'
+    encoder_type: Any = '2D'
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
@@ -24,6 +26,16 @@ class Encoder(nn.Module):
                                  block_type=self.block_type,
                                  dtype=self.dtype, )(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
+
+        assert self.encoder_type in ['1D', '2D']
+
+        if self.encoder_type == '1D':
+            x = nn.GroupNorm()(x)
+            x = nn.silu(x)
+            # Global Average Pooling
+            x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
+            x = nn.Conv(self.latent, (1, 1))(x)
+            x = einops.rearrange(x, 'b h w c->b (h w c)')
 
         return x
 
@@ -63,7 +75,7 @@ class AutoEncoder(nn.Module):
         reversed_dims = list(reversed(self.dims))
         self.decoder = Decoder(reversed_dims, self.num_blocks, self.dtype, block_type=self.block_type, name='Decoder_0')
 
-    def encode(self, x,*args,**kwargs):
+    def encode(self, x, *args, **kwargs):
         x = self.encoder(x)
         x = nn.tanh(x)
         return x

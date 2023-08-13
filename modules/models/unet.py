@@ -59,7 +59,7 @@ class Unet(nn.Module):
             encoder_configs = {'dims': 1}
         else:
             encoder_configs = self.encoder_configs
-        self.encoder = Encoder(**encoder_configs)
+        self.encoder = Encoder(**encoder_configs,name='Encoder')
 
     def encode(self, x, *args, **kwargs):
         x = self.encoder(x)
@@ -77,13 +77,20 @@ class Unet(nn.Module):
 
         if self.use_encoder:
             n = 2 ** 3
-            if z_rng is None:
-                z_rng = jax.random.PRNGKey(seed=42)
+            # if z_rng is None:
+            #     z_rng = jax.random.PRNGKey(seed=42)
             # x_self_cond = AutoEncoder(**self.encoder_configs).encode(x_self_cond, z_rng)
             x_self_cond = self.encode(x_self_cond)
-            x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
-            x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
-            x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
+            if self.encoder_configs['encoder_type'] == '1D':
+                x_self_cond = None
+            elif self.encoder_configs['encoder_type'] == '2D':
+                x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
+                x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
+                x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
+            else:
+                x_self_cond = None
+
+            #print(x_self_cond.shape)
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
