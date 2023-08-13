@@ -103,7 +103,7 @@ class Unet(nn.Module):
         # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
         # print(x.shape)
 
-        x = einops.rearrange(x, 'b (h p1) (w p2) c->b h w (c p1 p2)->b (h p1) (w p2)', p1=self.patch_size, p2=self.patch_size)
+        x = einops.rearrange(x, 'b (h p1) (w p2) c->b h w (c p1 p2)', p1=self.patch_size, p2=self.patch_size)
 
         x = nn.Conv(self.dim, (3, 3), (1, 1), padding="SAME",
                     dtype=self.dtype)(x)
