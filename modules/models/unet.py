@@ -56,7 +56,7 @@ class Unet(nn.Module):
 
     def setup(self) :
         if self.encoder_configs is None:
-            encoder_configs={}
+            encoder_configs={'dims':1}
         else:
             encoder_configs=self.encoder_configs
         self.encoder = Encoder(**encoder_configs)
@@ -102,7 +102,10 @@ class Unet(nn.Module):
         # x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
         # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
         # print(x.shape)
-        x = nn.Conv(self.dim, (3, 3), (1, 1), padding="SAME", dtype=self.dtype)(x)
+
+        kernel_size=max(self.patch_size**2,3)
+
+        x = nn.Conv(self.dim, (kernel_size, kernel_size), (self.patch_size, self.patch_size), padding="SAME", dtype=self.dtype)(x)
         r = x
 
         h = [x]

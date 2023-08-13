@@ -2,13 +2,13 @@
   "train": {
     dataloader_configs: {
       image_size: 128,
-      batch_size: 1,
-      file_path: '/home/john/data/FFHQ256'
+      batch_size: 64,
+      file_path: '/root/data/celeba-128/celeba-128'
     },
     trainer_configs: {
       seed: 43,
       total_steps: 500000,
-      sample_steps: 1,
+      sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
     },
@@ -27,22 +27,23 @@
     params:{
       dim: 256,
       #num_res_blocks : [2,2,2,2],
-      dim_mults: [1,2,2,4],
+      dim_mults: [1,2,4,4],
       #out_dim: 3,
       out_channels: 3,
       dtype: 'bfloat16',
-      patch_size: 8
-      #self_condition: True
+      patch_size: 8,
+      self_condition: True
     }
   },
   "Gaussian": {
     loss: 'l1',
     timesteps: 1000,
-    sampling_timesteps: 200,
+    sampling_timesteps: 1000,
     objective: 'predict_noise',
     beta_schedule: 'cosine',
     #min_snr_loss_weight: True,
     #scale_shift: True,
+    scale_factor: 0.25,
     noise_type: 'normal',
     self_condition: True,
 
