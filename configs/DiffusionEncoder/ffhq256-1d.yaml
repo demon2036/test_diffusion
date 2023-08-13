@@ -33,7 +33,7 @@
       encoder_configs: {
         dims: [ 64,128,128,256,512,512 ],
         latent: 512,
-        encoder_type: '1D'，
+        encoder_type: '1D',
         dtype: 'bfloat16',
       }
     }
