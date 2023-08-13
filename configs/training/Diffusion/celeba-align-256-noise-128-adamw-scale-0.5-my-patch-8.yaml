@@ -25,11 +25,12 @@
       }
     },
     params:{
-      dim: 256,
+      dim: 384,
       #num_res_blocks : [2,2,2,2],
       dim_mults: [1,2,4,4],
       #out_dim: 3,
       out_channels: 3,
+      res_type: "efficient",
       dtype: 'bfloat16',
       patch_size: 8,
       self_condition: True

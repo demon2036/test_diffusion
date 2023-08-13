@@ -29,6 +29,7 @@
       #num_res_blocks : [2,2,2,2],
       dim_mults: [1,2,2,4],
       #out_dim: 3,
+      res_type: "efficient",
       out_channels: 3,
       dtype: 'bfloat16',
       patch_size: 8
