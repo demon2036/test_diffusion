@@ -7,9 +7,6 @@
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/DiffusionEncoder/test_diff.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/DiffusionEncoder/test_diff.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/state_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/state_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -183,30 +180,6 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00079" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691772768902</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
-      <option name="project" value="LOCAL" />
-      <updated>1691772768902</updated>
-    </task>
-    <task id="LOCAL-00080" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691773997182</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1691773997182</updated>
-    </task>
-    <task id="LOCAL-00081" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691776241650</created>
-      <option name="number" value="00081" />
-      <option name="presentableId" value="LOCAL-00081" />
-      <option name="project" value="LOCAL" />
-      <updated>1691776241650</updated>
     </task>
     <task id="LOCAL-00082" summary="fix bug">
       <option name="closed" value="true" />
@@ -576,7 +549,31 @@
       <option name="project" value="LOCAL" />
       <updated>1692028036388</updated>
     </task>
-    <option name="localTasksCounter" value="128" />
+    <task id="LOCAL-00128" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692033390485</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1692033390486</updated>
+    </task>
+    <task id="LOCAL-00129" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692034019888</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1692034019888</updated>
+    </task>
+    <task id="LOCAL-00130" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692037239185</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1692037239185</updated>
+    </task>
+    <option name="localTasksCounter" value="131" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

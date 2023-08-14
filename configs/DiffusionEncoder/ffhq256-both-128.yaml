@@ -3,7 +3,7 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 64,
-      file_path: '/home/john/data/FFHQ256'
+      file_path: '/root/data/FFHQ256'
     },
     trainer_configs: {
       seed: 43,
@@ -31,7 +31,7 @@
       self_condition: True,
       use_encoder: True,
       encoder_configs: {
-        dims: [ 64,128,256,256],
+        dims: [ 64,128,256,256 ],
         latent: 4,
         encoder_type: 'Both',
         dtype: 'bfloat16',

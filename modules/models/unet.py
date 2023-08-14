@@ -77,9 +77,6 @@ class Unet(nn.Module):
             encoder_configs = self.encoder_configs
             self.encoder = Encoder(**encoder_configs, name='Encoder')
 
-
-
-
     def encode(self, x, *args, **kwargs):
         x = self.encoder(x)
         x = nn.tanh(x)
@@ -97,17 +94,17 @@ class Unet(nn.Module):
         cond_emb = None
         if self.use_encoder:
             n = 8
+            latent = self.encode(x_self_cond)
             encoder_configs = self.encoder_configs
             encoder_type = encoder_configs['encoder_type']
             decoder_latent_1d = nn.Sequential([
-                nn.GroupNorm(num_groups=min(8,x_self_cond.shape[-1])),
+                nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
                 nn.silu,
+                nn.Conv(self.dim*4, (1, 1)),
                 GlobalAveragePool(),
-                nn.Conv(encoder_configs['latent'], (1, 1)),
                 Rearrange('b h w c->b (h w c)')
             ])
 
-            latent = self.encode(x_self_cond)
             print(latent.shape)
             if encoder_type == '1D':
                 cond_emb = decoder_latent_1d(latent)
@@ -121,7 +118,6 @@ class Unet(nn.Module):
                 x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
                 x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
                 x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
-
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
