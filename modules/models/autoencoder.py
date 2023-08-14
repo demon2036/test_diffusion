@@ -27,17 +27,11 @@ class Encoder(nn.Module):
                                  dtype=self.dtype, )(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
 
-        assert self.encoder_type in ['1D', '2D']
-
-        if self.encoder_type == '1D':
-            x = nn.GroupNorm()(x)
-            x = nn.silu(x)
-            # Global Average Pooling
-            x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
-            x = nn.Conv(self.latent, (1, 1))(x)
-            x = einops.rearrange(x, 'b h w c->b (h w c)')
-
         return x
+
+
+
+
 
 
 class Decoder(nn.Module):
