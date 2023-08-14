@@ -80,11 +80,12 @@ class Unet(nn.Module):
             # if z_rng is None:
             #     z_rng = jax.random.PRNGKey(seed=42)
             # x_self_cond = AutoEncoder(**self.encoder_configs).encode(x_self_cond, z_rng)
-            x_self_cond = self.encode(x_self_cond)
+            encoder_output = self.encode(x_self_cond)
             if self.encoder_configs['encoder_type'] == '1D':
                 x_self_cond = None
+                cond_emb=encoder_output
             elif self.encoder_configs['encoder_type'] == '2D':
-                x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(x_self_cond)
+                x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(encoder_output)
                 x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
                 x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
             else:
@@ -130,7 +131,7 @@ class Unet(nn.Module):
         for i, (dim_mul, num_res_block) in enumerate(zip(self.dim_mults, num_res_blocks)):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
-                x = res_block(dim, dtype=self.dtype)(x, t)
+                x = res_block(dim, dtype=self.dtype)(x, t,cond_emb)
                 h.append(x)
 
             if i != len(self.dim_mults) - 1:
@@ -142,10 +143,10 @@ class Unet(nn.Module):
         # for m in h:
         #     print(m.shape)
 
-        x = res_block(dim, dtype=self.dtype)(x, t)
+        x = res_block(dim, dtype=self.dtype)(x, t,cond_emb)
         # x = self.mid_attn(x) + x
         # x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
-        x = res_block(dim, dtype=self.dtype)(x, t)
+        x = res_block(dim, dtype=self.dtype)(x, t,cond_emb)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
         reversed_num_res_blocks = list(reversed(num_res_blocks))
@@ -154,7 +155,7 @@ class Unet(nn.Module):
             dim = self.dim * dim_mul
             for _ in range(num_res_block + 1):
                 x = jnp.concatenate([x, h.pop()], axis=3)
-                x = res_block(dim, dtype=self.dtype)(x, t)
+                x = res_block(dim, dtype=self.dtype)(x, t,cond_emb)
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(dim, dtype=self.dtype)(x)

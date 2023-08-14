@@ -114,11 +114,11 @@ class ResBlock(nn.Module):
         h = Block(dim_out=self.dim_out, dtype=self.dtype)(x, scale_shift=scale_shift)
 
         if cond_emb is not None:
-            cond_emb = nn.Dense(self.dim_out*2, dtype=self.dtype)(cond_emb)
+            cond_emb = nn.Dense(self.dim_out * 2, dtype=self.dtype)(cond_emb)
             cond_emb = einops.rearrange(cond_emb, 'b c -> b  1 1 c')
             scale_shift = jnp.split(cond_emb, indices_or_sections=2, axis=3)
 
-        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h,scale_shift=scale_shift)
+        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h, scale_shift=scale_shift)
         if c != self.dim_out:
             x = nn.Conv(self.dim_out, (1, 1), dtype=self.dtype)(x)
 

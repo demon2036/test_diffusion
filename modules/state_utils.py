@@ -17,7 +17,7 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
     inputs = list(map(lambda shape: jnp.empty(shape), input_shapes))
 
     if print_model:
-        print(model.tabulate(rng, *inputs, z_rng=rng, depth=2, console_kwargs={'width': 200}))
+        print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
 
     variables = model.init(rng, *inputs, z_rng=rng)
     optimizer = get_obj_from_str(optimizer_dict['optimizer'])
