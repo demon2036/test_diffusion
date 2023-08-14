@@ -75,6 +75,7 @@ class Unet(nn.Module):
             assert len(self.num_res_blocks) == len(self.dim_mults)
             num_res_blocks = self.num_res_blocks
 
+        cond_emb=None
         if self.use_encoder:
             n = 2 ** 3
             # if z_rng is None:
