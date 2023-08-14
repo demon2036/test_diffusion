@@ -20,6 +20,7 @@ initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
+
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
     def loss_fn(params):
@@ -36,12 +37,6 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-
-
-
-
-
-
 def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='configs/training/Diffusion/test.yaml')
@@ -49,7 +44,7 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str,model_optimizer, unet_config = config['Unet'].values()
+    model_cls_str, model_optimizer, unet_config = config['Unet'].values()
     model_cls = get_obj_from_str(model_cls_str)
     gaussian_config = config['Gaussian']
 
@@ -58,7 +53,7 @@ def train():
     dataloader_configs, trainer_configs = train_config.values()
 
     input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
-    input_shapes = (input_shape, input_shape[0],input_shape)
+    input_shapes = (input_shape, input_shape[0], input_shape)
 
     c = Gaussian(**gaussian_config, image_size=dataloader_configs['image_size'])
 
@@ -77,10 +72,12 @@ def train():
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
-    p_copy_params_to_ema=jax.pmap(copy_params_to_ema)
-    p_apply_ema=jax.pmap(apply_ema_decay)
+    p_copy_params_to_ema = jax.pmap(copy_params_to_ema)
+    p_apply_ema = jax.pmap(apply_ema_decay)
 
-    with tqdm(total=trainer_configs['total_steps']) as pbar:
+    num_repeats = 1
+
+    with tqdm(total=trainer_configs['total_steps'] * num_repeats) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
             key, train_step_key = jax.random.split(key, num=2)
@@ -88,12 +85,13 @@ def train():
             batch = next(dl)
 
             batch = shard(batch)
-            state, metrics = train_step(state, batch, train_step_key, c)
-            for k, v in metrics.items():
-                metrics.update({k: v[0]})
+            for _ in range(num_repeats):
+                state, metrics = train_step(state, batch, train_step_key, c)
+                for k, v in metrics.items():
+                    metrics.update({k: v[0]})
 
-            pbar.set_postfix(metrics)
-            pbar.update(1)
+                pbar.set_postfix(metrics)
+                pbar.update(1)
 
             # if steps > 100 and steps % 1 == 0:
             #     state = update_ema(state, 0.9999)
@@ -103,15 +101,13 @@ def train():
                 ema_decay = ema_decay_schedule(steps)
                 state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
 
-
-
             # if steps > 0 and steps % 1 == 0:
             #     decay = min(0.9999, (1 + steps) / (10 + steps))
             #     decay = flax.jax_utils.replicate(jnp.array([decay]))
             #     state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
-                #sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
+                # sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 try:
                     sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
                 except Exception as e:
