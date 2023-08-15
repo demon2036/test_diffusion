@@ -27,11 +27,11 @@
     params: {
       dim: 128,
       out_channels: 3,
-      num_res_blocks: 1,
+      num_res_blocks: 2,
       dim_mults: [ 1, 1, 2, 2, 4, 4 ],
       encoder_type: '1D',
       encoder_configs: {
-        dims: [ 64,128,128,256,512,512 ],
+        dims: [ 128,128,256,256,512,512,512 ],
         dtype: 'bfloat16',
         latent: 512,
       }
