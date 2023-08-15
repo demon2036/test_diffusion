@@ -15,7 +15,7 @@
 
   },
   "Unet": {
-    target: modules.models.unet.Unet,
+    target: modules.models.diffEncoder.DiffEncoder,
     optimizer: {
       optimizer: optax.adamw,
       optimizer_configs: {

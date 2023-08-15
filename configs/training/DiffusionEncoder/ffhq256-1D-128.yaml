@@ -1,9 +1,9 @@
 {
   "train": {
     dataloader_configs: {
-      image_size: 256,
+      image_size: 128,
       batch_size: 64,
-      file_path: '/home/john/data/FFHQ256'
+      file_path: '/root/data/FFHQ256'
     },
     trainer_configs: {
       seed: 43,
@@ -28,7 +28,7 @@
       dim: 32,
       out_channels: 3,
       dim_mults: [ 1, 2, 4, 4, 8, 8 ],
-      encoder_type: '2D',
+      encoder_type: '1D',
       encoder_configs: {
         dims: [ 64,128,256,256 ],
         dtype: 'bfloat16',
