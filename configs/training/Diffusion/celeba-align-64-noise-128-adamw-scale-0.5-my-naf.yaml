@@ -3,7 +3,7 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 64,
-      file_path: '/home/john/data/celeba-128/celeba-128'
+      file_path: '/root/data/celeba-128/celeba-128'
     },
     trainer_configs: {
       seed: 43,

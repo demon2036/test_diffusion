@@ -62,13 +62,14 @@ class Unet(nn.Module):
     dim: int = 64
     dim_mults: Sequence = (1, 2, 4, 4)
     num_res_blocks: Any = 2
+    num_middle_blocks: Any = 2
     out_channels: int = 3
     resnet_block_groups: int = 8,
     channels: int = 3,
     dtype: Any = jnp.bfloat16
     self_condition: bool = False
     use_encoder: bool = False
-    encoder_type:str ='2D'
+    encoder_type: str = '2D'
     res_type: Any = 'default'
     patch_size: int = 1
 
@@ -148,8 +149,8 @@ class Unet(nn.Module):
             # else:
             #     x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 
-        x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
-        x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+        for _ in range(self.num_middle_blocks):
+            x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
         reversed_num_res_blocks = list(reversed(num_res_blocks))
