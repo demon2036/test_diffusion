@@ -32,7 +32,7 @@
       use_encoder: True,
       encoder_configs: {
         dims: [ 64,128,256,256 ],
-        latent: 4,
+        latent: 3,
         encoder_type: 'Both',
         dtype: 'bfloat16',
       }

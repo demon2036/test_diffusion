@@ -44,7 +44,10 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
  x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(encoder_output)
                 x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
                 x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
-
+        # b,h,w,c=x.shape
+        # x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
+        # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
+        # print(x.shape)
 
 """
 
@@ -91,6 +94,15 @@ class Unet(nn.Module):
             assert len(self.num_res_blocks) == len(self.dim_mults)
             num_res_blocks = self.num_res_blocks
 
+        if self.res_type == 'default':
+            res_block = ResBlock
+        elif self.res_type == "NAF":
+            res_block = NAFBlock
+        elif self.res_type == "efficient":
+            res_block = EfficientBlock
+        else:
+            res_block = None
+
         cond_emb = None
         if self.use_encoder:
             n = 8
@@ -100,7 +112,7 @@ class Unet(nn.Module):
             decoder_latent_1d = nn.Sequential([
                 nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
                 nn.silu,
-                nn.Conv(self.dim*4, (1, 1)),
+                nn.Conv(self.dim * 4, (1, 1)),
                 GlobalAveragePool(),
                 Rearrange('b h w c->b (h w c)')
             ])
@@ -112,7 +124,6 @@ class Unet(nn.Module):
                 x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
                 x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
                 x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
-
             elif encoder_type == 'Both':
                 cond_emb = decoder_latent_1d(latent)
                 x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
@@ -132,11 +143,6 @@ class Unet(nn.Module):
             nn.Dense(time_dim, dtype=self.dtype)
         ])(time)
 
-        # b,h,w,c=x.shape
-        # x = split_array_into_overlapping_patches(x,h//self.patch_size,h//self.patch_size//2)
-        # x=einops.rearrange(x,'b n h w c ->b w h (n c)')
-        # print(x.shape)
-
         x = einops.rearrange(x, 'b (h p1) (w p2) c->b h w (c p1 p2)', p1=self.patch_size, p2=self.patch_size)
 
         x = nn.Conv(self.dim, (3, 3), (1, 1), padding="SAME",
@@ -144,15 +150,6 @@ class Unet(nn.Module):
         r = x
 
         h = [x]
-
-        if self.res_type == 'default':
-            res_block = ResBlock
-        elif self.res_type == "NAF":
-            res_block = NAFBlock
-        elif self.res_type == "efficient":
-            res_block = EfficientBlock
-        else:
-            res_block = None
 
         for i, (dim_mul, num_res_block) in enumerate(zip(self.dim_mults, num_res_blocks)):
             dim = self.dim * dim_mul
@@ -166,12 +163,7 @@ class Unet(nn.Module):
             # else:
             #     x = nn.Conv(dim, (3, 3), dtype=self.dtype, padding="SAME")(x)
 
-        # for m in h:
-        #     print(m.shape)
-
         x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
-        # x = self.mid_attn(x) + x
-        # x=Attention(dim=dim,head=dim//64,dtype=self.dtype)(x)
         x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
 
         reversed_dim_mults = list(reversed(self.dim_mults))
