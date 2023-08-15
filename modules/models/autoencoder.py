@@ -3,7 +3,9 @@ import flax.linen as nn
 from typing import *
 
 import jax
+from einops.layers.flax import Rearrange
 
+from modules.models.resnet import GlobalAveragePool
 from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
 import jax.numpy as jnp
 
@@ -27,11 +29,16 @@ class Encoder(nn.Module):
                                  dtype=self.dtype, )(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
 
+        if self.encoder_type == '1D':
+            x = nn.Sequential([
+                nn.GroupNorm(),
+                nn.silu,
+                GlobalAveragePool(),
+                nn.Conv(self.latent, (1, 1)),
+                Rearrange('b h w c->b (h w c)'),
+            ])(x)
+
         return x
-
-
-
-
 
 
 class Decoder(nn.Module):

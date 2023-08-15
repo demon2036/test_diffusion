@@ -11,7 +11,7 @@ from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder
 from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
-from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
+from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock, GlobalAveragePool
 
 
 # from .attention import Attention
@@ -52,13 +52,6 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
 """
 
 
-class GlobalAveragePool(nn.Module):
-    @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
-        return x
-
-
 class Encoder2DLatent(nn.Module):
     n: int = 8
     dtype: Any = 'bfloat16'
@@ -88,7 +81,7 @@ class DiffEncoder(nn.Module):
     def setup(self):
 
         encoder_configs = self.encoder_configs
-        self.encoder = Encoder(**encoder_configs, name='Encoder')
+        self.encoder = Encoder(encoder_type=self.encoder_type,**encoder_configs, name='Encoder')
         self.decoder_latent_1d = nn.Sequential([
             # nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
             nn.silu,
@@ -101,10 +94,6 @@ class DiffEncoder(nn.Module):
     def encode(self, x, *args, **kwargs):
         x = self.encoder(x)
         x = nn.tanh(x)
-        encoder_type = self.encoder_type
-        if encoder_type == '1D':
-            latent = self.decoder_latent_1d(x)
-            return latent
         return x
 
     @nn.compact
@@ -126,8 +115,8 @@ class DiffEncoder(nn.Module):
         else:
             raise NotImplementedError()
 
-        assert self.encoder_type in ['1D','2D','Both']
-        print(latent.shape)
+        assert self.encoder_type in ['1D', '2D', 'Both']
+        print(f'latent shape:{latent.shape}')
         if self.encoder_type == '1D':
             cond_emb = latent
             x_self_cond = None

@@ -219,3 +219,10 @@ class UpSample(nn.Module):
         x = jax.image.resize(x, shape=(b, h * 2, w * 2, c), method="nearest")
         x = nn.Conv(self.dim, (3, 3), padding="SAME", dtype=self.dtype)(x)
         return x
+
+
+class GlobalAveragePool(nn.Module):
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
+        return x
