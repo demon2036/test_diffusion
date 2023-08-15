@@ -6,9 +6,8 @@ import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
 from einops.layers.flax import Rearrange
-import optax
 from modules.models.nafnet import NAFBlock
-from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder
+from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder, Encoder2DLatent
 from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
@@ -69,7 +68,7 @@ class Unet(nn.Module):
     dtype: Any = jnp.bfloat16
     self_condition: bool = False
     use_encoder: bool = False
-    encoder_configs: Any = None
+    encoder_type:str ='2D'
     res_type: Any = 'default'
     patch_size: int = 1
 
@@ -95,6 +94,26 @@ class Unet(nn.Module):
             res_block = None
 
         cond_emb = None
+        if self.use_encoder:
+            latent = x_self_cond
+            assert self.encoder_type in ['1D', '2D', 'Both']
+            print(f'latent shape:{latent.shape}')
+            if self.encoder_type == '1D':
+                cond_emb = latent
+                x_self_cond = None
+            elif self.encoder_type == '2D':
+                cond_emb = None
+                x_self_cond = Encoder2DLatent(shape=x.shape)(latent)
+            elif self.encoder_type == 'Both':
+                cond_emb = nn.Sequential([
+                    nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
+                    nn.silu,
+                    nn.Conv(self.dim * 16, (1, 1)),
+                    GlobalAveragePool(),
+                    Rearrange('b h w c->b (h w c)'),
+                    nn.Dense(self.dim * 16)
+                ])(latent)
+                x_self_cond = Encoder2DLatent(shape=x.shape)(latent)
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)

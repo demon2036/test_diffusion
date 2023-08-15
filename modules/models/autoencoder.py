@@ -10,6 +10,21 @@ from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
 import jax.numpy as jnp
 
 
+
+class Encoder2DLatent(nn.Module):
+    n: int = 8
+    dtype: Any = 'bfloat16'
+    shape: Any = None
+
+    @nn.compact
+    def __call__(self, latent, *args, **kwargs):
+        n = self.n
+        x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
+        x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
+        x_self_cond = jax.image.resize(x_self_cond, self.shape, 'bicubic')
+        return x_self_cond
+
+
 class Encoder(nn.Module):
     dims: Sequence
     num_blocks: int = 2
@@ -30,13 +45,12 @@ class Encoder(nn.Module):
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
 
         if self.encoder_type == '1D':
-            x = nn.Sequential([
-                nn.GroupNorm(),
-                nn.silu,
-                GlobalAveragePool(),
-                nn.Conv(self.latent, (1, 1)),
-                Rearrange('b h w c->b (h w c)'),
-            ])(x)
+            x = nn.GroupNorm()(x)
+            x = nn.silu(x)
+            # Global Average Pooling
+            x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
+            x = nn.Conv(self.latent, (1, 1))(x)
+            x = einops.rearrange(x, 'b h w c->b (h w c)')
 
         return x
 
