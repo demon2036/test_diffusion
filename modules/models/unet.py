@@ -74,31 +74,7 @@ class Unet(nn.Module):
     patch_size: int = 1
 
     def setup(self):
-        if self.use_encoder is None:
-            pass
-        else:
-            encoder_configs = self.encoder_configs
-            self.encoder = Encoder(**encoder_configs, name='Encoder')
-            self.decoder_latent_1d = nn.Sequential([
-                # nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
-                nn.silu,
-                nn.Conv(512, (1, 1)),
-                GlobalAveragePool(),
-                Rearrange('b h w c->b (h w c)'),
-                nn.Dense(512)
-            ])
-
-    def encode(self, x, *args, **kwargs):
-        x = self.encoder(x)
-        x = nn.tanh(x)
-
-        encoder_type = self.encoder_configs['encoder_type']
-
-        if encoder_type == '1D':
-            latent = self.decoder_latent_1d(x)
-            return latent
-
-        return x
+        pass
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
@@ -119,32 +95,6 @@ class Unet(nn.Module):
             res_block = None
 
         cond_emb = None
-        if self.use_encoder:
-            n = 8
-            latent = self.encode(x_self_cond)
-            encoder_configs = self.encoder_configs
-            encoder_type = encoder_configs['encoder_type']
-            decoder_latent_1d = nn.Sequential([
-                nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
-                nn.silu,
-                nn.Conv(512, (1, 1)),
-                GlobalAveragePool(),
-                Rearrange('b h w c->b (h w c)'),
-                nn.Dense(512)
-            ])
-
-            print(latent.shape)
-            if encoder_type == '1D':
-                cond_emb = latent
-            elif encoder_type == '2D':
-                x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
-                x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
-                x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
-            elif encoder_type == 'Both':
-                cond_emb = decoder_latent_1d(latent)
-                x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
-                x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
-                x_self_cond = jax.image.resize(x_self_cond, x.shape, 'bicubic')
 
         if x_self_cond is not None and self.self_condition:
             x = jnp.concatenate([x, x_self_cond], axis=3)
