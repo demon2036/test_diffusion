@@ -25,9 +25,9 @@
       }
     },
     params: {
-      dim: 32,
+      dim: 64,
       out_channels: 3,
-      dim_mults: [ 1, 2, 4, 4, 8, 8 ],
+      dim_mults: [ 1, 1, 2, 2, 4, 4 ],
       encoder_type: '2D',
       encoder_configs: {
         dims: [ 64,128,256,256 ],
