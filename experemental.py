@@ -124,7 +124,6 @@ if __name__ == "__main__":
             #print(f'batch:{batch.shape}')
 
 
-
             # sample_save_image_latent_diffusion_1d_test(key, c, steps, state, trainer_configs['save_path'], ae_state,
             #                                            first_stage_gaussian, batch)
             state, metrics = train_step(state, batch, train_step_key, c)

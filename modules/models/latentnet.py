@@ -49,8 +49,7 @@ class LatentNet(nn.Module):
                 h = jnp.concatenate([h, x], axis=-1)
             h = MLP(self.dim, self.dtype)(h, t)
 
-        x = nn.LayerNorm(dtype=self.dtype)(x)
-        x = nn.silu(x)
-        x = nn.Dense(self.out_dim, dtype=self.dtype)(x)
-
+        # x = nn.LayerNorm(dtype=self.dtype)(x)
+        # x = nn.silu(x)
+        x = nn.Dense(self.out_dim, dtype='float32')(h)
         return x

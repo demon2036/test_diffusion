@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/ae_preprocess.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/training/ldm_1d/2048-20.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/ldm_1d/test_diff.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_1d/test_diff.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussian1D.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian1D.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/diffEncoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/diffEncoder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experemental.py" beforeDir="false" afterPath="$PROJECT_DIR$/experemental.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/models/latentnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/latentnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/ae_diff_preprocess.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,18 +41,18 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/preprocess/diff_ae/1D",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/ldm_1d",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/training/ldm_1d" />
       <recent name="$PROJECT_DIR$/configs/preprocess/diff_ae/1D" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/model/DiffAE" />
       <recent name="$PROJECT_DIR$/configs/training/DiffusionEncoder" />
-      <recent name="$PROJECT_DIR$/modules/gaussian" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
@@ -190,30 +187,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00101" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691868732491</created>
-      <option name="number" value="00101" />
-      <option name="presentableId" value="LOCAL-00101" />
-      <option name="project" value="LOCAL" />
-      <updated>1691868732491</updated>
-    </task>
-    <task id="LOCAL-00102" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691870693562</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1691870693562</updated>
-    </task>
-    <task id="LOCAL-00103" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691870751066</created>
-      <option name="number" value="00103" />
-      <option name="presentableId" value="LOCAL-00103" />
-      <option name="project" value="LOCAL" />
-      <updated>1691870751066</updated>
     </task>
     <task id="LOCAL-00104" summary="fix bug">
       <option name="closed" value="true" />
@@ -583,7 +556,31 @@
       <option name="project" value="LOCAL" />
       <updated>1692274516653</updated>
     </task>
-    <option name="localTasksCounter" value="150" />
+    <task id="LOCAL-00150" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692290136146</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1692290136146</updated>
+    </task>
+    <task id="LOCAL-00151" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692291554458</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1692291554458</updated>
+    </task>
+    <task id="LOCAL-00152" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692291946681</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
+      <option name="project" value="LOCAL" />
+      <updated>1692291946681</updated>
+    </task>
+    <option name="localTasksCounter" value="153" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
