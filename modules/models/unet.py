@@ -116,7 +116,7 @@ class Unet(nn.Module):
                 ])(latent)
                 x_self_cond = Encoder2DLatent(shape=x.shape)(latent)
 
-        if x_self_cond is not None and self.self_condition:
+        if x_self_cond is not None:
             x = jnp.concatenate([x, x_self_cond], axis=3)
 
         print(x.shape)
