@@ -3,6 +3,10 @@ import jax.numpy as jnp
 import flax.linen as nn
 
 
+def charbonnier_loss(predictions, target, eps=1e-3):
+    return jnp.sqrt((target - predictions) ** 2 + eps)
+
+
 def l2_loss(predictions, target):
     return optax.l2_loss(predictions=predictions, targets=target)
 

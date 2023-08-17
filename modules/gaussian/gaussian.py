@@ -6,7 +6,7 @@ from flax.training.common_utils import shard, shard_prng_key
 from tqdm import tqdm
 from modules.noise.noise import normal_noise, truncate_noise, pyramid_nosie, resize_noise, offset_noise
 from modules.gaussian.schedules import linear_beta_schedule, cosine_beta_schedule, sigmoid_beta_schedule
-from modules.loss.loss import l1_loss, l2_loss
+from modules.loss.loss import l1_loss, l2_loss, charbonnier_loss
 import jax
 import jax.numpy as jnp
 
@@ -70,7 +70,7 @@ class Gaussian:
         elif beta_schedule == 'sigmoid':
             beta_schedule_fn = sigmoid_beta_schedule
 
-        betas = beta_schedule_fn(timesteps,**beta_schedule_configs)
+        betas = beta_schedule_fn(timesteps, **beta_schedule_configs)
 
         alphas = 1 - betas
         if scale_shift:
@@ -112,6 +112,8 @@ class Gaussian:
             self.loss = l2_loss
         elif loss == 'l1':
             self.loss = l1_loss
+        elif loss == 'charbonnier':
+            self.loss = charbonnier_loss
 
         maybe_clipped_snr = snr.clone()
         if min_snr_loss_weight:
@@ -338,7 +340,7 @@ class Gaussian:
         key, cond_key = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
 
-        x_start=x_start*self.scale_factor
+        x_start = x_start * self.scale_factor
         # noise sample
         x = self.q_sample(x_start, t, noise)
 

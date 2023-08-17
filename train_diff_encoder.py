@@ -92,15 +92,16 @@ def train():
             pbar.set_postfix(metrics)
             pbar.update(1)
 
-            if steps <= 100:
-                state = p_copy_params_to_ema(state)
-            elif steps % 10 == 0:
-                ema_decay = ema_decay_schedule(steps)
-                state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
+            # if steps <= 100:
+            #     state = p_copy_params_to_ema(state)
+            # elif steps % 10 == 0:
+            #     ema_decay = ema_decay_schedule(steps)
+            #     state = p_apply_ema(state, replicate(jnp.array([ema_decay])))
 
-
-            # if steps > 100 and steps % 10 == 0:
-            #     state = update_ema(state, 0.995)
+            if steps > 0 and steps % 1 == 0:
+                decay = min(0.9999, (1 + steps) / (10 + steps))
+                decay = flax.jax_utils.replicate(jnp.array([decay]))
+                state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
                 batch=flax.jax_utils.unreplicate(batch)
