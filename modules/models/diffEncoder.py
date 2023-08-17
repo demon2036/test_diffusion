@@ -93,6 +93,7 @@ class DiffEncoder(nn.Module):
                          )
 
     def encode(self, x, *args, **kwargs):
+        print(x.shape)
         x = self.encoder(x)
         x = nn.tanh(x)
         return x

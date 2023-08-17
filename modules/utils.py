@@ -3,6 +3,7 @@ import importlib
 import einops
 import numpy as np
 import torch
+from flax.jax_utils import replicate
 from flax.training.common_utils import shard
 from torchvision.utils import save_image
 from flax.training import train_state
@@ -17,9 +18,12 @@ import yaml
 import json
 
 from modules.gaussian.gaussian import Gaussian
+from modules.gaussian.gaussian1D import Gaussian1D
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.gaussian.gaussianSR import GaussianSR
+from modules.gaussian.gaussian_test import GaussianTest
 from modules.models.autoencoder import AutoEncoder
+from modules.models.diffEncoder import DiffEncoder
 
 
 class EMATrainState(train_state.TrainState):
@@ -35,7 +39,7 @@ def read_yaml(config_path):
 
 
 @partial(jax.pmap, )
-def update_ema(state, ema_decay=0.999,):
+def update_ema(state, ema_decay=0.999, ):
     new_ema_params = jax.tree_map(lambda ema, normal: ema * ema_decay + (1 - ema_decay) * normal, state.ema_params,
                                   state.params)
     state = state.replace(ema_params=new_ema_params)
@@ -72,12 +76,12 @@ def vanilla_d_loss(logits_real, logits_fake):
     return d_loss
 
 
-def sample_save_image_autoencoder(state, save_path, steps, data,z_rng):
+def sample_save_image_autoencoder(state, save_path, steps, data, z_rng):
     os.makedirs(save_path, exist_ok=True)
 
     @jax.pmap
     def infer(state, params, data):
-        sample = state.apply_fn({'params': params}, data,z_rng=z_rng)
+        sample = state.apply_fn({'params': params}, data, z_rng=z_rng)
         return sample
 
     if steps < 50000:
@@ -141,6 +145,58 @@ def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainS
     sample = decode(ae_state, latent)
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
+def sample_save_image_latent_diffusion_1d(key, c: Gaussian1D, steps,
+                                          state: EMATrainState, save_path, ae_state: EMATrainState,
+                                          first_stage_gaussian: GaussianTest):
+    os.makedirs(save_path, exist_ok=True)
+    c.eval()
+    sample_latent = c.sample(key, state, batch_size=16)
+    c.train()
+
+    print(sample_latent.shape)
+    first_stage_gaussian.eval()
+    samples = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    print(samples.shape)
+    """
+    latent = shard(sample)
+    sample = decode(ae_state, latent)
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+    """
+
+
+@jax.pmap
+def diff_encode(state: EMATrainState, x):
+    return state.apply_fn({'params': state.ema_params}, x, method=DiffEncoder.encode)
+
+
+def sample_save_image_latent_diffusion_1d_test(key, c: Gaussian1D, steps,
+                                               state: EMATrainState, save_path, ae_state: EMATrainState,
+                                               first_stage_gaussian: GaussianTest, batch):
+    os.makedirs(save_path, exist_ok=True)
+
+    print(batch.shape)
+    sample_latent = diff_encode(ae_state, batch)
+    sample_latent = einops.rearrange(sample_latent, 'n b c->(n b) c')
+
+    print(sample_latent.shape)
+    first_stage_gaussian.eval()
+    sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    print(sample.shape)
+
+    batch = einops.rearrange(batch,'n b h w c->(n b ) h w c')
+    sample = jnp.concatenate([sample, batch], axis=0)
+
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, 'b h w c->(b) c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')

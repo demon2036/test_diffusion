@@ -5,12 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+      <change afterPath="$PROJECT_DIR$/configs/training/ldm_1d/test_diff.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/gaussian/gaussian1D.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/gaussian/gaussian_test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/models/latentnet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train_ldm_1d.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-1D.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-1D.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-2D-128.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-2D-128.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-2D.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-2D.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-both-128.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-both-128.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-both.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/ffhq256-both.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/diffEncoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/diffEncoder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,29 +40,50 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/Diffusion&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/model/DiffAE",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
-      <recent name="$PROJECT_DIR$/configs/training/DiffusionEncoder" />
-      <recent name="$PROJECT_DIR$/configs/training" />
-      <recent name="$PROJECT_DIR$/configs/DiffusionEncoder" />
+      <recent name="$PROJECT_DIR$/model/DiffAE" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/modules/gaussian" />
+      <recent name="$PROJECT_DIR$/configs/training" />
+      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train_diff">
+  <component name="RunManager" selected="Python.experemental">
+    <configuration name="experemental" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="diffusion" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experemental.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -72,49 +96,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="diffusion" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="diffusion" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/test2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -135,6 +118,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_diff.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -156,7 +140,30 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_diff_encoder.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_ldm_1d" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="diffusion" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_ldm_1d.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -167,11 +174,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.experemental" />
+        <item itemvalue="Python.train_ldm_1d" />
         <item itemvalue="Python.train_diff" />
         <item itemvalue="Python.train_diff_encoder" />
         <item itemvalue="Python.test (1)" />
-        <item itemvalue="Python.test2" />
-        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -184,22 +191,7 @@
       <option name="presentableId" value="Default" />
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
-    </task>
-    <task id="LOCAL-00097" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691853178748</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
-      <option name="project" value="LOCAL" />
-      <updated>1691853178748</updated>
-    </task>
-    <task id="LOCAL-00098" summary="fix bug">
-      <option name="closed" value="true" />
-      <created>1691856672531</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
-      <option name="project" value="LOCAL" />
-      <updated>1691856672531</updated>
+      <workItem from="1692227362716" duration="3000" />
     </task>
     <task id="LOCAL-00099" summary="fix bug">
       <option name="closed" value="true" />
@@ -577,7 +569,23 @@
       <option name="project" value="LOCAL" />
       <updated>1692215363320</updated>
     </task>
-    <option name="localTasksCounter" value="146" />
+    <task id="LOCAL-00146" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692215703767</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1692215703767</updated>
+    </task>
+    <task id="LOCAL-00147" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692215756590</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1692215756590</updated>
+    </task>
+    <option name="localTasksCounter" value="148" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
