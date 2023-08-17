@@ -122,7 +122,7 @@ class Gaussian:
         if objective == 'predict_noise':
             self.loss_weight = maybe_clipped_snr / snr
         elif objective == 'predict_x0':
-            self.loss_weight = maybe_clipped_snr
+            self.loss_weight = maybe_clipped_snr / snr ** 1.5  # maybe_clipped_snr
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
 
