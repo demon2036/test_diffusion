@@ -35,7 +35,7 @@ class LatentNet(nn.Module):
     @nn.compact
     def __call__(self, x, time, *args, **kwargs):
 
-        time_dim = self.dim * 4
+        time_dim = self.dim * 1
         t = nn.Sequential([
             SinusoidalPosEmb(self.dim),
             nn.Dense(time_dim, dtype=self.dtype),
@@ -47,7 +47,7 @@ class LatentNet(nn.Module):
         for i in range(self.num_layers):
             if i != 0:
                 h = jnp.concatenate([h, x], axis=-1)
-            h = MLP(self.dim, self.dtype)(x, t)
+            h = MLP(self.dim, self.dtype)(h, t)
 
         x = nn.LayerNorm(dtype=self.dtype)(x)
         x = nn.silu(x)

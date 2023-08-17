@@ -30,7 +30,7 @@
               image_size: 128,
               loss: 'l1',
               timesteps: 1000,
-              sampling_timesteps: 999,
+              sampling_timesteps: 200,
               objective: 'predict_noise',
               beta_schedule: 'sigmoid',
               min_snr_loss_weight: True,
@@ -44,8 +44,8 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 32,
-      file_path: '/home/john/data/FFHQ256',
-      #data_type: 'np'
+      file_path: '/home/john/data/latent1D',
+      data_type: 'np'
     },
     trainer_configs: {
       seed: 43,
@@ -65,7 +65,7 @@
     },
     params: {
       num_layers: 10,
-      dim: 512,
+      dim: 1024,
       out_dim: 512,
       dtype: 'bfloat16'
     }
@@ -76,12 +76,12 @@
       latent_size: 512,
       loss: 'l1',
       timesteps: 1000,
-      sampling_timesteps: 5,
+      sampling_timesteps: 100,
       objective: 'predict_noise',
-      beta_schedule: 'sigmoid',
+      beta_schedule: 'linear',
       min_snr_loss_weight: True,
-      scale_shift: True,
-      self_condition: True,
+      #scale_shift: True,
+      #self_condition: True,
       p_loss: False
     },
   }

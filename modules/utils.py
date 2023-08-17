@@ -157,20 +157,16 @@ def sample_save_image_latent_diffusion_1d(key, c: Gaussian1D, steps,
     c.eval()
     sample_latent = c.sample(key, state, batch_size=16)
     c.train()
-
     print(sample_latent.shape)
     first_stage_gaussian.eval()
-    samples = first_stage_gaussian.sample(key, ae_state, sample_latent)
-    print(samples.shape)
-    """
-    latent = shard(sample)
-    sample = decode(ae_state, latent)
+    sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    print(sample.shape)
     sample = sample / 2 + 0.5
-    sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
+    sample = einops.rearrange(sample, 'b h w c->( b) c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
-    """
+
 
 
 @jax.pmap
@@ -200,6 +196,36 @@ def sample_save_image_latent_diffusion_1d_test(key, c: Gaussian1D, steps,
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
+
+
+
+
+
+def sample_save_image_latent_diffusion_1d_test2(key, c: Gaussian1D, steps,
+                                               state: EMATrainState, save_path, ae_state: EMATrainState,
+                                               first_stage_gaussian: GaussianTest, batch):
+    os.makedirs(save_path, exist_ok=True)
+
+    print(batch.shape)
+    #sample_latent = diff_encode(ae_state, batch)
+    sample_latent = einops.rearrange(batch, 'n b c->(n b) c')
+    #sample_latent=batch
+
+    print(sample_latent.shape)
+    first_stage_gaussian.eval()
+    sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    print(sample.shape)
+
+    # batch = einops.rearrange(batch,' b h w c->(n b ) h w c')
+    # sample = jnp.concatenate([sample, batch], axis=0)
+
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, 'b h w c->(b) c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):
