@@ -35,6 +35,10 @@ def extract(a, t, x_shape):
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
+def identity(x):
+    return x
+
+
 class Gaussian:
     def __init__(
             self,
@@ -51,15 +55,21 @@ class Gaussian:
             self_condition=False,
             noise_type='normal',
             scale_factor=1,
-            p_loss=True
+            p_loss=True,
+            mean=0,
+            std=1,
+            clip_x_start=False
 
     ):
+        self.clip_x_start = clip_x_start
         self.train_state = True
         self.noise_type = noise_type
         self.scale_factor = scale_factor
         self.model = None
         self.image_size = image_size
         self.self_condition = self_condition
+        self.mean = mean
+        self.std = std
         assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
         self.objective = objective
 
@@ -136,6 +146,12 @@ class Gaussian:
         self.pmap_model_predictions = jax.pmap(self.model_predictions)
         self.pmap_p_sample = jax.pmap(self.p_sample)
 
+    def normalize(self, x):
+        return (x - self.mean) / self.std
+
+    def denormalize(self, x):
+        return x * self.std + self.mean
+
     def set_state(self, state):
         self.state = state
 
@@ -180,7 +196,7 @@ class Gaussian:
         else:
             model_output = model_predict_ema(state, x, t, x_self_cond)
 
-        clip_x_start = True
+        clip_x_start = self.clip_x_start
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
 
         if self.objective == 'predict_noise':
@@ -328,6 +344,10 @@ class Gaussian:
         else:
             samples = self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
+        # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was normalized
+        # if mean=0 and std=1 img=denormalize(image)
+        samples = self.denormalize(samples)
+
         return samples / self.scale_factor
 
     def q_sample(self, x_start, t, noise):
@@ -372,6 +392,10 @@ class Gaussian:
         return p_loss
 
     def __call__(self, key, state, params, img):
+        # input image will be normalized by mean(default as 0) and std(default as 1)
+        # if mean=0 and std=1 img=normalize(image)
+        img = self.normalize(img)
+
         key_times, key_noise = jax.random.split(key, 2)
         b, h, w, c = img.shape
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
