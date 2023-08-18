@@ -70,6 +70,10 @@ class Gaussian:
         self.self_condition = self_condition
         self.mean = mean
         self.std = std
+
+        if mean != 0 and std != 1:
+            print(f'mean:{mean} std:{std}')
+
         assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
         self.objective = objective
 
