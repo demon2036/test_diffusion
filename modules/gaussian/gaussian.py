@@ -401,7 +401,7 @@ class Gaussian:
         img = self.normalize(img)
 
         key_times, key_noise = jax.random.split(key, 2)
-        b, h, w, c = img.shape
+        b,*_ = img.shape
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
         return self.p_loss(key_noise, state, params, img, t)
