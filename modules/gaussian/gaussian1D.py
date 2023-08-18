@@ -22,14 +22,27 @@ def extract(a, t, x_shape):
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
+
+
+
+
 class Gaussian1D(Gaussian):
     def __init__(
             self,
+            latent_size,
             *args,
             **kwargs
 
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args,**kwargs)
+        self.latent_size = latent_size
+
+
+
+
+
+
+
 
     def ddim_sample(self, key, state, self_condition=None, shape=None):
         b, *_ = shape
@@ -81,3 +94,18 @@ class Gaussian1D(Gaussian):
         img = einops.rearrange(img, 'n b  c->(n b ) c', n=img.shape[0])
 
         return img
+
+    def sample(self, key, state, self_condition=None, batch_size=64):
+
+        if self_condition is not None:
+            batch_size = self_condition.shape[0]
+
+        shape = (batch_size, self.latent_size)
+
+        if self.num_timesteps > self.sampling_timesteps:
+            samples = self.ddim_sample(key, state, self_condition, shape)
+        else:
+            samples = self.p_sample_loop(key, state, self_condition, shape)
+
+        return samples / self.scale_factor
+
