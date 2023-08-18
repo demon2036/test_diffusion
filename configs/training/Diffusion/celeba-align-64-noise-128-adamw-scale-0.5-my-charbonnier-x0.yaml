@@ -41,11 +41,12 @@
     sampling_timesteps: 1000,
     objective: 'predict_x0',
     beta_schedule: 'cosine',
-    #min_snr_loss_weight: True,
+    min_snr_loss_weight: True,
     #scale_shift: True,
     scale_factor: 0.25,
     noise_type: 'normal',
     self_condition: True,
+    p_loss: False,
 
   }
 
