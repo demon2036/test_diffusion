@@ -45,7 +45,8 @@
       image_size: 128,
       batch_size: 4096,
       file_path: '/root/data/latent1D',
-      data_type: 'np'
+      data_type: 'np',
+      repeat: 100,
     },
     trainer_configs: {
       seed: 43,
