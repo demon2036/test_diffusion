@@ -58,7 +58,7 @@ class Gaussian:
             p_loss=True,
             mean=0,
             std=1,
-            clip_x_start=False
+            clip_x_start=True
 
     ):
         self.clip_x_start = clip_x_start
