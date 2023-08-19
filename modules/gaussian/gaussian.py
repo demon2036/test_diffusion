@@ -350,9 +350,10 @@ class Gaussian:
 
         # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was normalized
         # if mean=0 and std=1 img=denormalize(image)
+        samples=samples/self.scale_factor
         samples = self.denormalize(samples)
 
-        return samples / self.scale_factor
+        return samples
 
     def q_sample(self, x_start, t, noise):
         return (
