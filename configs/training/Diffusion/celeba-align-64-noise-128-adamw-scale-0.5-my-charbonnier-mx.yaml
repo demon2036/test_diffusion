@@ -46,6 +46,7 @@
     scale_factor: 0.25,
     noise_type: 'normal',
     self_condition: True,
+    p_loss: False,
 
   }
 
