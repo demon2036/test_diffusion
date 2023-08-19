@@ -22,10 +22,6 @@ def extract(a, t, x_shape):
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
-
-
-
-
 class Gaussian1D(Gaussian):
     def __init__(
             self,
@@ -34,15 +30,8 @@ class Gaussian1D(Gaussian):
             **kwargs
 
     ):
-        super().__init__(*args,**kwargs)
+        super().__init__(*args, **kwargs)
         self.latent_size = latent_size
-
-
-
-
-
-
-
 
     def ddim_sample(self, key, state, self_condition=None, shape=None):
         b, *_ = shape
@@ -113,4 +102,3 @@ class Gaussian1D(Gaussian):
         samples = self.denormalize(samples)
 
         return samples
-
