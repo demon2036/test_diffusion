@@ -140,7 +140,7 @@ class Gaussian:
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
         elif objective == 'predict_mx':
-            self.loss_weight = snr ** (-0.5)
+            self.loss_weight = snr ** 0.5
 
         if p_loss:
             p2_loss_weight_gamma = 1
