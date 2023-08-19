@@ -69,7 +69,7 @@ def get_auto_encoder_diff(config):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/1D/test_diff.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/1D/no-tanh.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     dataloader_configs, trainer_configs = train_config.values()
 
     dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
-    save_path = '/home/john/data/latent1D'
+    save_path = '/home/john/data/latent1D_no_tanh'
     os.makedirs(save_path, exist_ok=True)
     count = 0
 

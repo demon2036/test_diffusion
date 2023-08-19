@@ -1,0 +1,59 @@
+{
+  "FirstStage": {
+    "AutoEncoder": {
+            target: modules.models.diffEncoder.DiffEncoder,
+            optimizer: {
+              optimizer: optax.adamw,
+              optimizer_configs: {
+                learning_rate: 2.0e-4,
+                b1: 0.9,
+                b2: 0.99
+              }
+            },
+            params: {
+              dim: 64,
+              out_channels: 3,
+              num_res_blocks: 2,
+              dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+              encoder_type: '1D',
+              use_act: False,
+              encoder_configs: {
+                dims: [ 64,128,256,256,512,512,512 ],
+                dtype: 'bfloat16',
+                latent: 512,
+
+              }
+            }
+          },
+          "Gaussian": {
+            target: modules.gaussian.gaussian_test.GaussianTest,
+            params: {
+              image_size: 128,
+              loss: 'l1',
+              timesteps: 1000,
+              sampling_timesteps: 200,
+              objective: 'predict_noise',
+              beta_schedule: 'sigmoid',
+              min_snr_loss_weight: True,
+              scale_shift: True,
+              self_condition: True,
+              p_loss: False
+            }
+          }
+  },
+  "train": {
+    dataloader_configs: {
+      image_size: 128,
+      batch_size: 32,
+      file_path: '/home/john/data/FFHQ256',
+      #data_type: 'np'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+  },
+}

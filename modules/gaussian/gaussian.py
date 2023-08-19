@@ -74,7 +74,7 @@ class Gaussian:
         if mean != 0 and std != 1:
             print(f'mean:{mean} std:{std}')
 
-        assert objective in {'predict_noise', 'predict_x0', 'predict_v'}
+        assert objective in {'predict_noise', 'predict_x0', 'predict_v', 'predict_mx'}
         self.objective = objective
 
         if beta_schedule == 'linear':
@@ -136,9 +136,11 @@ class Gaussian:
         if objective == 'predict_noise':
             self.loss_weight = maybe_clipped_snr / snr
         elif objective == 'predict_x0':
-            self.loss_weight = maybe_clipped_snr / snr   # maybe_clipped_snr
+            self.loss_weight = maybe_clipped_snr / snr  # maybe_clipped_snr
         elif objective == 'predict_v':
             self.loss_weight = maybe_clipped_snr / (snr + 1)
+        elif objective == 'predict_mx':
+            self.loss_weight = snr ** (-0.5)
 
         if p_loss:
             p2_loss_weight_gamma = 1
@@ -219,6 +221,10 @@ class Gaussian:
         elif self.objective == 'predict_v':
             v = model_output
             x_start = self.predict_start_from_v(x, t, v)
+            x_start = maybe_clip(x_start)
+            pred_noise = self.predict_noise_from_start(x, t, x_start)
+        elif self.objective == 'predict_mx':
+            x_start = -model_output
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 
@@ -348,9 +354,9 @@ class Gaussian:
         else:
             samples = self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
 
-        # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was normalized
-        # if mean=0 and std=1 img=denormalize(image)
-        samples=samples/self.scale_factor
+        # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was
+        # normalized if mean=0 and std=1 img=denormalize(image)
+        samples = samples / self.scale_factor
         samples = self.denormalize(samples)
 
         return samples
@@ -388,6 +394,8 @@ class Gaussian:
         elif self.objective == 'predict_v':
             v = self.predict_v(x_start, t, noise)
             target = v
+        elif self.objective == 'predict_mx':
+            target = -x_start
         else:
             target = None
 
@@ -402,7 +410,7 @@ class Gaussian:
         img = self.normalize(img)
 
         key_times, key_noise = jax.random.split(key, 2)
-        b,*_ = img.shape
+        b, *_ = img.shape
         t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
 
         return self.p_loss(key_noise, state, params, img, t)

@@ -107,5 +107,10 @@ class Gaussian1D(Gaussian):
         else:
             samples = self.p_sample_loop(key, state, self_condition, shape)
 
-        return samples / self.scale_factor
+        # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was
+        # normalized if mean=0 and std=1 img=denormalize(image)
+        samples = samples / self.scale_factor
+        samples = self.denormalize(samples)
+
+        return samples
 

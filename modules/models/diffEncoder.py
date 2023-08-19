@@ -77,6 +77,7 @@ class DiffEncoder(nn.Module):
     encoder_configs: Any = None
     encoder_type: str = '2D'
     res_type: Any = 'default'
+    use_act:bool =True
 
     def setup(self):
         encoder_configs = self.encoder_configs
@@ -95,7 +96,8 @@ class DiffEncoder(nn.Module):
     def encode(self, x, *args, **kwargs):
         print(f'encoder input:{x.shape}')
         x = self.encoder(x)
-        x = nn.tanh(x)
+        if self.use_act:
+            x = nn.tanh(x)
         return x
 
     def decode(self, x, time, latent=None, *args, **kwargs):
