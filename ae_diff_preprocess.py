@@ -34,8 +34,8 @@ def save_latent(x, count, save_path):
 def diff_encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=DiffEncoder.encode)
 
-#@partial(jax.jit)
-def decode(ae_state: EMATrainState, sample_latent,first_stage_gaussian):
+
+def decode(ae_state: EMATrainState, sample_latent, first_stage_gaussian):
     first_stage_gaussian.eval()
     sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
     return sample
@@ -92,16 +92,17 @@ if __name__ == "__main__":
 
             x = shard(x)
             sample_latent = diff_encode(state, x)
-            sample_latent = einops.rearrange(sample_latent, 'n b c->(n b) c')
-            latent = np.array(sample_latent, dtype='float32')
-            for x in latent:
-                pool.submit(save_latent, x, count, save_path)
-                count += 1
+            # sample_latent = einops.rearrange(sample_latent, 'n b c->(n b) c')
+            # latent = np.array(sample_latent, dtype='float32')
+            # for x in latent:
+            #     pool.submit(save_latent, x, count, save_path)
+            #     count += 1
 
-            # y = decode(state, latent,first_stage_gaussian)
-            # sample = y / 2 + 0.5
-            # sample = einops.rearrange(sample, '( b) h w c->(b ) c h w', )
-            # sample = np.array(sample)
-            # sample = torch.Tensor(sample)
-            # save_image(sample, f'test.png')
-            # break
+            sample_latent = einops.rearrange(sample_latent, 'n b c->(n b ) c')
+            y = decode(state, sample_latent, first_stage_gaussian)
+            sample = y / 2 + 0.5
+            sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
+            sample = np.array(sample)
+            sample = torch.Tensor(sample)
+            save_image(sample, f'test.png')
+            break

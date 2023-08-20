@@ -48,19 +48,21 @@ class Gaussian:
             sampling_timesteps=1000,
             objective='predict_noise',
             beta_schedule='linear',
-            beta_schedule_configs={},
+            beta_schedule_configs=None,
             ddim_sampling_eta=0.,
             min_snr_loss_weight=False,
             scale_shift=False,
             self_condition=False,
             noise_type='normal',
             scale_factor=1,
-            p_loss=True,
+            p_loss=False,
             mean=0,
             std=1,
             clip_x_start=True
 
     ):
+        if beta_schedule_configs is None:
+            beta_schedule_configs = {}
         self.clip_x_start = clip_x_start
         self.train_state = True
         self.noise_type = noise_type
