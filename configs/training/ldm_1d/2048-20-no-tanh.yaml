@@ -45,7 +45,7 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 4096,
-      file_path: '/root/data/latent1D',
+      file_path: '/root/data/latent1D_no_tanh',
       data_type: 'np',
       repeat: 100,
 
