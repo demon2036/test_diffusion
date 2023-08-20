@@ -43,7 +43,7 @@
   "train": {
     dataloader_configs: {
       image_size: 128,
-      batch_size: 128,
+      batch_size: 4096,
       file_path: '/root/data/latent1D',
       data_type: 'np',
       repeat: 100,
@@ -60,7 +60,7 @@
   "LatentNet": {
     target: modules.models.latentnet.LatentNet,
     optimizer: {
-      optimizer: optax.adamw,
+      optimizer: optax.lion,
       optimizer_configs: {
         learning_rate: 1.0e-4
       }
@@ -79,7 +79,7 @@
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
-      objective: 'predict_noise',
+      objective: 'predict_mx',
       beta_schedule: 'cosine',
       #min_snr_loss_weight: True,
       #scale_shift: True,
