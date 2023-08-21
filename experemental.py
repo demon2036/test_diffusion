@@ -16,7 +16,7 @@ from modules.save_utils import save_image_from_jax
 from modules.state_utils import create_state
 from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
     get_obj_from_str, EMATrainState, sample_save_image_diffusion, sample_save_image_latent_diffusion, \
-    sample_save_image_latent_diffusion_1d, sample_save_image_latent_diffusion_1d_test, \
+    sample_save_image_latent_diffusion, sample_save_image_latent_diffusion_1d_test, \
     sample_save_image_latent_diffusion_1d_test2
 import os
 import flax
@@ -116,6 +116,7 @@ if __name__ == "__main__":
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, trainer_configs['total_steps'] + 1):
+
             key, train_step_key = jax.random.split(key, num=2)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
@@ -140,7 +141,7 @@ if __name__ == "__main__":
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image_latent_diffusion_1d(key, c, steps, state, trainer_configs['save_path'], ae_state,first_stage_gaussian,)
+                    sample_save_image_latent_diffusion(key, c, steps, state, trainer_configs['save_path'], ae_state,first_stage_gaussian,)
                     # sample_save_image_latent_diffusion_1d_test2(key, c, steps, state, trainer_configs['save_path'], ae_state,
                     #                                       first_stage_gaussian, batch)
 
@@ -150,4 +151,3 @@ if __name__ == "__main__":
                 model_ckpt = {'model': unreplicate_state, 'steps': steps}
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
                 checkpoint_manager.save(steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
-

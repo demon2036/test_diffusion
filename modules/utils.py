@@ -150,7 +150,7 @@ def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainS
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_latent_diffusion_1d(key, c: Gaussian1D, steps,
+def sample_save_image_latent_diffusion(key, c: Gaussian1D, steps,
                                           state: EMATrainState, save_path, ae_state: EMATrainState,
                                           first_stage_gaussian: GaussianTest):
     os.makedirs(save_path, exist_ok=True)
