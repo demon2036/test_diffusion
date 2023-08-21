@@ -41,29 +41,6 @@ def train_step(state, batch, train_key, cls, gaussian_conf):
     return new_state, metric
 
 
-def create_state_by_config(rng, print_model=True, state_configs={}):
-    inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
-    model = create_obj_by_config(state_configs['Model'])
-
-    if print_model:
-        print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
-    variables = model.init(rng, *inputs, z_rng=rng)
-
-    args = tuple()
-    args += (create_obj_by_config(state_configs['Optimizer']),)
-    tx = optax.chain(
-        *args
-    )
-    train_state = get_obj_from_str(state_configs['target'])
-
-    return train_state.create(apply_fn=model.apply,
-                              params=variables['params'],
-                              tx=tx,
-                              batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
-                              ema_params=variables['params'],
-                              )
-
-
 class DummyClass:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -71,7 +48,7 @@ class DummyClass:
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='configs/training/DiffusionMulti/test.yaml')
+    parser.add_argument('-cp', '--config_path', default='configs/training/DiffusionMulti/test2.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -84,9 +61,7 @@ def train():
     states_conf = config['states_conf']
 
     c = create_obj_by_config(config['Gaussian'])
-    # state = create_state_by_config(key, state_configs=config["State"])
     states = [create_state_by_config(key, state_configs=config["State"]) for _ in states_conf]
-    # print(states)
 
     model_ckpt = {'model': states, 'steps': 0}
     model_save_path = trainer_configs['model_path']
@@ -95,7 +70,6 @@ def train():
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     states = [flax.jax_utils.replicate(state) for state in model_ckpt['model']]
-
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
@@ -112,7 +86,7 @@ def train():
             batch = next(dl)
 
             batch = shard(batch)
-            """
+
             for i in range(len(states_confs)):
                 state, state_conf = states[i], states_confs[i]
                 state, metrics = train_step(state, batch, train_step_key, c, state_conf)
@@ -120,36 +94,24 @@ def train():
                     metrics.update({k: v[0]})
                 pbar.set_postfix(metrics)
 
-                # decay = min(0.9999, (1 + steps) / (10 + steps))
-                # decay = flax.jax_utils.replicate(jnp.array([decay]))
-                # state = update_ema(state, decay)
-                # states[i] = state
-    
+                decay = min(0.9999, (1 + steps) / (10 + steps))
+                decay = flax.jax_utils.replicate(jnp.array([decay]))
+                state = update_ema(state, decay)
+                states[i] = state
+
             pbar.update(1)
-            """
+
             if steps % trainer_configs['sample_steps'] == 0:
-                """
                 try:
                     sample_save_image_diffusion_multi(key, c, steps, states, trainer_configs['save_path'], states_confs)
                 except Exception as e:
                     print(e)
-                """
 
                 unreplicate_states = [flax.jax_utils.unreplicate(state) for state in states]
-
-                unreplicate_states = create_state_by_config(key, state_configs=config["State"])
-                print(type(unreplicate_states))
                 model_ckpt_save = {'model': unreplicate_states, 'steps': steps}
                 save_args = orbax_utils.save_args_from_target(model_ckpt)
-                print()
                 checkpoint_manager.save(steps, model_ckpt_save, save_kwargs={'save_args': save_args}, force=False)
 
-                model_ckpt_save = load_ckpt(checkpoint_manager, model_ckpt_save)
-
-                print(model_ckpt_save)
-
-                while True:
-                    pass
 
 
 if __name__ == "__main__":
