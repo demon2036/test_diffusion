@@ -44,7 +44,7 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 1024,
-      file_path: '/root/data/latent1D',
+      file_path: '/root/data/latent2D',
       data_type: 'np',
       repeat: 100,
 
@@ -72,16 +72,16 @@
       #num_res_blocks : [2,2,2,2],
       dim_mults: [ 1,2,4,8 ],
       #out_dim: 3,
-      out_channels: 3,
+      out_channels: 4,
       dtype: 'bfloat16',
       #patch_size: 1
       self_condition: True
     }
   },
   "Gaussian": {
-    target: modules.gaussian.gaussian1D.Gaussian1D,
+    target: modules.gaussian.gaussian.Gaussian,
     params: {
-      latent_size: 512,
+      image_size: 16,
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
