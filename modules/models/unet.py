@@ -72,12 +72,12 @@ class Unet(nn.Module):
     encoder_type: str = '2D'
     res_type: Any = 'default'
     patch_size: int = 1
-
-    def setup(self):
-        pass
+    residual: bool = False
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
+
+        y = x
 
         if type(self.num_res_blocks) == int:
             num_res_blocks = (self.num_res_blocks,) * len(self.dim_mults)
@@ -172,6 +172,9 @@ class Unet(nn.Module):
         x = nn.silu(x)
         x = nn.Conv(self.out_channels * self.patch_size ** 2, (3, 3), dtype="float32")(x)
         x = einops.rearrange(x, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=self.patch_size, p2=self.patch_size)
+
+        if self.residual:
+            x = x + y
 
         return x
 
@@ -274,15 +277,11 @@ class NAFUnet(nn.Module):
             assert len(self.num_up_blocks) == len(self.dim_mults)
             num_up_blocks = self.num_up_blocks
 
-
         if type(self.num_down_blocks) == int:
             num_down_blocks = (self.num_down_blocks,) * len(self.dim_mults)
         else:
             assert len(self.num_down_blocks) == len(self.dim_mults)
             num_down_blocks = self.num_down_blocks
-
-
-
 
         if self.res_type == 'default':
             res_block = ResBlock

@@ -43,7 +43,8 @@
         dim_mults: [ 1,2,4,8 ],
         out_channels: 3,
         dtype: 'bfloat16',
-        self_condition: True
+        self_condition: True,
+        residual: True
       }
     },
     Optimizer: {
