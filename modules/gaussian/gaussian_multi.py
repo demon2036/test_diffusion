@@ -258,7 +258,7 @@ class GaussianMulti(Gaussian):
 
             cls = gaussian_configs[-int(count + 1)]
             state = states[-int(count + 1)]
-            #print(cls.objective, cls.time_min, cls.time_max)
+            # print(cls.objective, cls.time_min, cls.time_max)
 
             if time < cls.time_min:
                 count += 1
@@ -314,9 +314,10 @@ class GaussianMulti(Gaussian):
         x = self.q_sample(x_start, t, noise)
 
         print(gaussian_conf.objective)
+
         def estimate(_):
             return jax.lax.stop_gradient(
-                self.model_predictions(gaussian_conf.objective,x, t, state=state, x_self_cond=jnp.zeros_like(x),)
+                self.model_predictions(gaussian_conf.objective, x, t, state=state, x_self_cond=jnp.zeros_like(x), )
             ).pred_x_start
 
         zeros = jnp.zeros_like(x)
@@ -358,6 +359,13 @@ class GaussianMulti(Gaussian):
 
         key_times, key_noise = jax.random.split(key, 2)
         b, *_ = img.shape
-        t = jax.random.randint(key_times, (b,), minval=0, maxval=self.num_timesteps)
+
+        time_min = jnp.clip(gaussian_conf.time_min - 50, a_min=0)
+
+        time_max = jnp.clip(gaussian_conf.time_max + 50, a_max=self.num_timesteps)
+
+        print(f'time_min:{time_min} time_max:{time_max}')
+
+        t = jax.random.randint(key_times, (b,), minval=time_min, maxval=time_max)
 
         return self.p_loss(key_noise, state, params, img, t, gaussian_conf)
