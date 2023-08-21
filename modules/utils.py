@@ -128,7 +128,7 @@ def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, s
 def sample_save_image_diffusion_multi(key, c: GaussianMulti, steps, state: EMATrainState, save_path, gaussian_configs):
     os.makedirs(save_path, exist_ok=True)
     c.eval()
-    sample = c.sample(key, state, batch_size=1, gaussian_configs=gaussian_configs)
+    sample = c.sample(key, state, batch_size=64, gaussian_configs=gaussian_configs)
     c.train()
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'b h w c->b c h w')
