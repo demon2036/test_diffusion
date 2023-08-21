@@ -50,11 +50,11 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-
+    key = jax.random.PRNGKey(seed=43)
     c = create_obj_by_config(config['Gaussian'])
     state = create_state_by_config(key, state_configs=config['State'])
 
-    key = jax.random.PRNGKey(seed=43)
+
 
     dataloader_configs, trainer_configs = train_config.values()
 
