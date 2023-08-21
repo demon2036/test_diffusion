@@ -15,8 +15,6 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
                  model_kwargs=None, ):
     model = model_cls(**model_kwargs)
 
-
-
     inputs = list(map(lambda shape: jnp.empty(shape), input_shapes))
 
     if print_model:
@@ -44,14 +42,47 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
 
 
 
+def create_obj_by_config(config):
+    assert 'target', 'params' in config
+    obj = get_obj_from_str(config['target'])
+    params = config['params']
+    return obj(**params)
+
+
+def create_state_by_config(rng, print_model=True, state_configs={}):
+    inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
+    model = create_obj_by_config(state_configs['Model'])
+
+    if print_model:
+        print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
+    variables = model.init(rng, *inputs, z_rng=rng)
+
+    args = tuple()
+    args += (create_obj_by_config(state_configs['Optimizer']),)
+    print(args)
+    tx = optax.chain(
+        *args
+    )
+    train_state = get_obj_from_str(state_configs['target'])
+
+    return train_state.create(apply_fn=model.apply,
+                              params=variables['params'],
+                              tx=tx,
+                              batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
+                              ema_params=variables['params'])
+
+
+
 def copy_params_to_ema(state):
-   state = state.replace(ema_params = state.params)
-   return state
+    state = state.replace(ema_params=state.params)
+    return state
+
 
 def apply_ema_decay(state, ema_decay):
     params_ema = jax.tree_map(lambda p_ema, p: p_ema * ema_decay + p * (1. - ema_decay), state.ema_params, state.params)
-    state = state.replace(ema_params = params_ema)
+    state = state.replace(ema_params=params_ema)
     return state
+
 
 def ema_decay_schedule(step):
     beta = 0.995

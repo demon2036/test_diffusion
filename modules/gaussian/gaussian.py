@@ -42,8 +42,8 @@ def identity(x):
 class Gaussian:
     def __init__(
             self,
+            sample_shape,
             loss='l2',
-            image_size=32,
             timesteps=1000,
             sampling_timesteps=1000,
             objective='predict_noise',
@@ -61,6 +61,8 @@ class Gaussian:
             clip_x_start=True
 
     ):
+
+        self.sample_shape = sample_shape
         if beta_schedule_configs is None:
             beta_schedule_configs = {}
         self.clip_x_start = clip_x_start
@@ -68,7 +70,7 @@ class Gaussian:
         self.noise_type = noise_type
         self.scale_factor = scale_factor
         self.model = None
-        self.image_size = image_size
+
         self.self_condition = self_condition
         self.mean = mean
         self.std = std
@@ -90,6 +92,7 @@ class Gaussian:
 
         alphas = 1 - betas
         if scale_shift:
+            image_size = self.sample_shape[0]
             scale = 64 / image_size
             snr = alphas / (1 - alphas)
             alphas = 1 - 1 / (1 + (scale) ** 1 * snr)
@@ -289,7 +292,8 @@ class Gaussian:
 
             img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond, state)
 
-        img = einops.rearrange(img, 'n b h w c->(n b) h w c')
+        img = jnp.reshape(img,(-1, *self.sample_shape))
+
         ret = img
 
         return ret
@@ -341,7 +345,10 @@ class Gaussian:
                 batch_times_next = shard(batch_times_next)
                 img = self.pmap_q_sample(x_start, batch_times_next, noise)
 
-        img = einops.rearrange(img, 'n b h w c->(n b ) h w c', n=img.shape[0])
+        # img = einops.rearrange(img, 'n b h w c->(n b ) h w c', n=img.shape[0])
+        print(img.shape)
+
+        img = jnp.reshape(img,(-1, *self.sample_shape))
 
         return img
 
@@ -349,12 +356,10 @@ class Gaussian:
         if self_condition is not None:
             batch_size = self_condition.shape[0]
 
-        # return self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
-
         if self.num_timesteps > self.sampling_timesteps:
-            samples = self.ddim_sample(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+            samples = self.ddim_sample(key, state, self_condition, (batch_size, *self.sample_shape))
         else:
-            samples = self.p_sample_loop(key, state, self_condition, (batch_size, self.image_size, self.image_size, 3))
+            samples = self.p_sample_loop(key, state, self_condition, (batch_size, *self.sample_shape))
 
         # output image will be denormalized by mean(default as 0) and std(default as 1) because input image was
         # normalized if mean=0 and std=1 img=denormalize(image)

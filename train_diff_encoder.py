@@ -1,11 +1,13 @@
 import argparse
 
+import optax
 from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
 from modules.gaussian.gaussianDecoder import GaussianDecoder
-from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule
+from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, \
+    create_obj_by_config, create_state_by_config
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
     sample_save_image_diffusion, get_obj_from_str, sample_save_image_diffusion_encoder
 import flax
@@ -20,6 +22,7 @@ import jax.numpy as jnp
 initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+
 
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
 def train_step(state, batch, train_key, cls):
@@ -39,6 +42,7 @@ def train_step(state, batch, train_key, cls):
 
 
 
+
 def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='configs/training/DiffusionEncoder/test_diff.yaml')
@@ -46,22 +50,15 @@ def train():
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str,model_optimizer, unet_config = config['Unet'].values()
-    model_cls = get_obj_from_str(model_cls_str)
-    gaussian_config = config['Gaussian']
+
+    c = create_obj_by_config(config['Gaussian'])
+    state = create_state_by_config(key, state_configs=config['State'])
 
     key = jax.random.PRNGKey(seed=43)
 
     dataloader_configs, trainer_configs = train_config.values()
 
-    input_shape = (1, dataloader_configs['image_size'], dataloader_configs['image_size'], 3)
-    input_shapes = (input_shape, input_shape[0],input_shape)
 
-    c = GaussianDecoder(**gaussian_config, image_size=dataloader_configs['image_size'])
-
-    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
-                         optimizer_dict=model_optimizer,
-                         train_state=EMATrainState, model_kwargs=unet_config)
 
     model_ckpt = {'model': state, 'steps': 0}
     model_save_path = trainer_configs['model_path']
@@ -74,8 +71,8 @@ def train():
     dl = generator(**dataloader_configs)  # file_path
     finished_steps = model_ckpt['steps']
 
-    p_copy_params_to_ema=jax.pmap(copy_params_to_ema)
-    p_apply_ema=jax.pmap(apply_ema_decay)
+    p_copy_params_to_ema = jax.pmap(copy_params_to_ema)
+    p_apply_ema = jax.pmap(apply_ema_decay)
 
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
@@ -104,9 +101,9 @@ def train():
                 state = update_ema(state, decay)
 
             if steps % trainer_configs['sample_steps'] == 0:
-                batch=flax.jax_utils.unreplicate(batch)
+                batch = flax.jax_utils.unreplicate(batch)
                 try:
-                    sample_save_image_diffusion_encoder(key, c, steps, state, trainer_configs['save_path'],batch)
+                    sample_save_image_diffusion_encoder(key, c, steps, state, trainer_configs['save_path'], batch)
                 except Exception as e:
                     print(e)
 

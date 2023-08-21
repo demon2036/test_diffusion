@@ -13,7 +13,7 @@ import argparse
 from tools.resize_dataset import save_image
 
 from modules.save_utils import save_image_from_jax
-from modules.state_utils import create_state
+from modules.state_utils import create_state, create_obj_by_config, create_state_by_config
 from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
     get_obj_from_str, EMATrainState, sample_save_image_diffusion, sample_save_image_latent_diffusion, \
     sample_save_image_latent_diffusion, sample_save_image_latent_diffusion_1d_test, \
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str,input_shapes, model_optimizer, unet_config = config['LatentNet'].values()
+    model_cls_str, input_shapes, model_optimizer, unet_config = config['LatentNet'].values()
     model_cls = get_obj_from_str(model_cls_str)
 
     gaussian, gaussian_configs = get_obj_from_str(config['Gaussian']['target']), config['Gaussian']['params']
@@ -88,14 +88,8 @@ if __name__ == "__main__":
 
     dataloader_configs, trainer_configs = train_config.values()
 
-
-    c = gaussian(**gaussian_configs, )
-
-    print(model_cls)
-
-    state = create_state(rng=key, model_cls=model_cls, input_shapes=input_shapes,
-                         optimizer_dict=model_optimizer,
-                         train_state=EMATrainState, model_kwargs=unet_config)
+    c = create_obj_by_config(config['Gaussian'])
+    state = create_state_by_config(key, state_configs=config['State'])
 
     model_ckpt = {'model': state, 'steps': 0}
     model_save_path = trainer_configs['model_path']
