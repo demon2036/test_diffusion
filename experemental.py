@@ -44,11 +44,8 @@ def train_step(state, batch, train_key, cls):
 
 def get_auto_encoder_diff(config):
     ae_cls_str, model_optimizer, model_configs = config['AutoEncoder'].values()
-    gaussian, gaussian_configs = get_obj_from_str(config['Gaussian']['target']), config['Gaussian']['params']
+    first_stage_gaussian=create_obj_by_config(config['Gaussian'])
 
-    print(config['Gaussian']['target'])
-
-    first_stage_gaussian = gaussian(**gaussian_configs)
     ae_cls = get_obj_from_str(ae_cls_str)
 
     key = jax.random.PRNGKey(seed=43)
@@ -70,13 +67,11 @@ def get_auto_encoder_diff(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_1d/test_diff.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str, input_shapes, model_optimizer, unet_config = config['LatentNet'].values()
-    model_cls = get_obj_from_str(model_cls_str)
 
     gaussian, gaussian_configs = get_obj_from_str(config['Gaussian']['target']), config['Gaussian']['params']
 

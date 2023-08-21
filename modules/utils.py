@@ -21,6 +21,7 @@ from modules.gaussian.gaussian import Gaussian
 from modules.gaussian.gaussian1D import Gaussian1D
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.gaussian.gaussianSR import GaussianSR
+from modules.gaussian.gaussian_multi import GaussianMulti
 from modules.gaussian.gaussian_test import GaussianTest
 from modules.models.autoencoder import AutoEncoder
 from modules.models.diffEncoder import DiffEncoder
@@ -57,7 +58,6 @@ def create_checkpoint_manager(save_path, max_to_keep=10, ):
 def load_ckpt(checkpoint_manager: orbax.checkpoint.CheckpointManager, model_ckpt):
     step = checkpoint_manager.latest_step()
     print(step)
-
     raw_restored = checkpoint_manager.restore(step, items=model_ckpt)
     return raw_restored
 
@@ -125,6 +125,18 @@ def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, s
     save_image(sample, f'{save_path}/{steps}.png')
 
 
+def sample_save_image_diffusion_multi(key, c: GaussianMulti, steps, state: EMATrainState, save_path, gaussian_configs):
+    os.makedirs(save_path, exist_ok=True)
+    c.eval()
+    sample = c.sample(key, state, batch_size=1, gaussian_configs=gaussian_configs)
+    c.train()
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, 'b h w c->b c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
 @jax.pmap
 def encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.encode)
@@ -151,8 +163,8 @@ def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainS
 
 
 def sample_save_image_latent_diffusion(key, c: Gaussian1D, steps,
-                                          state: EMATrainState, save_path, ae_state: EMATrainState,
-                                          first_stage_gaussian: GaussianTest):
+                                       state: EMATrainState, save_path, ae_state: EMATrainState,
+                                       first_stage_gaussian: GaussianTest):
     os.makedirs(save_path, exist_ok=True)
     c.eval()
     sample_latent = c.sample(key, state, batch_size=16)
@@ -166,7 +178,6 @@ def sample_save_image_latent_diffusion(key, c: Gaussian1D, steps,
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
-
 
 
 @jax.pmap
@@ -188,7 +199,7 @@ def sample_save_image_latent_diffusion_1d_test(key, c: Gaussian1D, steps,
     sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
     print(sample.shape)
 
-    batch = einops.rearrange(batch,'n b h w c->(n b ) h w c')
+    batch = einops.rearrange(batch, 'n b h w c->(n b ) h w c')
     sample = jnp.concatenate([sample, batch], axis=0)
 
     sample = sample / 2 + 0.5
@@ -198,18 +209,15 @@ def sample_save_image_latent_diffusion_1d_test(key, c: Gaussian1D, steps,
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-
-
-
 def sample_save_image_latent_diffusion_1d_test2(key, c: Gaussian1D, steps,
-                                               state: EMATrainState, save_path, ae_state: EMATrainState,
-                                               first_stage_gaussian: GaussianTest, batch):
+                                                state: EMATrainState, save_path, ae_state: EMATrainState,
+                                                first_stage_gaussian: GaussianTest, batch):
     os.makedirs(save_path, exist_ok=True)
 
     print(batch.shape)
-    #sample_latent = diff_encode(ae_state, batch)
+    # sample_latent = diff_encode(ae_state, batch)
     sample_latent = einops.rearrange(batch, 'n b c->(n b) c')
-    #sample_latent=batch
+    # sample_latent=batch
 
     print(sample_latent.shape)
     first_stage_gaussian.eval()
@@ -224,8 +232,6 @@ def sample_save_image_latent_diffusion_1d_test2(key, c: Gaussian1D, steps,
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')
-
-
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):

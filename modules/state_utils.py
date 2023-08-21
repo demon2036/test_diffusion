@@ -59,7 +59,6 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
 
     args = tuple()
     args += (create_obj_by_config(state_configs['Optimizer']),)
-    print(args)
     tx = optax.chain(
         *args
     )

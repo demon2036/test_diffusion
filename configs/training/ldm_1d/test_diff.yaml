@@ -27,7 +27,7 @@
           "Gaussian": {
             target: modules.gaussian.gaussian_test.GaussianTest,
             params: {
-              image_size: 128,
+              sample_shape: [ 128,128,3 ],
               loss: 'l1',
               timesteps: 1000,
               sampling_timesteps: 200,
@@ -43,7 +43,7 @@
   "train": {
     dataloader_configs: {
       image_size: 128,
-      batch_size: 128,
+      batch_size: 4096,
       file_path: '/home/john/data/latent1D',
       data_type: 'np'
     },
@@ -55,25 +55,29 @@
       model_path: 'check_points/Diffusion'
     },
   },
-  "LatentNet": {
-    target: modules.models.latentnet.LatentNet,
-    optimizer: {
-      optimizer: optax.adamw,
-      optimizer_configs: {
-        learning_rate: 1.0e-4
-      }
-    },
-    params: {
-      num_layers: 20,
-      dim: 2048,
-      out_dim: 512,
-      dtype: 'bfloat16'
-    }
+  "State": {
+      target: modules.state_utils.EMATrainState,
+      Input_Shape: [ [ 1,512 ],[ 1, ] ],
+      Model: {
+        target: modules.models.latentnet.LatentNet,
+        params: {
+          num_layers: 10,
+          dim: 512,
+          out_dim: 512,
+          dtype: 'bfloat16'
+        }
+     },
+      Optimizer: {
+        target: optax.lion,
+        params: {
+          learning_rate: 1.0e-4,
+        }
+      },
   },
   "Gaussian": {
-    target: modules.gaussian.gaussian1D.Gaussian1D,
+    target: modules.gaussian.gaussian.Gaussian,
     params: {
-      latent_size: 512,
+      sample_shape: [ 512 ],
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
@@ -86,3 +90,6 @@
     },
   }
 }
+
+
+

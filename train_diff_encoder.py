@@ -40,9 +40,6 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-
-
-
 def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='configs/training/DiffusionEncoder/test_diff.yaml')
@@ -54,11 +51,7 @@ def train():
     c = create_obj_by_config(config['Gaussian'])
     state = create_state_by_config(key, state_configs=config['State'])
 
-
-
     dataloader_configs, trainer_configs = train_config.values()
-
-
 
     model_ckpt = {'model': state, 'steps': 0}
     model_save_path = trainer_configs['model_path']
