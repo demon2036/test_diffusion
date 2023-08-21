@@ -57,8 +57,9 @@
   },
   "LatentNet": {
     target: modules.models.unet.Unet,
+    input_shape: [[1,16,16,4],[1],[1,16,16,4]],
     optimizer: {
-      optimizer: optax.adamw,
+      optimizer: optax.lion,
       optimizer_configs: {
         learning_rate: 1.0e-4,
         b1: 0.9,
@@ -87,7 +88,7 @@
       beta_schedule: 'cosine',
       #min_snr_loss_weight: True,
       #scale_shift: True,
-      #self_condition: True,
+      self_condition: True,
       p_loss: False
     },
   }

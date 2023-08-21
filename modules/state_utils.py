@@ -14,6 +14,9 @@ class EMATrainState(train_state.TrainState):
 def create_state(rng, model_cls, input_shapes, train_state, print_model=True, optimizer_dict=None, batch_size=1,
                  model_kwargs=None, ):
     model = model_cls(**model_kwargs)
+
+
+
     inputs = list(map(lambda shape: jnp.empty(shape), input_shapes))
 
     if print_model:

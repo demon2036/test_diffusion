@@ -70,12 +70,12 @@ def get_auto_encoder_diff(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_1d/test_diff.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
     train_config = config['train']
-    model_cls_str, model_optimizer, unet_config = config['LatentNet'].values()
+    model_cls_str,input_shapes, model_optimizer, unet_config = config['LatentNet'].values()
     model_cls = get_obj_from_str(model_cls_str)
 
     gaussian, gaussian_configs = get_obj_from_str(config['Gaussian']['target']), config['Gaussian']['params']
@@ -88,8 +88,6 @@ if __name__ == "__main__":
 
     dataloader_configs, trainer_configs = train_config.values()
 
-    input_shape = (1, 512)
-    input_shapes = (input_shape, input_shape[0])
 
     c = gaussian(**gaussian_configs, )
 
@@ -120,13 +118,8 @@ if __name__ == "__main__":
             key, train_step_key = jax.random.split(key, num=2)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
-            #print(f'batch:{batch.shape}')
             batch = shard(batch)
-            #print(f'batch:{batch.shape}')
 
-
-            # sample_save_image_latent_diffusion_1d_test(key, c, steps, state, trainer_configs['save_path'], ae_state,
-            #                                            first_stage_gaussian, batch)
             state, metrics = train_step(state, batch, train_step_key, c)
             for k, v in metrics.items():
                 metrics.update({k: v[0]})
@@ -141,7 +134,8 @@ if __name__ == "__main__":
 
             if steps % trainer_configs['sample_steps'] == 0:
                 try:
-                    sample_save_image_latent_diffusion(key, c, steps, state, trainer_configs['save_path'], ae_state,first_stage_gaussian,)
+                    sample_save_image_latent_diffusion(key, c, steps, state, trainer_configs['save_path'], ae_state,
+                                                       first_stage_gaussian, )
                     # sample_save_image_latent_diffusion_1d_test2(key, c, steps, state, trainer_configs['save_path'], ae_state,
                     #                                       first_stage_gaussian, batch)
 
