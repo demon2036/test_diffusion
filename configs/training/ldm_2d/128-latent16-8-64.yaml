@@ -18,6 +18,7 @@
                   encoder_type: '2D',
                   encoder_configs: {
                     dims: [ 64,128,256,256 ],
+                    latent: 8,
                     dtype: 'bfloat16',
                   }
                 }
