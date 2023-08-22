@@ -24,16 +24,17 @@ def cal_mean_std():
         mean += data.mean()
         std += data.std()
         count += 1
+    print(data.shape)
     mean /= count
     std /= count
     print(mean, std)
 
-    datas = []
-    for data in dl:
-        datas.append(data)
-
-    datas = np.array(datas)
-    print(datas.mean(), datas.std())
+    # datas = []
+    # for data in dl:
+    #     datas.append(data)
+    #
+    # datas = np.array(datas)
+    # print(datas.mean(), datas.std())
 
 
 
@@ -43,7 +44,7 @@ def cal_mean_std():
 
 
 if __name__ == "__main__":
-
+    cal_mean_std()
 
 
     pass

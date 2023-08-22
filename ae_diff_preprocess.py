@@ -69,7 +69,7 @@ def get_auto_encoder_diff(config):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/1D/no-tanh.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq256-2D-128-latent8.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     dataloader_configs, trainer_configs = train_config.values()
 
     dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
-    save_path = '/home/john/data/latent1D_no_tanh'
+    save_path = '/home/john/data/latent2D-128-8'
     os.makedirs(save_path, exist_ok=True)
     count = 0
 
@@ -92,17 +92,18 @@ if __name__ == "__main__":
 
             x = shard(x)
             sample_latent = diff_encode(state, x)
-            # sample_latent = einops.rearrange(sample_latent, 'n b c->(n b) c')
-            # latent = np.array(sample_latent, dtype='float32')
-            # for x in latent:
-            #     pool.submit(save_latent, x, count, save_path)
-            #     count += 1
+            sample_latent = jnp.reshape(sample_latent, (-1, *sample_latent.shape[2:]))
+            latent = np.array(sample_latent, dtype='float32')
+            for x in latent:
+                pool.submit(save_latent, x, count, save_path)
+                count += 1
 
-            sample_latent = einops.rearrange(sample_latent, 'n b c->(n b ) c')
-            y = decode(state, sample_latent, first_stage_gaussian)
-            sample = y / 2 + 0.5
-            sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
-            sample = np.array(sample)
-            sample = torch.Tensor(sample)
-            save_image(sample, f'test.png')
-            break
+            # print(sample_latent.shape)
+            # y = decode(state, sample_latent, first_stage_gaussian)
+            # y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
+            # sample = y / 2 + 0.5
+            # sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
+            # sample = np.array(sample)
+            # sample = torch.Tensor(sample)
+            # save_image(sample, f'test.png')
+            # break

@@ -37,6 +37,10 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
+
+
+
+
 def train():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='configs/training/Diffusion/test.yaml')
