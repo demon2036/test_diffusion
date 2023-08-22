@@ -69,7 +69,7 @@ def get_auto_encoder_diff(config):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq256-2D-128-latent8.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq256-2D-latent16.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     dataloader_configs, trainer_configs = train_config.values()
 
     dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
-    save_path = '/home/john/data/latent2D-128-8'
+    save_path = '/home/john/latent/latent2D-16'
     os.makedirs(save_path, exist_ok=True)
     count = 0
 

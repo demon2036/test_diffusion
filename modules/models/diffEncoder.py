@@ -90,7 +90,8 @@ class DiffEncoder(nn.Module):
                          dtype=self.dtype,
                          encoder_type=self.encoder_type,
                          res_type=self.res_type,
-                         use_encoder=True
+                         use_encoder=True,
+                         n=(len(encoder_configs['dims'])-1)**2
                          )
 
     def encode(self, x, *args, **kwargs):

@@ -73,6 +73,7 @@ class Unet(nn.Module):
     res_type: Any = 'default'
     patch_size: int = 1
     residual: bool = False
+    n: int = 8
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
@@ -104,7 +105,7 @@ class Unet(nn.Module):
                 x_self_cond = None
             elif self.encoder_type == '2D':
                 cond_emb = None
-                x_self_cond = Encoder2DLatent(shape=x.shape)(latent)
+                x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
             elif self.encoder_type == 'Both':
                 cond_emb = nn.Sequential([
                     nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
@@ -118,8 +119,6 @@ class Unet(nn.Module):
 
         if x_self_cond is not None:
             x = jnp.concatenate([x, x_self_cond], axis=3)
-
-        print(x.shape)
 
         time_dim = self.dim * 4
         t = nn.Sequential([

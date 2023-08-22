@@ -18,6 +18,9 @@ class Encoder2DLatent(nn.Module):
 
     @nn.compact
     def __call__(self, latent, *args, **kwargs):
+
+        print(f'latent.shape:{latent.shape}')
+
         n = self.n
         x_self_cond = nn.Conv(3 * n ** 2, (5, 5), padding="SAME", dtype=self.dtype)(latent)
         x_self_cond = einops.rearrange(x_self_cond, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=n, p2=n)
