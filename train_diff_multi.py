@@ -43,6 +43,8 @@ def train_step(state, batch, train_key, cls, gaussian_conf):
 
 class DummyClass:
     def __init__(self, **kwargs):
+        self.time_max = None
+        self.time_min = None
         self.__dict__.update(kwargs)
 
 
@@ -78,26 +80,32 @@ def train():
 
     states_confs = [DummyClass(**state_conf) for state_conf in states_conf]
 
+    total = sum([cls.time_max - cls.time_min for cls in states_confs])
+    possibility = jnp.array([(cls.time_max - cls.time_min) / total for cls in states_confs])
+    print(possibility)
+    a = jnp.array([i for i in range(len(possibility))])
+
     with tqdm(total=trainer_configs['total_steps']) as pbar:
         pbar.update(finished_steps)
         for steps in range(finished_steps + 1, 1000000):
-            key, train_step_key = jax.random.split(key, num=2)
+            key, train_step_key, choice_key = jax.random.split(key, num=3)
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
 
             batch = shard(batch)
 
-            for i in range(len(states_confs)):
-                state, state_conf = states[i], states_confs[i]
-                state, metrics = train_step(state, batch, train_step_key, c, state_conf)
-                for k, v in metrics.items():
-                    metrics.update({k: v[0]})
-                pbar.set_postfix(metrics)
+            # for i in range(len(states_confs)):
+            i = jax.random.choice(key, a=a, p=possibility)
+            state, state_conf = states[i], states_confs[i]
+            state, metrics = train_step(state, batch, train_step_key, c, state_conf)
+            for k, v in metrics.items():
+                metrics.update({k: v[0]})
+            pbar.set_postfix(metrics)
 
-                decay = min(0.9999, (1 + steps) / (10 + steps))
-                decay = flax.jax_utils.replicate(jnp.array([decay]))
-                state = update_ema(state, decay)
-                states[i] = state
+            decay = min(0.9999, (1 + steps) / (10 + steps))
+            decay = flax.jax_utils.replicate(jnp.array([decay]))
+            state = update_ema(state, decay)
+            states[i] = state
 
             pbar.update(1)
 

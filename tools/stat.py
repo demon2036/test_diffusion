@@ -5,7 +5,9 @@ import numpy as np
 from data.dataset import get_dataloader
 from modules.utils import read_yaml
 
-if __name__ == "__main__":
+
+
+def cal_mean_std():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='../configs/stat/config.yaml')
     args = parser.parse_args()
@@ -21,18 +23,31 @@ if __name__ == "__main__":
     for data in dl:
         mean += data.mean()
         std += data.std()
-        count+=1
-    mean/=count
-    std/=count
-    print(mean,std)
+        count += 1
+    mean /= count
+    std /= count
+    print(mean, std)
 
-
-    datas=[]
+    datas = []
     for data in dl:
         datas.append(data)
 
-    datas=np.array(datas)
-    print(datas.mean(),datas.std())
+    datas = np.array(datas)
+    print(datas.mean(), datas.std())
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+
+
+
+    pass
+
 
 
 

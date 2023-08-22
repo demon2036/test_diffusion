@@ -7,6 +7,8 @@ from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
+from modules.gaussian.gaussian_multi import GaussianMulti
+from modules.loss.loss import l1_loss, l2_loss
 from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, \
     create_obj_by_config, create_state_by_config
 from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
@@ -17,7 +19,7 @@ from functools import partial
 from flax.training import orbax_utils, train_state
 from flax.training.common_utils import shard, shard_prng_key
 from jax_smi import initialise_tracking
-from modules.gaussian.gaussian import Gaussian
+from modules.gaussian.gaussian import Gaussian, extract
 import jax.numpy as jnp
 
 initialise_tracking()
@@ -61,57 +63,27 @@ def train():
     states_conf = config['states_conf']
 
     c = create_obj_by_config(config['Gaussian'])
-    states = [create_state_by_config(key, state_configs=config["State"]) for _ in states_conf]
+    assert type(c) == GaussianMulti
 
-    model_ckpt = {'model': states, 'steps': 0}
-    model_save_path = trainer_configs['model_path']
-    checkpoint_manager = create_checkpoint_manager(model_save_path, max_to_keep=5)
-    if len(os.listdir(model_save_path)) > 0:
-        model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
-
-    states = [flax.jax_utils.replicate(state) for state in model_ckpt['model']]
     dl = generator(**dataloader_configs)  # file_path
-    finished_steps = model_ckpt['steps']
 
-    p_copy_params_to_ema = jax.pmap(copy_params_to_ema)
-    p_apply_ema = jax.pmap(apply_ema_decay)
+    batch = next(dl)
+    noise = jax.random.normal(key, batch.shape)
+    for i in range(1000):
+        batch_size = batch.shape[0]
+        time = jnp.full((batch_size,), i)
 
-    states_confs = [DummyClass(**state_conf) for state_conf in states_conf]
+        mixed_image = c.q_sample(batch, time, noise)
 
-    with tqdm(total=trainer_configs['total_steps']) as pbar:
-        pbar.update(finished_steps)
-        for steps in range(finished_steps + 1, 1000000):
-            key, train_step_key = jax.random.split(key, num=2)
-            train_step_key = shard_prng_key(train_step_key)
-            batch = next(dl)
+        loss_x0 = l2_loss(batch, mixed_image).mean()
+        loss_noise = l2_loss(mixed_image, noise)
+        loss_noise_snr = (loss_noise / extract((c.snr ** 0.5), time, loss_noise.shape)).mean()
 
-            batch = shard(batch)
+        print(loss_x0, loss_noise.mean(), loss_noise_snr)
 
-            for i in range(len(states_confs)):
-                state, state_conf = states[i], states_confs[i]
-                state, metrics = train_step(state, batch, train_step_key, c, state_conf)
-                for k, v in metrics.items():
-                    metrics.update({k: v[0]})
-                pbar.set_postfix(metrics)
-
-                decay = min(0.9999, (1 + steps) / (10 + steps))
-                decay = flax.jax_utils.replicate(jnp.array([decay]))
-                state = update_ema(state, decay)
-                states[i] = state
-
-            pbar.update(1)
-
-            if steps % trainer_configs['sample_steps'] == 0:
-                try:
-                    sample_save_image_diffusion_multi(key, c, steps, states, trainer_configs['save_path'], states_confs)
-                except Exception as e:
-                    print(e)
-
-                unreplicate_states = [flax.jax_utils.unreplicate(state) for state in states]
-                model_ckpt_save = {'model': unreplicate_states, 'steps': steps}
-                save_args = orbax_utils.save_args_from_target(model_ckpt)
-                checkpoint_manager.save(steps, model_ckpt_save, save_kwargs={'save_args': save_args}, force=False)
-
+        if loss_x0 > loss_noise_snr:
+            print(time)
+            break
 
 
 if __name__ == "__main__":

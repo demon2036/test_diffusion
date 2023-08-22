@@ -125,6 +125,7 @@ class GaussianMulti(Gaussian):
         self.posterior_mean_coef2 = (1 - alphas_cumprod_prev) * jnp.sqrt(alphas) / (1 - alphas_cumprod)
 
         snr = alphas_cumprod / (1 - alphas_cumprod)
+        self.snr = snr
 
         if loss == 'l2':
             self.loss = l2_loss
