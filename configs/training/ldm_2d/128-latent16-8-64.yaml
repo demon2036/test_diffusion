@@ -25,7 +25,7 @@
           "Gaussian": {
             target: modules.gaussian.gaussian_test.GaussianTest,
             params: {
-              image_size: 128,
+              sample_shape: [128,128,3],
               loss: 'l1',
               timesteps: 1000,
               sampling_timesteps: 200,
@@ -42,7 +42,7 @@
     dataloader_configs: {
       image_size: 128,
       batch_size: 1024,
-      file_path: '/root/data/latent2D',
+      file_path: '/root/data/latent2D-128-8',
       data_type: 'np',
       repeat: 100,
     },
@@ -54,32 +54,31 @@
       model_path: 'check_points/Diffusion'
     },
   },
-  "State": {
-    target: modules.models.unet.Unet,
-    input_shape: [[1,16,16,8],[1],[1,16,16,8]],
-    optimizer: {
-      optimizer: optax.lion,
-      optimizer_configs: {
+  State: {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [ [ 1,16,16,8 ],[ 1, ],[ 1,16,16,8 ] ],
+    Model: {
+      target: modules.models.unet.Unet,
+      params: {
+        dim: 64,
+        num_res_blocks : [2,2,2,2],
+        dim_mults: [ 1,2,4,8 ],
+        out_channels: 8,
+        dtype: 'bfloat16',
+        self_condition: True
+        }
+    },
+    Optimizer: {
+      target: optax.lion,
+      params: {
         learning_rate: 1.0e-4,
-        b1: 0.9,
-        b2: 0.99
       }
     },
-    params: {
-      dim: 64,
-      #num_res_blocks : [2,2,2,2],
-      dim_mults: [ 1,2,4,8 ],
-      #out_dim: 3,
-      out_channels: 8,
-      dtype: 'bfloat16',
-      #patch_size: 1
-      self_condition: True
-    }
   },
   "Gaussian": {
     target: modules.gaussian.gaussian.Gaussian,
     params: {
-      image_size: 16,
+      sample_shape: [16,16,8],
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,

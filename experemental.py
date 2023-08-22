@@ -67,7 +67,7 @@ def get_auto_encoder_diff(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_1d/test_diff.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
@@ -108,8 +108,8 @@ if __name__ == "__main__":
             train_step_key = shard_prng_key(train_step_key)
             batch = next(dl)
             batch = shard(batch)
-
             state, metrics = train_step(state, batch, train_step_key, c)
+
             for k, v in metrics.items():
                 metrics.update({k: v[0]})
 
