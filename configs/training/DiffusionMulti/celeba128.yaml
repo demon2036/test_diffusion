@@ -1,0 +1,73 @@
+{
+  "train": {
+    dataloader_configs: {
+      image_size: 128,
+      batch_size: 64,
+      file_path: '/root/data/celeba-128/celeba-128'
+    },
+    trainer_configs: {
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 10000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+    },
+
+  },
+  "Gaussian": {
+    target: modules.gaussian.gaussian_multi.GaussianMulti,
+    params: {
+      sample_shape: [ 128,128,3 ],
+      loss: 'l2',
+      timesteps: 1000,
+      sampling_timesteps: 200,
+      objective: 'predict_noise',
+      beta_schedule: 'sigmoid',
+      min_snr_loss_weight: True,
+      scale_shift: True,
+      self_condition: True,
+      p_loss: False
+    },
+  },
+
+
+  "State": {
+    target: train_diff_multi.EMATrainState,
+
+    Input_Shape: [ [ 1,128,128,3 ],[ 1, ],[ 1,128,128,3 ], ],
+    Model: {
+      target: modules.models.unet.Unet,
+      params: {
+        dim: 64,
+        #num_res_blocks : [2,2,2,2],
+        dim_mults: [ 1,2,4,8 ],
+        out_channels: 3,
+        dtype: 'bfloat16',
+        self_condition: True,
+        residual: True
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 1.0e-4,
+      }
+    },
+  },
+
+  states_conf: [
+     {
+      objective: "predict_mx",
+      time_min: 0,
+      time_max: 361,
+    },
+    {
+      objective: "predict_noise",
+      time_min: 361,
+      time_max: 1000,
+    },
+  ]
+
+
+
+}
