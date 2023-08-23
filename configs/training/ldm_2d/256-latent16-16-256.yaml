@@ -12,7 +12,7 @@
                 }
               },
                 params: {
-                  dim: 256,
+                  dim: 64,
                   out_channels: 3,
                   dim_mults: [ 1, 1, 2, 2, 4, 4 ],
                   encoder_type: '2D',
@@ -61,7 +61,7 @@
     Model: {
       target: modules.models.unet.Unet,
       params: {
-        dim: 64,
+        dim: 256,
         num_res_blocks : [2,2,2,2],
         dim_mults: [ 1,2,4,8 ],
         out_channels: 16,
