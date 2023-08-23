@@ -57,7 +57,7 @@
 
   states_conf: [
      {
-      objective: "predict_mx",
+      objective: "predict_x0",
       time_min: 0,
       time_max: 361,
     },
