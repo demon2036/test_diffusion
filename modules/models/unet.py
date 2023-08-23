@@ -486,7 +486,6 @@ class UnetTest(nn.Module):
         for i, (dim_mul, num_res_block) in enumerate(zip(reversed_dim_mults, reversed_num_res_blocks)):
             dim = self.dim * dim_mul
             for _ in range(num_res_block + 1):
-                print(x.shape, h[-1].shape)
                 if self.skip_connection == 'concat':
                     x = jnp.concatenate([x, h.pop()], axis=3)
                 elif self.skip_connection == 'add':
