@@ -56,7 +56,6 @@
   },
 
   states_conf: [
-    states_conf: [
       {
         objective: "predict_x0",
         time_min: 0,
