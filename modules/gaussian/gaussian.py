@@ -292,7 +292,7 @@ class Gaussian:
 
             img, x_start = self.pmap_p_sample(normal_key, img, batch_times, x_self_cond, state)
 
-        img = jnp.reshape(img,(-1, *self.sample_shape))
+        img = jnp.reshape(img, (-1, *self.sample_shape))
 
         ret = img
 
@@ -348,7 +348,7 @@ class Gaussian:
         # img = einops.rearrange(img, 'n b h w c->(n b ) h w c', n=img.shape[0])
         print(img.shape)
 
-        img = jnp.reshape(img,(-1, *self.sample_shape))
+        img = jnp.reshape(img, (-1, *self.sample_shape))
 
         return img
 
@@ -377,6 +377,8 @@ class Gaussian:
     def p_loss(self, key, state, params, x_start, t):
         key, cond_key = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
+
+        assert x_start.shape == self.sample_shape
 
         x_start = x_start * self.scale_factor
         # noise sample
