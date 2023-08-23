@@ -74,6 +74,7 @@ class Unet(nn.Module):
     patch_size: int = 1
     residual: bool = False
     n: int = 8
+    skip_connection: str = 'concat'
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
@@ -157,7 +158,14 @@ class Unet(nn.Module):
         for i, (dim_mul, num_res_block) in enumerate(zip(reversed_dim_mults, reversed_num_res_blocks)):
             dim = self.dim * dim_mul
             for _ in range(num_res_block + 1):
-                x = jnp.concatenate([x, h.pop()], axis=3)
+
+                if self.skip_connection == 'concat':
+                    x = jnp.concatenate([x, h.pop()], axis=3)
+                elif self.skip_connection == 'add':
+                    x = x + h.pop() * (2 ** -0.5)
+                else:
+                    raise NotImplemented()
+
                 x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
 
             if i != len(self.dim_mults) - 1:
