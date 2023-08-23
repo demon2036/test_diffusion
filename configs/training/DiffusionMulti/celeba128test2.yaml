@@ -18,7 +18,7 @@
     target: modules.gaussian.gaussian_multi.GaussianMulti,
     params: {
       sample_shape: [ 128,128,3 ],
-      loss: 'l2',
+      loss: 'l1',
       timesteps: 1000,
       sampling_timesteps: 200,
       objective: 'predict_noise',
