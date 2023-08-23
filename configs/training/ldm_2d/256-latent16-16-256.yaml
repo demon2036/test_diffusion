@@ -59,7 +59,7 @@
     target: modules.state_utils.EMATrainState,
     Input_Shape: [ [ 1,16,16,16 ],[ 1, ],[ 1,16,16,16 ] ],
     Model: {
-      target: modules.models.unet.Unet,
+      target: modules.models.unet.UnetTest,
       params: {
         dim: 256,
         num_res_blocks : [2,2,2,2],
