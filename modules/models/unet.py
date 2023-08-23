@@ -6,6 +6,8 @@ import jax.numpy as jnp
 import flax.linen as nn
 from typing import *
 from einops.layers.flax import Rearrange
+
+from modules.models.attention import Attention
 from modules.models.nafnet import NAFBlock
 from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder, Encoder2DLatent
 from modules.models.transformer import Transformer
@@ -461,6 +463,7 @@ class UnetTest(nn.Module):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
                 x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+                x = Attention(dim)(x) + x
                 h.append(x)
 
             if i != len(self.dim_mults) - 1:
@@ -471,6 +474,7 @@ class UnetTest(nn.Module):
 
         for _ in range(self.num_middle_blocks):
             x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+            x = Attention(dim)(x) + x
 
         reversed_dim_mults = list(reversed(self.dim_mults))
         reversed_num_res_blocks = list(reversed(num_res_blocks))
@@ -486,6 +490,7 @@ class UnetTest(nn.Module):
                     raise NotImplemented()
 
                 x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+                x = Attention(dim)(x) + x
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(self.dim * reversed_dim_mults[i + 1], dtype=self.dtype)(x)

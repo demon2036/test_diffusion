@@ -70,7 +70,7 @@
         }
     },
     Optimizer: {
-      target: optax.lion,
+      target: optax.adamw,
       params: {
         learning_rate: 1.0e-4,
       }
@@ -83,9 +83,9 @@
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
-      objective: 'predict_mx',
+      objective: 'predict_noise',
       beta_schedule: 'cosine',
-      #min_snr_loss_weight: True,
+      min_snr_loss_weight: True,
       #scale_shift: True,
       self_condition: True,
       p_loss: False,

@@ -102,6 +102,8 @@ class Attention(nn.Module):
 
 
 if __name__ == "__main__":
+    pass
+    """
     key = jax.random.PRNGKey(42)
 
     times = 1
@@ -122,3 +124,4 @@ if __name__ == "__main__":
     out = a2.apply({'params': variable['params']}, x)
     print(out, out.shape)
     end = time.time()
+    """
