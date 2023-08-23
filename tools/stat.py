@@ -19,15 +19,18 @@ def cal_mean_std():
     count = 0
     mean = 0
     std = 0
-
+    max_value=0
+    min_value=0
     for data in dl:
         mean += data.mean()
         std += data.std()
+        max_value=max(max_value,data.max())
+        min_value = min(min_value, data.min())
         count += 1
     print(data.shape)
     mean /= count
     std /= count
-    print(mean, std)
+    print(mean, std,max_value,min_value)
 
     # datas = []
     # for data in dl:
