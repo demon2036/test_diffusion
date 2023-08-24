@@ -406,7 +406,7 @@ class UnetTest(nn.Module):
         if type(self.num_res_blocks) == int:
             num_res_blocks = (self.num_res_blocks,) * len(self.dim_mults)
         else:
-            print(len(self.num_res_blocks),len(self.dim_mults))
+            #print(len(self.num_res_blocks),len(self.dim_mults))
             assert len(self.num_res_blocks) == len(self.dim_mults)
             num_res_blocks = self.num_res_blocks
 
