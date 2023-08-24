@@ -81,12 +81,13 @@ class DepthWiseConv(nn.Module):
 
 class Block(nn.Module):
     dim_out: int
+    kernel_size: int = 3
     groups: int = 8
     dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x, scale_shift=None):
-        x = nn.Conv(self.dim_out, (3, 3), dtype=self.dtype, padding='SAME')(x)
+        x = nn.Conv(self.dim_out, (self.kernel_size, self.kernel_size), dtype=self.dtype, padding='SAME')(x)
         x = nn.GroupNorm(self.groups, dtype=self.dtype, )(x)
 
         if scale_shift is not None:
@@ -98,6 +99,7 @@ class Block(nn.Module):
 
 class ResBlock(nn.Module):
     dim_out: int
+    kernel_size: int = 3
     groups: int = 32
     dtype: Any = jnp.bfloat16
 
@@ -111,15 +113,14 @@ class ResBlock(nn.Module):
             time_emb = einops.rearrange(time_emb, 'b c -> b  1 1 c')
             scale_shift = jnp.split(time_emb, indices_or_sections=2, axis=3)
 
-        h = Block(dim_out=self.dim_out, dtype=self.dtype)(x, scale_shift=scale_shift)
+        h = Block(dim_out=self.dim_out, dtype=self.dtype, kernel_size=self.kernel_size)(x, scale_shift=scale_shift)
 
         if cond_emb is not None:
             cond_emb = nn.Dense(self.dim_out * 2, dtype=self.dtype)(cond_emb)
             cond_emb = einops.rearrange(cond_emb, 'b c -> b  1 1 c')
             scale_shift = jnp.split(cond_emb, indices_or_sections=2, axis=3)
 
-
-        h = Block(dim_out=self.dim_out, dtype=self.dtype)(h, scale_shift=scale_shift)
+        h = Block(dim_out=self.dim_out, dtype=self.dtype, kernel_size=self.kernel_size)(h, scale_shift=scale_shift)
         if c != self.dim_out:
             x = nn.Conv(self.dim_out, (1, 1), dtype=self.dtype)(x)
 
