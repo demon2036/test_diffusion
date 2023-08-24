@@ -6,7 +6,6 @@ from data.dataset import get_dataloader
 from modules.utils import read_yaml
 
 
-
 def cal_mean_std():
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='../configs/stat/config.yaml')
@@ -19,18 +18,28 @@ def cal_mean_std():
     count = 0
     mean = 0
     std = 0
-    max_value=0
-    min_value=0
+    max_value = 0
+    min_value = 0
     for data in dl:
-        mean += data.mean()
-        std += data.std()
-        max_value=max(max_value,data.max())
+        mean += data.mean(axis=[0, 1, 2])
+        std += data.std(axis=[0, 1, 2])
+
+        m=data.mean(axis=[0, 1, 2])
+        s = data.std(axis=[0, 1, 2])
+
+        t = data - m
+        ss=data/s
+        print(t.mean(axis=[0, 1, 2]),ss.std(axis=[0, 1, 2]))
+
+        # mean += data.mean()
+        # std += data.std()
+        max_value = max(max_value, data.max())
         min_value = min(min_value, data.min())
         count += 1
     print(data.shape)
     mean /= count
     std /= count
-    print(mean, std,max_value,min_value)
+    print(mean, std, max_value, min_value)
 
     # datas = []
     # for data in dl:
@@ -40,18 +49,7 @@ def cal_mean_std():
     # print(datas.mean(), datas.std())
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
     cal_mean_std()
 
-
     pass
-
-
-
-

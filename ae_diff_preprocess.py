@@ -66,6 +66,23 @@ def get_auto_encoder_diff(config):
     return state, first_stage_gaussian
 
 
+def interpolate_points(p1, p2, n_steps=10):
+    # interpolate ratios between the points
+    ratios = jnp.linspace(0, 1, num=n_steps)
+    # linear interpolate vectors
+
+    vectors = [p1]
+    for ratio in ratios:
+        v = (1.0 - ratio) * p1 + ratio * p2
+        vectors.append(v)
+    vectors.append(p2)
+    return jnp.asarray(vectors)
+
+
+def cal(x):
+    print(jnp.mean(x, axis=[0, 1]))
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -79,7 +96,7 @@ if __name__ == "__main__":
 
     dataloader_configs, trainer_configs = train_config.values()
 
-    dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
+    dl = get_dataloader(**dataloader_configs, drop_last=False, shuffle=False)  # file_path
     save_path = '/home/john/latent/latent2D-16'
     os.makedirs(save_path, exist_ok=True)
     count = 0
@@ -93,17 +110,40 @@ if __name__ == "__main__":
             x = shard(x)
             sample_latent = diff_encode(state, x)
             sample_latent = jnp.reshape(sample_latent, (-1, *sample_latent.shape[2:]))
-            latent = np.array(sample_latent, dtype='float32')
-            for x in latent:
-                pool.submit(save_latent, x, count, save_path)
-                count += 1
+            # latent = np.array(sample_latent, dtype='float32')
+            # for x in latent:
+            #     pool.submit(save_latent, x, count, save_path)4
+            #     count += 1
 
-            # print(sample_latent.shape)
-            # y = decode(state, sample_latent, first_stage_gaussian)
-            # y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
-            # sample = y / 2 + 0.5
-            # sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
-            # sample = np.array(sample)
-            # sample = torch.Tensor(sample)
-            # save_image(sample, f'test.png')
-            # break
+            mean = jnp.array(
+                [-0.0058, 0.0006, 0.0008, -0.0026, -0.0009, -0.0210, -0.0509, -0.0127, 0.0002, -0.0015, -0.0006,
+                 -0.0009, -0.0107, -0.0011, 0.0010, -0.0005])
+            std = jnp.array(
+                [0.2701, 0.0809, 0.2470, 0.1041, 0.1111, 0.2017, 0.2451, 0.1454, 0.1112, 0.1159, 0.0825, 0.1259, 0.1462,
+                 0.0909, 0.1044, 0.0861])
+            sample_latent = (sample_latent - mean) / std
+
+            for i in range(16):
+                img1, img2 = sample_latent[0], sample_latent[0]
+                img2 = img2.at[..., i].set(jnp.ones_like(img2[..., i]))
+
+                print(l1_loss(img1, img2).mean())  # ,cal(img1),cal(img2)
+                #cal(img1)
+
+                sample_latent = interpolate_points(img1, img2, n_steps=8 - 2)
+
+
+
+
+
+
+                #sample_latent = einops.rearrange(sample_latent, 'n  b h w c->(n b )  h w c', )
+
+                y = decode(state, sample_latent, first_stage_gaussian)
+                # y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
+                sample = y / 2 + 0.5
+                sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
+                sample = np.array(sample)
+                sample = torch.Tensor(sample)
+                save_image(sample, f'result/test{i}.png')
+            break

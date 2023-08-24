@@ -1,7 +1,7 @@
 {
   dataloader_configs: {
     image_size: 128,
-    batch_size: 128,
+    batch_size: 3,
     file_path: '/home/john/latent/latent2D-16',
     data_type: 'np'
   }

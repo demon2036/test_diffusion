@@ -62,7 +62,7 @@
       target: modules.models.unet.UnetTest,
       params: {
         dim: 256,
-        num_res_blocks : [2,2,2,2],
+        num_res_blocks : [2,2,2],
         dim_mults: [ 1,2,4 ],
         out_channels: 16,
         dtype: 'bfloat16',

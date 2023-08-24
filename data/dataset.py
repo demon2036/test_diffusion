@@ -22,12 +22,12 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
 def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64, repeat=1, drop_last=True,
-                   data_type='img'):
+                   data_type='img',shuffle=True):
     data = MyDataSet(file_path, cache, image_size, repeat=repeat, data_type=data_type)
 
     dataloader = DataLoader(data, batch_size=batch_size,
                             num_workers=jax.device_count() * 2
-                            , persistent_workers=True, pin_memory=True, shuffle=True,
+                            , persistent_workers=True, pin_memory=True, shuffle=shuffle,
                             drop_last=drop_last)
     return dataloader
 
