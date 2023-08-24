@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet_block.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet_block.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +60,7 @@
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ae_diff_preprocess">
+  <component name="RunManager" selected="Python.experemental">
     <configuration name="ae_diff_preprocess" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -191,9 +189,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.experemental" />
         <item itemvalue="Python.ae_diff_preprocess" />
         <item itemvalue="Python.stat" />
-        <item itemvalue="Python.experemental" />
         <item itemvalue="Python.test (1)" />
         <item itemvalue="Python.train_diff_multi" />
       </list>
@@ -209,22 +207,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00166" summary="commit">
-      <option name="closed" value="true" />
-      <created>1692467162103</created>
-      <option name="number" value="00166" />
-      <option name="presentableId" value="LOCAL-00166" />
-      <option name="project" value="LOCAL" />
-      <updated>1692467162103</updated>
-    </task>
-    <task id="LOCAL-00167" summary="commit">
-      <option name="closed" value="true" />
-      <created>1692467211145</created>
-      <option name="number" value="00167" />
-      <option name="presentableId" value="LOCAL-00167" />
-      <option name="project" value="LOCAL" />
-      <updated>1692467211145</updated>
     </task>
     <task id="LOCAL-00168" summary="commit">
       <option name="closed" value="true" />
@@ -602,7 +584,23 @@
       <option name="project" value="LOCAL" />
       <updated>1692880999038</updated>
     </task>
-    <option name="localTasksCounter" value="215" />
+    <task id="LOCAL-00215" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692885111241</created>
+      <option name="number" value="00215" />
+      <option name="presentableId" value="LOCAL-00215" />
+      <option name="project" value="LOCAL" />
+      <updated>1692885111241</updated>
+    </task>
+    <task id="LOCAL-00216" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692885177539</created>
+      <option name="number" value="00216" />
+      <option name="presentableId" value="LOCAL-00216" />
+      <option name="project" value="LOCAL" />
+      <updated>1692885177539</updated>
+    </task>
+    <option name="localTasksCounter" value="217" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

@@ -24,7 +24,7 @@ class EncoderDownBlock(nn.Module):
             block = EfficientBlock
 
         for _ in range(self.num_blocks):
-            x = block(self.dim, self.dtype)(x)
+            x = block(self.dim, dtype=self.dtype)(x)
 
         # if self.use_attn:
         #     x=Attention(self.dim,self.dtype)(x)+x
