@@ -375,7 +375,7 @@ class Gaussian:
         )
 
     def p_loss(self, key, state, params, x_start, t):
-        key, cond_key = jax.random.split(key, 2)
+        key, cond_key, z_rng = jax.random.split(key, 3)
         noise = self.generate_nosie(key, shape=x_start.shape)
         assert x_start.shape[1:] == tuple(self.sample_shape)
 
@@ -385,7 +385,7 @@ class Gaussian:
 
         def estimate(_):
             return jax.lax.stop_gradient(
-                self.model_predictions(x, t, state=state, x_self_cond=jnp.zeros_like(x))).pred_x_start
+                self.model_predictions(x, t, state=state, x_self_cond=jnp.zeros_like(x), z_rng=z_rng)).pred_x_start
 
         zeros = jnp.zeros_like(x)
         x_self_cond = None
@@ -393,7 +393,7 @@ class Gaussian:
             x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,
                                        None)
 
-        model_output = state.apply_fn({"params": params}, x, t, x_self_cond)
+        model_output = state.apply_fn({"params": params}, x, t, x_self_cond,z_rng=z_rng)
 
         if self.objective == 'predict_noise':
             target = noise

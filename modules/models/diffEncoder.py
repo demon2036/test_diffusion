@@ -1,3 +1,4 @@
+import copy
 import math
 from functools import partial
 import einops
@@ -13,6 +14,7 @@ from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock, GlobalAveragePool
 from modules.models.unet import Unet
+import flax
 
 
 # from .attention import Attention
@@ -63,9 +65,6 @@ def split_array_into_overlapping_patches(arr, patch_size, stride):
 """
 
 
-
-
-
 class DiffEncoder(nn.Module):
     dim: int = 64
     dim_mults: Sequence = (1, 2, 4, 4)
@@ -77,10 +76,14 @@ class DiffEncoder(nn.Module):
     encoder_configs: Any = None
     encoder_type: str = '2D'
     res_type: Any = 'default'
-    use_act:bool =True
+    latent_type: Any = 'tanh'
 
     def setup(self):
-        encoder_configs = self.encoder_configs
+        encoder_configs = flax.core.frozen_dict.unfreeze(copy.deepcopy(self.encoder_configs))
+
+        if self.latent_type == 'double_z':
+            encoder_configs['latent'] = encoder_configs['latent'] * 2
+
         self.encoder = Encoder(encoder_type=self.encoder_type, **encoder_configs, name='Encoder')
         self.unet = Unet(dim=self.dim,
                          dim_mults=self.dim_mults,
@@ -91,14 +94,27 @@ class DiffEncoder(nn.Module):
                          encoder_type=self.encoder_type,
                          res_type=self.res_type,
                          use_encoder=True,
-                         n=(len(encoder_configs['dims'])-1)**2
+                         n=(len(encoder_configs['dims']) - 1) ** 2
                          )
 
-    def encode(self, x, *args, **kwargs):
+    def encode(self, x, z_rng=None, *args, **kwargs):
         print(f'encoder input:{x.shape}')
         x = self.encoder(x)
-        if self.use_act:
+        if self.latent_type == 'tanh':
             x = nn.tanh(x)
+        elif self.latent_type == 'double_z':
+
+            if z_rng is None:
+                print('z_rng is None ,z_rng will default as 42')
+                z_rng=jax.random.PRNGKey(42)
+
+            mean, log_var = jnp.split(x, 2, -1)
+            # mean = mean.clip(-3, 3)
+            log_var = log_var.clip(-20, 20)
+            self.sow('intermediate', 'mean', mean)
+            self.sow('intermediate', 'variance', log_var)
+            x = self.reparameter(z_rng, mean, log_var)
+
         return x
 
     def decode(self, x, time, latent=None, *args, **kwargs):
@@ -106,6 +122,11 @@ class DiffEncoder(nn.Module):
         return x
 
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
-        latent = self.encode(x_self_cond)
+        latent = self.encode(x_self_cond, z_rng=z_rng)
         x = self.decode(x, time, latent)
         return x
+
+    def reparameter(self, rng, mean, logvar):
+        std = jnp.exp(0.5 * logvar)
+        eps = jax.random.normal(rng, logvar.shape)
+        return mean + eps * std
