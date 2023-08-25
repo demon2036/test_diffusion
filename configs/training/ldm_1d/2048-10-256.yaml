@@ -58,7 +58,7 @@
     Model: {
       target: modules.models.latentnet.LatentNet,
       params: {
-        num_layers: 20,
+        num_layers: 10,
         dim: 2048,
         out_dim: 2048,
         dtype: 'bfloat16'
