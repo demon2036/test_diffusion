@@ -10,7 +10,7 @@ class Trainer:
                  batch_size=1,
                  file_path='/root/data/latent2D-128-8',
                  cache=False,
-                 data_type='np',
+                 data_type='img',
                  repeat=100,
                  seed=43,
                  total_steps=3000000,
