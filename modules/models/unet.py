@@ -466,10 +466,11 @@ class UnetTest(nn.Module):
 
         h = [x]
 
-        for i, (dim_mul, num_res_block,block_kernel_size) in enumerate(zip(self.dim_mults, num_res_blocks,kernel_size)):
+        for i, (dim_mul, num_res_block, block_kernel_size) in enumerate(
+                zip(self.dim_mults, num_res_blocks, kernel_size)):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
-                x = res_block(dim, dtype=self.dtype,kernel_size=block_kernel_size)(x, t, cond_emb)
+                x = res_block(dim, dtype=self.dtype, kernel_size=block_kernel_size)(x, t, cond_emb)
                 x = Attention(dim)(x) + x
                 h.append(x)
 
@@ -483,11 +484,12 @@ class UnetTest(nn.Module):
             x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
             x = Attention(dim)(x) + x
 
-        reversed_kernel_size=list(reversed(kernel_size))
+        reversed_kernel_size = list(reversed(kernel_size))
         reversed_dim_mults = list(reversed(self.dim_mults))
         reversed_num_res_blocks = list(reversed(num_res_blocks))
 
-        for i, (dim_mul, num_res_block,block_kernel_size) in enumerate(zip(reversed_dim_mults, reversed_num_res_blocks,reversed_kernel_size)):
+        for i, (dim_mul, num_res_block, block_kernel_size) in enumerate(
+                zip(reversed_dim_mults, reversed_num_res_blocks, reversed_kernel_size)):
             dim = self.dim * dim_mul
             for _ in range(num_res_block + 1):
                 if self.skip_connection == 'concat':
@@ -497,7 +499,7 @@ class UnetTest(nn.Module):
                 else:
                     raise NotImplemented()
 
-                x = res_block(dim, dtype=self.dtype,kernel_size=block_kernel_size)(x, t, cond_emb)
+                x = res_block(dim, dtype=self.dtype, kernel_size=block_kernel_size)(x, t, cond_emb)
                 x = Attention(dim)(x) + x
 
             if i != len(self.dim_mults) - 1:

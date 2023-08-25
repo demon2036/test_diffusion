@@ -77,6 +77,7 @@ class DiffEncoder(nn.Module):
     encoder_type: str = '2D'
     res_type: Any = 'default'
     latent_type: Any = 'tanh'
+    patch_size:int =1
 
     def setup(self):
         encoder_configs = flax.core.frozen_dict.unfreeze(copy.deepcopy(self.encoder_configs))
@@ -94,6 +95,7 @@ class DiffEncoder(nn.Module):
                          encoder_type=self.encoder_type,
                          res_type=self.res_type,
                          use_encoder=True,
+                         patch_size=self.patch_size,
                          n=(len(encoder_configs['dims']) - 1) ** 2
                          )
 
