@@ -32,6 +32,16 @@ class EMATrainState(train_state.TrainState):
     ema_params: Any = None
 
 
+def exists(x):
+    return x is not None
+
+
+def default(val, d):
+    if exists(val):
+        return val
+    return d() if callable(d) else d
+
+
 def read_yaml(config_path):
     with open(config_path, 'r') as f:
         res = yaml.load(f, Loader=yaml.FullLoader)
@@ -57,7 +67,7 @@ def create_checkpoint_manager(save_path, max_to_keep=10, ):
 
 def load_ckpt(checkpoint_manager: orbax.checkpoint.CheckpointManager, model_ckpt):
     step = checkpoint_manager.latest_step()
-    print(step)
+    print(f'load ckpt {step}')
     raw_restored = checkpoint_manager.restore(step, items=model_ckpt)
     return raw_restored
 

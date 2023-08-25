@@ -1,0 +1,91 @@
+{
+
+  "FirstStage": {
+    "AutoEncoder": {
+          target: modules.models.diffEncoder.DiffEncoder,
+              optimizer: {
+                optimizer: optax.adamw,
+                optimizer_configs: {
+                  learning_rate: 2.0e-4,
+                    b1: 0.9,
+                    b2: 0.99
+                }
+              },
+                params: {
+                  dim: 128,
+                  out_channels: 3,
+                  dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+                  encoder_type: '1D',
+                  encoder_configs: {
+                    dims: [ 128,128,256,256,512,512,512 ],
+                    dtype: 'bfloat16',
+                    latent: 2048,
+                  }
+                }
+          },
+          "Gaussian": {
+            target: modules.gaussian.gaussian_test.GaussianTest,
+            params: {
+              sample_shape: [256,256,3],
+              loss: 'l1',
+              timesteps: 1000,
+              sampling_timesteps: 200,
+              objective: 'predict_noise',
+              beta_schedule: 'sigmoid',
+              min_snr_loss_weight: True,
+              scale_shift: True,
+              self_condition: True,
+              p_loss: False
+            }
+          }
+  },
+  "train": {
+      image_size: 256,
+      batch_size: 4,
+      file_path: '/home/john/latent/latent2D-16',
+      data_type: 'np',
+      repeat: 100,
+      seed: 43,
+      total_steps: 3000000,
+      sample_steps: 50000,
+      save_path: 'result',
+      model_path: 'check_points/LDM-1D'
+  },
+  State: {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [ [ 1,16,16,16 ],[ 1, ],[ 1,16,16,16 ] ],
+    Model: {
+      target: modules.models.latentnet.LatentNet,
+      params: {
+        num_layers: 20,
+        dim: 2048,
+        out_dim: 512,
+        dtype: 'bfloat16'
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 1.0e-4,
+      }
+    },
+  },
+  "Gaussian": {
+    target: modules.gaussian.gaussian.Gaussian,
+    params: {
+      sample_shape: [2048],
+      loss: 'l2',
+      timesteps: 1000,
+      sampling_timesteps: 200,
+      objective: 'predict_mx',
+      beta_schedule: 'cosine',
+      #min_snr_loss_weight: True,
+      #scale_shift: True,
+      self_condition: True,
+      p_loss: False,
+#      mean: 0.0087,
+#      std: 0.2059,
+#      clip_x_start: False
+    },
+  }
+}

@@ -65,6 +65,34 @@ def get_auto_encoder_diff(config):
     return state, first_stage_gaussian
 
 
+
+
+class Trainer:
+    def __init__(self):
+        pass
+
+
+    def load(self):
+        pass
+
+    def save(self):
+        pass
+
+    def sample(self):
+        pass
+
+    def train(self):
+        pass
+
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
