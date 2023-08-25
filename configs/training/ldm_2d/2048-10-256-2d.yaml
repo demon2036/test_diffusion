@@ -1,6 +1,6 @@
 {
 
-  "FirstStage": {
+"FirstStage": {
     "AutoEncoder": {
           target: modules.models.diffEncoder.DiffEncoder,
               optimizer: {
@@ -12,14 +12,14 @@
                 }
               },
                 params: {
-                  dim: 128,
+                  dim: 64,
                   out_channels: 3,
                   dim_mults: [ 1, 1, 2, 2, 4, 4 ],
-                  encoder_type: '1D',
+                  encoder_type: '2D',
                   encoder_configs: {
-                    dims: [ 128,128,256,256,512,512,512 ],
+                    dims: [ 64,128,256,256,256 ],
+                    latent: 16,
                     dtype: 'bfloat16',
-                    latent: 2048,
                   }
                 }
           },
@@ -40,41 +40,41 @@
           }
   },
   "train": {
-      image_size: 256,
-      batch_size: 16,
-#      file_path: '/home/john/latent/latent2D-16',
-      file_path: '/home/john/data/FFHQ256',
-      data_type: 'img',
-      repeat: 1,
-      seed: 43,
-      total_steps: 3000000,
-      sample_steps: 50000,
-      save_path: 'result',
-      model_path: 'check_points/LDM-1D'
+    image_size: 256,
+    batch_size: 64,
+    file_path: '/root/data/latent2D-16',
+#    file_path: '/home/john/data/FFHQ256',
+    data_type: 'np',
+    repeat: 1,
+    seed: 43,
+    total_steps: 3000000,
+    sample_steps: 50000,
+    save_path: 'result',
+    model_path: 'check_points/LDM-1D'
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,2048],[ 1, ], ],
+    Input_Shape: [ [ 1,16,16,16 ],[ 1, ]],
     Model: {
-      target: modules.models.latentnet.LatentNet,
+      target: modules.models.latentnet.LatentNet2D,
       params: {
-        num_layers: 2,
-        dim: 10,
-        out_dim: 2048,
+        num_layers: 10,
+        dim: 3072,
+        out_dim: 4096,
         dtype: 'bfloat16'
       }
     },
     Optimizer: {
-      target: optax.lion,
+      target: optax.adamw,
       params: {
         learning_rate: 1.0e-4,
       }
     },
   },
-  "Gaussian": {
-    target: modules.gaussian.gaussian.Gaussian,
-    params: {
-      sample_shape: [2048],
+"Gaussian": {
+  target: modules.gaussian.gaussian.Gaussian,
+  params: {
+      sample_shape: [ 16,16,16 ],
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
@@ -82,11 +82,11 @@
       beta_schedule: 'cosine',
       #min_snr_loss_weight: True,
       #scale_shift: True,
-      self_condition: True,
+      self_condition: False,
       p_loss: False,
-#      mean: 0.0087,
-#      std: 0.2059,
-#      clip_x_start: False
+      #      mean: 0.0087,
+      #      std: 0.2059,
+      #      clip_x_start: False
     },
   }
 }

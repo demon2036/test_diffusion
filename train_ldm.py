@@ -181,7 +181,7 @@ class LdmTrainer(Trainer):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_1d/test.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)
