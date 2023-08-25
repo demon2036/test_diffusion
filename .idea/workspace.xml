@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_1d/2048-20-256.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_1d/2048-20-256.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ldm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ldm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm_1d/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_1d/test.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -188,14 +187,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00172" summary="commit">
-      <option name="closed" value="true" />
-      <created>1692546562759</created>
-      <option name="number" value="00172" />
-      <option name="presentableId" value="LOCAL-00172" />
-      <option name="project" value="LOCAL" />
-      <updated>1692546562760</updated>
     </task>
     <task id="LOCAL-00173" summary="commit">
       <option name="closed" value="true" />
@@ -581,7 +572,15 @@
       <option name="project" value="LOCAL" />
       <updated>1692933570487</updated>
     </task>
-    <option name="localTasksCounter" value="221" />
+    <task id="LOCAL-00221" summary="commit">
+      <option name="closed" value="true" />
+      <created>1692934545882</created>
+      <option name="number" value="00221" />
+      <option name="presentableId" value="LOCAL-00221" />
+      <option name="project" value="LOCAL" />
+      <updated>1692934545882</updated>
+    </task>
+    <option name="localTasksCounter" value="222" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

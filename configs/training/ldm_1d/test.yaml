@@ -41,10 +41,11 @@
   },
   "train": {
       image_size: 256,
-      batch_size: 4,
-      file_path: '/home/john/latent/latent2D-16',
-      data_type: 'np',
-      repeat: 100,
+      batch_size: 64,
+#      file_path: '/home/john/latent/latent2D-16',
+      file_path: '/home/john/data/FFHQ256',
+      data_type: 'img',
+      repeat: 1,
       seed: 43,
       total_steps: 3000000,
       sample_steps: 50000,
@@ -53,18 +54,18 @@
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,16,16,16 ],[ 1, ],[ 1,16,16,16 ] ],
+    Input_Shape: [ [ 1,2048],[ 1, ], ],
     Model: {
       target: modules.models.latentnet.LatentNet,
       params: {
         num_layers: 20,
         dim: 2048,
-        out_dim: 512,
+        out_dim: 2048,
         dtype: 'bfloat16'
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
         learning_rate: 1.0e-4,
       }
