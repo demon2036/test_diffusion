@@ -54,18 +54,18 @@
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,16,16,16 ],[ 1, ],[ 1,16,16,16 ] ],
+    Input_Shape: [ [ 1,2048],[ 1, ], ],
     Model: {
       target: modules.models.latentnet.LatentNet,
       params: {
         num_layers: 20,
         dim: 2048,
-        out_dim: 512,
+        out_dim: 2048,
         dtype: 'bfloat16'
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
         learning_rate: 1.0e-4,
       }

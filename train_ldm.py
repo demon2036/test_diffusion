@@ -86,6 +86,8 @@ def get_auto_encoder_diff(config):
     if len(os.listdir(save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
+    model_ckpt['model']=model_ckpt['model'].replace(params=None)
+
     state = flax.jax_utils.replicate(model_ckpt['model'])
     return state, first_stage_gaussian
 
