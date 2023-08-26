@@ -62,6 +62,7 @@ class GlobalAveragePool(nn.Module):
 
 class Encoder1DLatent(nn.Module):
     latent: int
+
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         b, h, w, c = x.shape

@@ -21,24 +21,6 @@ initialise_tracking()
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step(state, batch, train_key, cls):
-    def loss_fn(params):
-        loss = cls(train_key, state, params, batch)
-        return loss
-
-    grad_fn = jax.value_and_grad(loss_fn)
-    loss, grads = grad_fn(state.params)
-    #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
-    grads = jax.lax.pmean(grads, axis_name='batch')
-    new_state = state.apply_gradients(grads=grads)
-    loss = jax.lax.pmean(loss, axis_name='batch')
-    metric = {"loss": loss}
-    return new_state, metric
-
-
-
-
 
 
 def train():

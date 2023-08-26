@@ -21,15 +21,15 @@ def cal_mean_std():
     max_value = 0
     min_value = 0
     for data in dl:
-        mean += data.mean(axis=[0, 1, 2])
-        std += data.std(axis=[0, 1, 2])
+        mean += data.mean()
+        std += data.std()
 
-        m=data.mean(axis=[0, 1, 2])
-        s = data.std(axis=[0, 1, 2])
-
-        t = data - m
-        ss=data/s
-        print(t.mean(axis=[0, 1, 2]),ss.std(axis=[0, 1, 2]))
+        # m=data.mean()
+        # s = data.std()
+        #
+        # t = data - m
+        # ss=data/s
+        # print(t.mean(),ss.std())
 
         # mean += data.mean()
         # std += data.std()

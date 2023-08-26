@@ -157,21 +157,6 @@ def decode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=AutoEncoder.decode)
 
 
-def sample_save_image_latent_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path,
-                                       ae_state: EMATrainState):
-    os.makedirs(save_path, exist_ok=True)
-    c.eval()
-    sample = c.sample(key, state, )
-    c.train()
-    latent = shard(sample)
-    sample = decode(ae_state, latent)
-    sample = sample / 2 + 0.5
-    sample = einops.rearrange(sample, 'n b h w c->(n b) c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'{save_path}/{steps}.png')
-
-
 def sample_save_image_latent_diffusion(key, c: Gaussian1D, steps,
                                        state: EMATrainState, save_path, ae_state: EMATrainState,
                                        first_stage_gaussian: GaussianTest):

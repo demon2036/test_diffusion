@@ -19,7 +19,7 @@ from jax_smi import initialise_tracking
 from modules.gaussian.gaussian import Gaussian
 import jax.numpy as jnp
 
-from trainers import Trainer
+from trainers.diffencoder_trainer import DiffEncoderTrainer
 
 initialise_tracking()
 
@@ -41,83 +41,6 @@ def train_step(state, batch, train_key, cls):
     loss = jax.lax.pmean(loss, axis_name='batch')
     metric = {"loss": loss}
     return new_state, metric
-
-
-class DiffEncoderTrainer(Trainer):
-    def __init__(self,
-                 state,
-                 gaussian,
-                 *args,
-                 **kwargs
-                 ):
-        super().__init__(*args, **kwargs)
-        self.state = state
-        self.gaussian = gaussian
-        self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
-
-    def load(self, model_path=None, template_ckpt=None):
-
-        if model_path is not None:
-            checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=1)
-        else:
-            checkpoint_manager = self.checkpoint_manager
-
-        model_ckpt = default(template_ckpt, self.template_ckpt)
-        if len(os.listdir(self.model_path)) > 0:
-            model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
-        self.state = model_ckpt['model']
-        self.finished_steps = model_ckpt['steps']
-
-    def save(self):
-        model_ckpt = {'model': self.state, 'steps': self.finished_steps}
-        save_args = orbax_utils.save_args_from_target(model_ckpt)
-        self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
-
-    def sample(self, sample_state=None):
-        sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
-        batch = next(self.dl)
-        try:
-            sample_save_image_diffusion_encoder(self.rng,
-                                                self.gaussian,
-                                                self.finished_steps,
-                                                sample_state,
-                                                self.save_path,
-                                                batch
-                                                )
-        except Exception as e:
-            print(e)
-
-    def train(self):
-        state = flax.jax_utils.replicate(self.state)
-        self.finished_steps += 1
-        with tqdm(total=self.total_steps) as pbar:
-            pbar.update(self.finished_steps)
-            while self.finished_steps < self.total_steps:
-                self.rng, train_step_key = jax.random.split(self.rng, num=2)
-                train_step_key = shard_prng_key(train_step_key)
-                batch = next(self.dl)
-                batch = shard(batch)
-
-                state, metrics = train_step(state, batch, train_step_key, self.gaussian)
-
-                for k, v in metrics.items():
-                    metrics.update({k: v[0]})
-
-                pbar.set_postfix(metrics)
-                pbar.update(1)
-
-                if self.finished_steps > 0 and self.finished_steps % 1 == 0:
-                    decay = min(0.9999, (1 + self.finished_steps) / (10 + self.finished_steps))
-                    decay = flax.jax_utils.replicate(jnp.array([decay]))
-                    state = update_ema(state, decay)
-
-                if self.finished_steps % self.sample_steps == 0:
-                    print(self.finished_steps, self.sample_steps)
-                    self.sample(state)
-                    self.state = flax.jax_utils.unreplicate(state)
-                    self.save()
-
-                self.finished_steps += 1
 
 
 if __name__ == "__main__":

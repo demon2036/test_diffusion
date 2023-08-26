@@ -21,8 +21,9 @@ import jax
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-def get_dataloader(batch_size=32, file_path='/home/john/data/s', cache=False, image_size=64, repeat=1, drop_last=True,
-                   data_type='img',shuffle=True):
+def get_dataloader(batch_size=32, file_path='/home/john/data/s', image_size=64, cache=False, data_type='img', repeat=1,
+                   drop_last=True,
+                   shuffle=True):
     data = MyDataSet(file_path, cache, image_size, repeat=repeat, data_type=data_type)
 
     dataloader = DataLoader(data, batch_size=batch_size,
@@ -41,7 +42,7 @@ class MyDataSet(Dataset):
         self.data = []
         self.count = 0
 
-        self.img_names = os.listdir(self.path)#[:10000]
+        self.img_names = os.listdir(self.path)  # [:10000]
         self.data_type = data_type
 
         if self.cache:
@@ -83,8 +84,9 @@ class MyDataSet(Dataset):
 
 
 def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-128', image_size=64, cache=False,
-              data_type='img',repeat=1):
-    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type, repeat=repeat)
+              data_type='img', repeat=1, drop_last=True, shuffle=True):
+    d = get_dataloader(batch_size, file_path, cache=cache, image_size=image_size, data_type=data_type, repeat=repeat,
+                       drop_last=True, shuffle=True)
     while True:
         for data in d:
             data = torch_to_jax(data)
