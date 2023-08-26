@@ -60,21 +60,19 @@ class GlobalAveragePool(nn.Module):
         return x
 
 
-
-
 class Encoder1DLatent(nn.Module):
-    latent:int
-    def __call__(self,x, *args, **kwargs):
-        x = nn.GroupNorm()(x)
+    latent: int
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        b, h, w, c = x.shape
+        x = nn.GroupNorm(min(c, 32))(x)
         x = nn.silu(x)
-        x=nn.Conv(self.latent,(1,1))(x)
+        x = nn.Conv(self.latent, (1, 1))(x)
         # Global Average Pooling
         x = nn.avg_pool(x, window_shape=(x.shape[1], x.shape[2]), strides=(1, 1))
         x = nn.Conv(self.latent, (1, 1))(x)
         x = einops.rearrange(x, 'b h w c->b (h w c)')
         return x
-
-
 
 
 class Unet(nn.Module):
@@ -117,7 +115,7 @@ class Unet(nn.Module):
         cond_emb = None
         if self.use_encoder:
             latent = x_self_cond
-            assert self.encoder_type in ['1D', '2D', 'Both']
+            # assert self.encoder_type in ['1D', '2D', 'Both']
             print(f'latent shape:{latent.shape}')
             if self.encoder_type == '1D':
                 cond_emb = latent
@@ -127,7 +125,7 @@ class Unet(nn.Module):
                 x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
             elif self.encoder_type == '2D_as_1D':
                 cond_emb = Encoder1DLatent(2048)(x)
-                x_self_cond=None
+                x_self_cond = None
             elif self.encoder_type == 'Both':
                 cond_emb = nn.Sequential([
                     nn.GroupNorm(num_groups=min(8, latent.shape[-1])),
