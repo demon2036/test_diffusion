@@ -57,22 +57,22 @@
 
   states_conf: [
      {
-      objective: "predict_x0",
+      objective: "predict_noise",
       time_min: 0,
       time_max: 200,
     },
     {
-      objective: "predict_x0",
+      objective: "predict_noise",
       time_min: 200,
       time_max: 400,
     },
     {
-      objective: "predict_x0",
+      objective: "predict_noise",
       time_min: 400,
       time_max: 600
     },
     {
-      objective: "predict_x0",
+      objective: "predict_noise",
       time_min: 600,
       time_max: 800,
     },
