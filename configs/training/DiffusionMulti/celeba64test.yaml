@@ -17,7 +17,7 @@
   "Gaussian": {
     target: modules.gaussian.gaussian_multi.GaussianMulti,
     params: {
-      sample_shape: [ 64,64,3 ],
+      sample_shape: [ 128,128,3 ],
       loss: 'l2',
       timesteps: 1000,
       sampling_timesteps: 200,
@@ -34,7 +34,7 @@
   "State": {
     target: train_diff_multi.EMATrainState,
 
-    Input_Shape: [ [ 1,64,64,3 ],[ 1, ],[ 1,64,64,3 ], ],
+    Input_Shape: [ [ 1,128,128,3 ],[ 1, ],[ 1,128,128,3 ], ],
     Model: {
       target: modules.models.unet.Unet,
       params: {
