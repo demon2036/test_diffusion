@@ -7,7 +7,7 @@
     },
     trainer_configs: {
       seed: 43,
-      total_steps: 500000,
+      total_steps: 5000000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
