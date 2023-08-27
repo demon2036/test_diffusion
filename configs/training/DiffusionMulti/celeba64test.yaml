@@ -44,7 +44,7 @@
         out_channels: 3,
         dtype: 'bfloat16',
         self_condition: True,
-        residual: True
+        residual: False
       }
     },
     Optimizer: {
@@ -59,11 +59,26 @@
      {
       objective: "predict_x0",
       time_min: 0,
-      time_max: 361,
+      time_max: 200,
+    },
+    {
+      objective: "predict_x0",
+      time_min: 200,
+      time_max: 400,
+    },
+    {
+      objective: "predict_x0",
+      time_min: 400,
+      time_max: 600
+    },
+    {
+      objective: "predict_x0",
+      time_min: 600,
+      time_max: 800,
     },
     {
       objective: "predict_noise",
-      time_min: 361,
+      time_min: 800,
       time_max: 1000,
     },
   ]
