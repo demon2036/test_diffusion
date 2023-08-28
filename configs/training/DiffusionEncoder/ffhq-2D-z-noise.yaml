@@ -1,17 +1,13 @@
-ffhq-2D-z.yaml{
+{
   "train": {
-    dataloader_configs: {
       image_size: 256,
       batch_size: 64,
-      file_path: '/root/data/FFHQ256'
-    },
-    trainer_configs: {
+      file_path: '/root/data/FFHQ256',
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/DiffAE'
-    },
   },
   "State": {
     target: modules.state_utils.EMATrainState,
