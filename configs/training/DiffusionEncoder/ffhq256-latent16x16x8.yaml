@@ -21,8 +21,8 @@
         encoder_type: '2D',
         latent_type: 'tanh',
         encoder_configs: {
-          dims: [ 64,128,256,256 ],
-          latent: 2,
+          dims: [ 64,128,256,256,256 ],
+          latent: 8,
           dtype: 'bfloat16',
         }
       }
