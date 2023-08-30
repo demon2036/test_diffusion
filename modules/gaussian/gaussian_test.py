@@ -24,9 +24,9 @@ def extract(a, t, x_shape):
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
-def model_predict_ema(model, x, time, x_self_cond=None,method=None):
+def model_predict_ema(model, x, time, x_self_cond=None, method=None):
     print(f'method:{method}')
-    return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond,method=method)
+    return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond, method=method)
 
 
 def model_predict(model, x, time, x_self_cond=None):
@@ -47,16 +47,15 @@ class GaussianTest(Gaussian):
             **kwargs
 
     ):
-        super().__init__(*args,**kwargs)
-        self.apply_fn=DiffEncoder.decode
-
+        super().__init__(*args, **kwargs)
+        self.apply_fn = DiffEncoder.decode
 
     def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
         # model_output = model_predict(state, x, t, x_self_cond)
         if self.train_state:
             model_output = model_predict(state, x, t, x_self_cond)
         else:
-            model_output = model_predict_ema(state, x, t, x_self_cond,self.apply_fn)
+            model_output = model_predict_ema(state, x, t, x_self_cond, self.apply_fn)
 
         clip_x_start = True
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -81,13 +80,3 @@ class GaussianTest(Gaussian):
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 
         return ModelPrediction(pred_noise, x_start)
-
-
-
-
-
-
-
-
-
-

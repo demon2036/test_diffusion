@@ -449,7 +449,7 @@ class UnetTest(nn.Module):
         cond_emb = None
         if self.use_encoder:
             latent = x_self_cond
-            assert self.encoder_type in ['1D', '2D', 'Both']
+            assert self.encoder_type in ['1D', '2D', 'Both','2D_as_1D']
             print(f'latent shape:{latent.shape}')
             if self.encoder_type == '1D':
                 cond_emb = latent
@@ -467,6 +467,9 @@ class UnetTest(nn.Module):
                     nn.Dense(self.dim * 16)
                 ])(latent)
                 x_self_cond = Encoder2DLatent(shape=x.shape)(latent)
+            elif self.encoder_type == '2D_as_1D':
+                cond_emb = None
+                x_self_cond = Encoder1DLatent(shape=x.shape, n=self.n)(latent)
 
         if x_self_cond is not None:
             x = jnp.concatenate([x, x_self_cond], axis=3)
