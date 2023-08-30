@@ -26,8 +26,10 @@ class GaussianDecoder(Gaussian):
         elif self.objective == 'predict_v':
             v = self.predict_v(x_start, t, noise)
             target = v
+        elif self.objective == 'predict_mx':
+            target = -x_start
         else:
-            target = None
+            raise NotImplemented()
 
         p_loss = self.loss(target, model_output)
 
