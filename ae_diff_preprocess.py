@@ -129,7 +129,8 @@ if __name__ == "__main__":
     train_gaussian = create_obj_by_config(config['Gaussian'])
     train_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),
                                          state_configs=config['State'])
-    trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'], dataset_type='dataloader', drop_last=False)
+    trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'], dataset_type='dataloader',
+                                 drop_last=False)
     trainer.load()
     trainer.state = flax.jax_utils.replicate(trainer.state)
     count = 0
@@ -148,7 +149,8 @@ if __name__ == "__main__":
             if count == 0:
                 # y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
 
-                y = diff_encode(trainer.state, shard(sample_latent),shard_prng_key( trainer.rng))
+                y = diff_encode(trainer.state, shard(sample_latent), shard_prng_key(trainer.rng))
+                y = jnp.reshape(y, (-1, *x.shape[2:]))
                 y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
                 sample = y / 2 + 0.5
                 sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
