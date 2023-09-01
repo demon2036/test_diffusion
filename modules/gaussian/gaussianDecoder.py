@@ -1,3 +1,4 @@
+
 from functools import partial
 
 from modules.gaussian.gaussian import Gaussian, extract, ModelPrediction, identity
@@ -6,7 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import jax.numpy as jnp
 
-from modules.utils import default
+from modules.utils import default, get_obj_from_str
 
 
 def model_predict_ema(model, x, time, x_self_cond=None, method=None):
@@ -25,15 +26,18 @@ class GaussianDecoder(Gaussian):
             *args,
             **kwargs):
         super().__init__(*args, **kwargs)
-        self.apply_method = default(apply_method, None)
+
+        if apply_method is not None:
+            if not callable(apply_method):
+                apply_method = get_obj_from_str(apply_method)
+        self.apply_method = apply_method
         print(f'self.apply_method:{self.apply_method}')
 
     def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
-        # model_output = model_predict(state, x, t, x_self_cond)
         if self.train_state:
-            model_output = model_predict(state, x, t, x_self_cond,self.apply_method)
+            model_output = model_predict(state, x, t, x_self_cond, self.apply_method)
         else:
-            model_output = model_predict_ema(state, x, t, x_self_cond,self.apply_method)
+            model_output = model_predict_ema(state, x, t, x_self_cond, self.apply_method)
 
         clip_x_start = self.clip_x_start
         maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
@@ -58,37 +62,6 @@ class GaussianDecoder(Gaussian):
             pred_noise = self.predict_noise_from_start(x, t, x_start)
         elif self.objective == 'predict_mx':
             x_start = -model_output
-            x_start = maybe_clip(x_start)
-            pred_noise = self.predict_noise_from_start(x, t, x_start)
-
-        return ModelPrediction(pred_noise, x_start)
-
-    def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
-        # model_output = model_predict(state, x, t, x_self_cond)
-        if self.train_state:
-            model_output = model_predict(state, x, t, x_self_cond)
-        else:
-            model_output = model_predict_ema(state, x, t, x_self_cond, self.apply_fn)
-
-        clip_x_start = True
-        maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
-
-        if self.objective == 'predict_noise':
-            pred_noise = model_output
-            x_start = self.predict_start_from_noise(x, t, pred_noise)
-            x_start = maybe_clip(x_start)
-
-            if clip_x_start and rederive_pred_noise:
-                pred_noise = self.predict_noise_from_start(x, t, x_start)
-
-        elif self.objective == 'predict_x0':
-            x_start = model_output
-            x_start = maybe_clip(x_start)
-            pred_noise = self.predict_noise_from_start(x, t, x_start)
-
-        elif self.objective == 'predict_v':
-            v = model_output
-            x_start = self.predict_start_from_v(x, t, v)
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 

@@ -7,19 +7,16 @@ import torch
 from flax.training.common_utils import shard, shard_prng_key
 from torchvision.utils import save_image
 
-from data.dataset import generator, get_dataloader
 from modules.gaussian.gaussian import Gaussian
-from modules.models.autoencoder import AutoEncoder
-from functools import partial
+
 import jax
 import jax.numpy as jnp
-from modules.loss.loss import l1_loss, l2_loss, hinge_d_loss
 import argparse
 
 from modules.models.diffEncoder import DiffEncoder
-from modules.state_utils import create_state, create_obj_by_config, create_state_by_config
-from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
-    get_obj_from_str, EMATrainState
+from modules.state_utils import create_state, create_obj_by_config, create_state_by_config, EMATrainState
+from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, get_obj_from_str
+
 import os
 
 from tqdm import tqdm
@@ -72,11 +69,6 @@ def diff_encode(state: EMATrainState, x, z_rng):
     return state.apply_fn({'params': state.ema_params}, x, z_rng=z_rng, method=DiffEncoder.encode)
 
 
-@jax.pmap
-def diff_decode(state: EMATrainState, x, z_rng):
-    return state.apply_fn({'params': state.ema_params}, x, z_rng=z_rng, method=DiffEncoder.decode)
-
-
 def decode(ae_state: EMATrainState, sample_latent, first_stage_gaussian: Gaussian, key):
     first_stage_gaussian.eval()
     sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
@@ -127,10 +119,11 @@ def cal(x):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq-2D-z.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq-2D-z-noise.yaml')
     args = parser.parse_args()
 
     config = read_yaml(args.config_path)
+    config['Gaussian']['params'].update({'apply_method': DiffEncoder.decode})
     train_gaussian = create_obj_by_config(config['Gaussian'])
     train_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),
                                          state_configs=config['State'])
@@ -147,15 +140,12 @@ if __name__ == "__main__":
             x = jnp.asarray(x)
 
             x = shard(x)
-            sample_latent = diff_decode(trainer.state, x, shard_prng_key(trainer.rng))
+            sample_latent = diff_encode(trainer.state, x, shard_prng_key(trainer.rng))
             sample_latent = jnp.reshape(sample_latent, (-1, *sample_latent.shape[2:]))
             latent = np.array(sample_latent, dtype='float32')
 
             if count == 0:
-                # y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
-
-                y = diff_encode(trainer.state, shard(sample_latent), shard_prng_key(trainer.rng))
-                y = jnp.reshape(y, (-1, *x.shape[2:]))
+                y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
                 y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
                 sample = y / 2 + 0.5
                 sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )

@@ -41,7 +41,6 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
                               ema_params=variables['params'])
 
 
-
 def create_obj_by_config(config):
     assert 'target', 'params' in config
     obj = get_obj_from_str(config['target'])
@@ -69,7 +68,6 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
                               ema_params=variables['params'])
-
 
 
 def copy_params_to_ema(state):

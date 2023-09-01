@@ -2,7 +2,7 @@
   "train": {
       image_size: 256,
       batch_size: 64,
-      file_path: '/root/data/FFHQ256',
+      file_path: '/home/john/data/FFHQ256',
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
