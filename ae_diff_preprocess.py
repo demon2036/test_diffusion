@@ -131,7 +131,7 @@ if __name__ == "__main__":
                                          state_configs=config['State'])
     trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'], dataset_type='dataloader', drop_last=False)
     trainer.load()
-    trainer.state = shard(trainer.state)
+    trainer.state = flax.jax_utils.replicate(trainer.state)
     count = 0
     os.makedirs(trainer.save_path, exist_ok=True)
     with ThreadPoolExecutor() as pool:
