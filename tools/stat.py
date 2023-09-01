@@ -8,13 +8,13 @@ from modules.utils import read_yaml
 
 def cal_mean_std():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='../configs/stat/config.yaml')
+    parser.add_argument('-ip', '--image_path', default=None)
+    parser.add_argument('-bs', '--batch_size', default=128)
+    parser.add_argument('-s', '--image_size', default=256)
     args = parser.parse_args()
     print(args)
-    config = read_yaml(args.config_path)
-    dataloader_configs = config['dataloader_configs']
-    dl = get_dataloader(**dataloader_configs)  # file_path
 
+    dl = get_dataloader(args.batch_size, args.image_path,args.image_size,drop_last=False)  # file_path
     count = 0
     mean = 0
     std = 0
@@ -30,7 +30,6 @@ def cal_mean_std():
         # t = data - m
         # ss=data/s
         # print(t.mean(),ss.std())
-
         # mean += data.mean()
         # std += data.std()
         max_value = max(max_value, data.max())

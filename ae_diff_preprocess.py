@@ -132,8 +132,8 @@ if __name__ == "__main__":
     trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'])
     trainer.load()
     trainer.state = shard(trainer.state)
-    count=0
-    os.makedirs(trainer.save_path,exist_ok=True)
+    count = 0
+    os.makedirs(trainer.save_path, exist_ok=True)
     with ThreadPoolExecutor() as pool:
         for data in tqdm(trainer.dl):
             x = data
@@ -144,18 +144,19 @@ if __name__ == "__main__":
             sample_latent = diff_encode(trainer.state, x, shard_prng_key(trainer.rng))
             sample_latent = jnp.reshape(sample_latent, (-1, *sample_latent.shape[2:]))
             latent = np.array(sample_latent, dtype='float32')
+
+            if count == 0:
+                y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
+                y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
+                sample = y / 2 + 0.5
+                sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
+                sample = np.array(sample)
+                sample = torch.Tensor(sample)
+                save_image(sample, f'result/test{trainer.finished_steps}.png')
+
             for x in latent:
                 pool.submit(save_latent, x, count, trainer.save_path)
                 count += 1
-
-            # y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
-            # y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
-            # sample = y / 2 + 0.5
-            # sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
-            # sample = np.array(sample)
-            # sample = torch.Tensor(sample)
-            # save_image(sample, f'result/test{trainer.finished_steps}.png')
-            # break
 
     """
     parser = argparse.ArgumentParser()
