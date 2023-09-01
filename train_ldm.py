@@ -24,7 +24,7 @@ def get_auto_encoder_diff(config):
                          train_state=EMATrainState, model_kwargs=model_configs)
 
     model_ckpt = {'model': state, 'steps': 0}
-    save_path = './model/DiffAE'
+    save_path = './check_points/DiffAE'
     checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=1)
     if len(os.listdir(save_path)) > 0:
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
