@@ -146,7 +146,9 @@ if __name__ == "__main__":
             latent = np.array(sample_latent, dtype='float32')
 
             if count == 0:
-                y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
+                # y = decode(trainer.state, sample_latent, trainer.gaussian, trainer.rng)
+
+                y = diff_encode(trainer.state, shard(sample_latent),shard_prng_key( trainer.rng))
                 y = jnp.concatenate([y, jnp.reshape(x, (-1, *x.shape[2:]))])
                 sample = y / 2 + 0.5
                 sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
