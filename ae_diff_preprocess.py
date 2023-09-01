@@ -72,6 +72,11 @@ def diff_encode(state: EMATrainState, x, z_rng):
     return state.apply_fn({'params': state.ema_params}, x, z_rng=z_rng, method=DiffEncoder.encode)
 
 
+@jax.pmap
+def diff_decode(state: EMATrainState, x, z_rng):
+    return state.apply_fn({'params': state.ema_params}, x, z_rng=z_rng, method=DiffEncoder.decode)
+
+
 def decode(ae_state: EMATrainState, sample_latent, first_stage_gaussian: Gaussian, key):
     first_stage_gaussian.eval()
     sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
@@ -142,7 +147,7 @@ if __name__ == "__main__":
             x = jnp.asarray(x)
 
             x = shard(x)
-            sample_latent = diff_encode(trainer.state, x, shard_prng_key(trainer.rng))
+            sample_latent = diff_decode(trainer.state, x, shard_prng_key(trainer.rng))
             sample_latent = jnp.reshape(sample_latent, (-1, *sample_latent.shape[2:]))
             latent = np.array(sample_latent, dtype='float32')
 
