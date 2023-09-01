@@ -129,7 +129,7 @@ if __name__ == "__main__":
     train_gaussian = create_obj_by_config(config['Gaussian'])
     train_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),
                                          state_configs=config['State'])
-    trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'])
+    trainer = DiffEncoderTrainer(train_state, train_gaussian, **config['train'], dataset_type='dataloader', drop_last=False)
     trainer.load()
     trainer.state = shard(trainer.state)
     count = 0

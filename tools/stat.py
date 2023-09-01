@@ -4,23 +4,25 @@ import numpy as np
 
 from data.dataset import get_dataloader
 from modules.utils import read_yaml
+from trainers.basic_trainer import Trainer
 
 
 def cal_mean_std():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', '--image_path', default=None)
-    parser.add_argument('-bs', '--batch_size', default=128)
-    parser.add_argument('-s', '--image_size', default=256)
+    parser.add_argument('-cp', '--config_path', default='./configs/preprocess/diff_ae/2D/ffhq-2D-z.yaml')
     args = parser.parse_args()
+
+    config = read_yaml(args.config_path)
+
+    trainer = Trainer(**config['train'], dataset_type='dataloader', drop_last=False)
     print(args)
 
-    dl = get_dataloader(args.batch_size, args.image_path,args.image_size,drop_last=False)  # file_path
     count = 0
     mean = 0
     std = 0
     max_value = 0
     min_value = 0
-    for data in dl:
+    for data in trainer.dl:
         mean += data.mean()
         std += data.std()
 
