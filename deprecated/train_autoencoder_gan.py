@@ -10,8 +10,7 @@ import optax
 import argparse
 
 from modules.state_utils import create_state
-from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema, sample_save_image_autoencoder, \
-    get_obj_from_str, EMATrainState
+from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, update_ema,get_obj_from_str
 import os
 import flax
 from tqdm import tqdm

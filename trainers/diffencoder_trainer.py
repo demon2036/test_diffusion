@@ -1,24 +1,15 @@
 
-
-import argparse
-
-import optax
-from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
-from data.dataset import generator
-from modules.gaussian.gaussianDecoder import GaussianDecoder
-from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, \
-    create_obj_by_config, create_state_by_config
-from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
-    sample_save_image_diffusion, get_obj_from_str, sample_save_image_diffusion_encoder, default
+
+from modules.infer_utils import sample_save_image_diffusion_encoder
+from modules.utils import  create_checkpoint_manager, load_ckpt, update_ema, \
+  get_obj_from_str, default
 import flax
 import os
 from functools import partial
 from flax.training import orbax_utils
 from flax.training.common_utils import shard, shard_prng_key
-from jax_smi import initialise_tracking
-from modules.gaussian.gaussian import Gaussian
 import jax.numpy as jnp
 
 from trainers.basic_trainer import Trainer

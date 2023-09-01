@@ -8,8 +8,7 @@ from data.dataset import generator
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, \
     create_obj_by_config, create_state_by_config
-from modules.utils import EMATrainState, create_checkpoint_manager, load_ckpt, read_yaml, update_ema, \
-    sample_save_image_diffusion, get_obj_from_str, sample_save_image_diffusion_encoder, default
+from modules.utils import  create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
 import flax
 import os
 from functools import partial
