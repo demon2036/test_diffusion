@@ -18,7 +18,6 @@ import yaml
 import json
 
 from modules.gaussian.gaussian import Gaussian
-from modules.gaussian.gaussian1D import Gaussian1D
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.gaussian.gaussianSR import GaussianSR
 from modules.gaussian.gaussian_multi import GaussianMulti

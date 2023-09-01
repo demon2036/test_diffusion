@@ -1,6 +1,6 @@
 from functools import partial
 
-from modules.gaussian.gaussian import Gaussian, extract, ModelPrediction
+from modules.gaussian.gaussian import Gaussian, extract, ModelPrediction, identity
 import jax
 from tqdm import tqdm
 import numpy as np
