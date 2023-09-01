@@ -26,6 +26,7 @@ class GaussianDecoder(Gaussian):
             **kwargs):
         super().__init__(*args, **kwargs)
         self.apply_method = default(apply_method, None)
+        print(f'self.apply_method:{self.apply_method}')
 
     def model_predictions(self, x, t=None, x_self_cond=None, state=None, rederive_pred_noise=False, *args, **kwargs):
         # model_output = model_predict(state, x, t, x_self_cond)
