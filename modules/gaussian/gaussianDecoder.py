@@ -70,6 +70,7 @@ class GaussianDecoder(Gaussian):
     def p_loss(self, key, state, params, x_start, t):
         key, z_rng = jax.random.split(key, 2)
         noise = self.generate_nosie(key, shape=x_start.shape)
+
         assert x_start.shape[1:] == tuple(self.sample_shape)
 
         x = self.q_sample(x_start, t, noise)

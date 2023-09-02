@@ -101,6 +101,8 @@ class Gaussian:
         alphas_cumprod = jnp.cumprod(alphas)
         alphas_cumprod_prev = jnp.pad(alphas_cumprod[:-1], (1, 0), constant_values=1)
 
+        print(alphas_cumprod)
+
         self.num_timesteps = int(timesteps)
 
         self.sampling_timesteps = sampling_timesteps
