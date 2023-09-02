@@ -32,20 +32,24 @@
       out_channels: 3,
       dtype: 'bfloat16',
       #patch_size: 1
-      self_condition: True
+      #self_condition: True
     }
   },
   "Gaussian": {
-    loss: 'l1',
+    loss: 'charbonnier',
     timesteps: 1000,
     sampling_timesteps: 1000,
     objective: 'predict_noise',
-    beta_schedule: 'cosine',
+    beta_schedule: 'linear',
+    beta_schedule_configs: {
+        start: 0.02,
+        end: 0.0001,
+    },
     #min_snr_loss_weight: True,
     #scale_shift: True,
-    scale_factor: 0.25,
+    scale_factor: 0.5,
     noise_type: 'normal',
-    self_condition: True,
+    #self_condition: True,
 
   }
 

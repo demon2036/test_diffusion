@@ -23,14 +23,13 @@ def extract(a, t, x_shape):
     out = a[t]
     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
-
 def model_predict_ema(model, x, time, x_self_cond=None, method=None):
     print(f'method:{method}')
     return model.apply_fn({"params": model.ema_params}, x, time, x_self_cond, method=method)
 
 
-def model_predict(model, x, time, x_self_cond=None):
-    return model.apply_fn({"params": model.params}, x, time, x_self_cond)
+def model_predict(model, x, time, x_self_cond=None, method=None):
+    return model.apply_fn({"params": model.params}, x, time, x_self_cond, method=method)
 
 
 def extract(a, t, x_shape):
@@ -76,6 +75,10 @@ class GaussianTest(Gaussian):
         elif self.objective == 'predict_v':
             v = model_output
             x_start = self.predict_start_from_v(x, t, v)
+            x_start = maybe_clip(x_start)
+            pred_noise = self.predict_noise_from_start(x, t, x_start)
+        elif self.objective == 'predict_mx':
+            x_start = -model_output
             x_start = maybe_clip(x_start)
             pred_noise = self.predict_noise_from_start(x, t, x_start)
 

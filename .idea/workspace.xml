@@ -6,13 +6,30 @@
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/128-latent16-8-64.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/256-latent16-16-256-s.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ffhq-2D-z-mx.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/256-latent16-16-256.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/256-latent16-16-64-attn-kernel.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/256-latent16-16-64-attn.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/256-latent16-16-64-normal.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/64.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/celeba-256-v-patch-4.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/celeba-align-64-noise-128.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/celeba-align-64-noise-64.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/celeba.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/flowers.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/s-256-v-patch-4.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/s.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/test_diff.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/test_diff_vit.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/Diffusion/uvit.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-128-noise-128-adamw-scale-0.5-my.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-128-noise-128-adamw.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-256-noise-128-adamw-scale-0.5-my-patch-8.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adam.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5-my-charbonnier-mx.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5-my-naf.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5-my-naf2.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5-my.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5-my.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test_linear1.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale-0.5.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw-scale_shift.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-align-64-noise-128-adamw.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/ffhq256-64-noise-128.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussian_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussian_test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +79,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "test",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/ldm_2d",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/Diffusion",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
@@ -209,22 +226,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00204" summary="commit">
-      <option name="closed" value="true" />
-      <created>1692796922255</created>
-      <option name="number" value="00204" />
-      <option name="presentableId" value="LOCAL-00204" />
-      <option name="project" value="LOCAL" />
-      <updated>1692796922255</updated>
-    </task>
-    <task id="LOCAL-00205" summary="commit">
-      <option name="closed" value="true" />
-      <created>1692816881918</created>
-      <option name="number" value="00205" />
-      <option name="presentableId" value="LOCAL-00205" />
-      <option name="project" value="LOCAL" />
-      <updated>1692816881919</updated>
     </task>
     <task id="LOCAL-00206" summary="commit">
       <option name="closed" value="true" />
@@ -602,7 +603,23 @@
       <option name="project" value="LOCAL" />
       <updated>1693579848517</updated>
     </task>
-    <option name="localTasksCounter" value="253" />
+    <task id="LOCAL-00253" summary="commit">
+      <option name="closed" value="true" />
+      <created>1693588856176</created>
+      <option name="number" value="00253" />
+      <option name="presentableId" value="LOCAL-00253" />
+      <option name="project" value="LOCAL" />
+      <updated>1693588856176</updated>
+    </task>
+    <task id="LOCAL-00254" summary="commit">
+      <option name="closed" value="true" />
+      <created>1693589662134</created>
+      <option name="number" value="00254" />
+      <option name="presentableId" value="LOCAL-00254" />
+      <option name="project" value="LOCAL" />
+      <updated>1693589662134</updated>
+    </task>
+    <option name="localTasksCounter" value="255" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
