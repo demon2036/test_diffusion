@@ -10,7 +10,7 @@ from modules.utils import default, get_obj_from_str
 
 
 def kl_divergence(mean, logvar):
-    return 0.5 * jnp.mean(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
+    return 0.5 * jnp.sum(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
 
 
 def model_predict_ema(model, x, time, x_self_cond=None, method=None):
