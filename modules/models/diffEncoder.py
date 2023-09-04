@@ -113,8 +113,8 @@ class DiffEncoder(nn.Module):
             mean, log_var = jnp.split(x, 2, -1)
             # mean = mean.clip(-3, 3)
             log_var = log_var.clip(-20, 20)
-            self.sow('intermediate', 'mean', mean)
-            self.sow('intermediate', 'variance', log_var)
+            self.sow('intermediates', 'mean', mean)
+            self.sow('intermediates', 'log_var', log_var)
             x = self.reparameter(z_rng, mean, log_var)
 
         return x

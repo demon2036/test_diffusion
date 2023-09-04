@@ -8,7 +8,7 @@ from data.dataset import generator
 from modules.gaussian.gaussianDecoder import GaussianDecoder
 from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, \
     create_obj_by_config, create_state_by_config
-from modules.utils import  create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
+from modules.utils import create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
 import flax
 import os
 from functools import partial
@@ -23,8 +23,6 @@ from trainers.diffencoder_trainer import DiffEncoderTrainer
 initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

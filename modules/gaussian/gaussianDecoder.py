@@ -1,4 +1,3 @@
-
 from functools import partial
 
 from modules.gaussian.gaussian import Gaussian, extract, ModelPrediction, identity
@@ -8,6 +7,10 @@ import numpy as np
 import jax.numpy as jnp
 
 from modules.utils import default, get_obj_from_str
+
+
+def kl_divergence(mean, logvar):
+    return 0.5 * jnp.mean(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
 
 
 def model_predict_ema(model, x, time, x_self_cond=None, method=None):
@@ -23,6 +26,7 @@ class GaussianDecoder(Gaussian):
     def __init__(
             self,
             apply_method=None,
+            kl_loss=0,
             *args,
             **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,6 +34,7 @@ class GaussianDecoder(Gaussian):
         if apply_method is not None:
             if not callable(apply_method):
                 apply_method = get_obj_from_str(apply_method)
+        self.kl_loss = kl_loss
         self.apply_method = apply_method
         print(f'self.apply_method:{self.apply_method}')
 
@@ -74,7 +79,13 @@ class GaussianDecoder(Gaussian):
         assert x_start.shape[1:] == tuple(self.sample_shape)
 
         x = self.q_sample(x_start, t, noise)
-        model_output = state.apply_fn({"params": params}, x, t, x_start, z_rng=z_rng)
+        model_output, mod_vars = state.apply_fn({"params": params}, x, t, x_start, z_rng=z_rng, mutable='intermediates')
+        if self.kl_loss > 0:
+            mean = mod_vars['intermediates']['mean'][0]
+            log_var = mod_vars['intermediates']['log_var'][0]
+            kl_loss = kl_divergence(mean, log_var)
+        else:
+            kl_loss = jnp.array([0])
 
         if self.objective == 'predict_noise':
             target = noise
@@ -91,7 +102,7 @@ class GaussianDecoder(Gaussian):
         p_loss = self.loss(target, model_output)
 
         p_loss = (p_loss * extract(self.loss_weight, t, p_loss.shape)).mean()
-        return p_loss
+        return p_loss,kl_loss.mean()
 
     def __call__(self, key, state, params, img):
         key_times, key_noise = jax.random.split(key, 2)
