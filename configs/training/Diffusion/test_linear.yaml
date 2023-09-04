@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 128,
-      batch_size: 64,
+      batch_size: 256,
       file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
       total_steps: 500000,
@@ -15,15 +15,15 @@
     Model: {
       target: modules.models.unet.Unet,
       params: {
-        dim: 64,
+        dim: 192,
         out_channels: 3,
-        dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+        dim_mults: [ 1, 2,4,8],
       }
     },
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 2.0e-4,
+        learning_rate: 3.0e-4,
         b1: 0.9,
         b2: 0.99
       }
@@ -38,7 +38,7 @@
       sampling_timesteps: 200,
       objective: 'predict_noise',
       beta_schedule: 'linear',
-      scale_factor: 0.5,
+      #scale_factor: 0.5,
       p_loss: False
     },
   },
