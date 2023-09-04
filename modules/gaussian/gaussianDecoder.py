@@ -83,7 +83,7 @@ class GaussianDecoder(Gaussian):
         if self.kl_loss > 0:
             mean = mod_vars['intermediates']['mean'][0]
             log_var = mod_vars['intermediates']['log_var'][0]
-            kl_loss = kl_divergence(mean, log_var)
+            kl_loss = kl_divergence(mean, log_var)*self.kl_loss
         else:
             kl_loss = jnp.array([0])
 
