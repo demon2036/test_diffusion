@@ -82,15 +82,15 @@
       sample_shape: [32,32,3],
       loss: 'charbonnier',
       timesteps: 1000,
-      sampling_timesteps: 200,
+      sampling_timesteps: 1000,
       objective: 'predict_v',
       beta_schedule: 'linear',
       #min_snr_loss_weight: True,
       #scale_shift: True,
       #self_condition: True,
       p_loss: False,
-      mean: -0.1972,
-      std: 4.1737,
+      mean: -0.2711,
+      std: 2.5918,
       clip_x_start: False
     },
   }
