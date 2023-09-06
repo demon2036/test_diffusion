@@ -86,7 +86,7 @@
       objective: 'predict_x0',
       beta_schedule: 'linear',
       #min_snr_loss_weight: True,
-      #scale_shift: True,
+      scale_shift: True,
       #self_condition: True,
       p_loss: False,
       mean: -0.3104,
