@@ -1,5 +1,4 @@
 {
-
   "FirstStage": {
     "AutoEncoder": {
           target: modules.models.diffEncoder.DiffEncoder,
