@@ -1,7 +1,7 @@
 import argparse
 import jax.random
 from modules.state_utils import create_obj_by_config, create_state_by_config
-from modules.utils import  read_yaml
+from modules.utils import read_yaml
 import os
 from jax_smi import initialise_tracking
 from trainers.diff_sr_trainer import DiffSRTrainer

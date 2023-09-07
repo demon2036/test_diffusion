@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/training/DiffusionSR/celeba512-sr8.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_diff_sr.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/trainers/diff_sr_trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/gaussian/gaussianSR.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/gaussian/gaussianSR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_diff_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff_sr.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/deprecated/train_sr.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,9 +70,9 @@
       <recent name="$PROJECT_DIR$/configs/preprocess/diff_ae/2D" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/deprecated" />
       <recent name="$PROJECT_DIR$/tools/temp" />
       <recent name="$PROJECT_DIR$/tools" />
-      <recent name="$PROJECT_DIR$/deprecated" />
       <recent name="$PROJECT_DIR$/configs/preprocess/diff_ae/2D" />
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
     </key>
@@ -207,14 +203,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00229" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693132251230</created>
-      <option name="number" value="00229" />
-      <option name="presentableId" value="LOCAL-00229" />
-      <option name="project" value="LOCAL" />
-      <updated>1693132251230</updated>
     </task>
     <task id="LOCAL-00230" summary="commit">
       <option name="closed" value="true" />
@@ -600,7 +588,15 @@
       <option name="project" value="LOCAL" />
       <updated>1694053860849</updated>
     </task>
-    <option name="localTasksCounter" value="278" />
+    <task id="LOCAL-00278" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694069682468</created>
+      <option name="number" value="00278" />
+      <option name="presentableId" value="LOCAL-00278" />
+      <option name="project" value="LOCAL" />
+      <updated>1694069682468</updated>
+    </task>
+    <option name="localTasksCounter" value="279" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
