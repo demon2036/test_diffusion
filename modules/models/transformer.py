@@ -3,7 +3,7 @@ import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import Any
-from modules.models.attention import MyAttention
+from modules.models.attention import MyAttention, Attention
 
 
 class Transformer(nn.Module):
@@ -14,7 +14,7 @@ class Transformer(nn.Module):
     def __call__(self, x, time_emb=None):
         if time_emb is not None:
             time_emb = nn.Dense(self.dim * 6, dtype=self.dtype)(time_emb)
-            time_emb = einops.rearrange(time_emb,'b c->b 1 1 c')
+            time_emb = einops.rearrange(time_emb, 'b c->b 1 1 c')
             gate_msa, gate_ffn, scale_msa, scale_ffn, shift_msa, shift_ffn = jnp.split(time_emb, 3, 6)
 
         y = x
@@ -23,7 +23,14 @@ class Transformer(nn.Module):
         if time_emb is not None:
             x = x * (scale_msa + 1) + shift_msa
 
-        attn = MyAttention(self.dim, dtype=self.dtype)(x)
+        """
+        dim: int
+        scale: int = 10
+        dtype: Any = jnp.float32
+        """
+
+        # attn = MyAttention(self.dim, dtype=self.dtype)(x)
+        attn = Attention(self.dim, self.dtype)
 
         if time_emb is not None:
             attn = attn * gate_msa

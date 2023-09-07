@@ -111,7 +111,7 @@ class Unet(nn.Module):
         elif self.res_type == "efficient":
             res_block = EfficientBlock
         else:
-            res_block = None
+            raise NotImplemented()
 
         cond_emb = None
         if self.use_encoder:

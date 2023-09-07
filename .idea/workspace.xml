@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change beforePath="$PROJECT_DIR$/train_diff_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff_sr.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_sr.py" beforeDir="false" afterPath="$PROJECT_DIR$/deprecated/train_sr.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/training/Diffusion/ffhq64-128.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +58,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "test",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/DiffusionSR",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/Diffusion",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
@@ -203,22 +205,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00230" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693132264483</created>
-      <option name="number" value="00230" />
-      <option name="presentableId" value="LOCAL-00230" />
-      <option name="project" value="LOCAL" />
-      <updated>1693132264483</updated>
-    </task>
-    <task id="LOCAL-00231" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693132398966</created>
-      <option name="number" value="00231" />
-      <option name="presentableId" value="LOCAL-00231" />
-      <option name="project" value="LOCAL" />
-      <updated>1693132398966</updated>
     </task>
     <task id="LOCAL-00232" summary="commit">
       <option name="closed" value="true" />
@@ -596,7 +582,23 @@
       <option name="project" value="LOCAL" />
       <updated>1694069682468</updated>
     </task>
-    <option name="localTasksCounter" value="279" />
+    <task id="LOCAL-00279" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694069978083</created>
+      <option name="number" value="00279" />
+      <option name="presentableId" value="LOCAL-00279" />
+      <option name="project" value="LOCAL" />
+      <updated>1694069978083</updated>
+    </task>
+    <task id="LOCAL-00280" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694070455437</created>
+      <option name="number" value="00280" />
+      <option name="presentableId" value="LOCAL-00280" />
+      <option name="project" value="LOCAL" />
+      <updated>1694070455437</updated>
+    </task>
+    <option name="localTasksCounter" value="281" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
