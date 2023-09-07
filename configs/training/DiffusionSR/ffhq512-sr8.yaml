@@ -2,7 +2,7 @@
   "train": {
       image_size: 512,
       batch_size: 64,
-      file_path: '/root/data/celeba-512/celeba-512',
+      file_path: '/root/data/FFHQ',
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
