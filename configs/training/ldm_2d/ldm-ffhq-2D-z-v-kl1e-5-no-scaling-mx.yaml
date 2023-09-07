@@ -82,7 +82,7 @@
       loss: 'charbonnier',
       timesteps: 1000,
       sampling_timesteps: 1000,
-      objective: 'predict_v',
+      objective: 'predict_mx',
       beta_schedule: 'linear',
       #min_snr_loss_weight: True,
       #scale_shift: True,
