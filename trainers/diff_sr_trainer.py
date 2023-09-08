@@ -71,14 +71,6 @@ class DiffSRTrainer(Trainer):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = default(batch, next(self.dl))
         try:
-            # sample_save_image_sr(self.rng,
-            #                      self.gaussian,
-            #                      self.finished_steps,
-            #                      sample_state,
-            #                      batch,
-            #                      self.save_path,
-            #                      )
-
             sr_img = sample_save_image_sr(self.rng,
                                           self.gaussian,
                                           sample_state,
@@ -120,7 +112,7 @@ class DiffSRTrainer(Trainer):
 
                 if self.finished_steps % self.sample_steps == 0:
                     print(self.finished_steps, self.sample_steps)
-                    self.sample(state)
+                    self.sample(state,save_sample=True)
                     self.state = flax.jax_utils.unreplicate(state)
                     self.save()
 

@@ -47,7 +47,7 @@ class DiffTrainer(Trainer):
         self.gaussian = gaussian
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
-    def load(self, model_path=None, template_ckpt=None):
+    def load(self, model_path=None, template_ckpt=None,only_ema=False):
 
         if model_path is not None:
             checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=1)
@@ -59,6 +59,11 @@ class DiffTrainer(Trainer):
             model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
         self.state = model_ckpt['model']
         self.finished_steps = model_ckpt['steps']
+
+        if only_ema:
+            self.state=self.state.replace(params=None)
+
+
 
     def save(self):
         model_ckpt = {'model': self.state, 'steps': self.finished_steps}

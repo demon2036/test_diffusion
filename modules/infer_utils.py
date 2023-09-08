@@ -52,8 +52,7 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path, batch_size):
-    os.makedirs(save_path, exist_ok=True)
+def sample_save_image_diffusion(key, c: Gaussian, state: EMATrainState, batch_size):
     c.eval()
     sample = c.sample(key, state, batch_size=batch_size)
     c.train()
@@ -61,6 +60,7 @@ def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, s
 
 
 def jax_img_save(img, save_path, steps):
+    os.makedirs(save_path, exist_ok=True)
     img = img / 2 + 0.5
     img = einops.rearrange(img, 'b h w c->b c h w')
     img = np.array(img)

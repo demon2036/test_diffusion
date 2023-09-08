@@ -37,15 +37,18 @@ def go():
     args = parser.parse_args()
     print(args)
     trainer = get_diff_trainer(args)
-    trainer.load()
+    trainer.load(only_ema=True)
     sr_trainer = get_diff_sr_trainer(args)
     sr_trainer.load()
 
-    sample = trainer.sample()
-    sample_sr = sr_trainer.sample(batch=sample,return_sample=True)
+    sample = trainer.sample(batch_size=8,return_sample=True,save_sample=False)
+    sample_sr = sr_trainer.sample(batch=sample, return_sample=True)
 
-    jax_img_save(sample_sr, save_path='./result', steps='sr')
-    jax_img_save(sample, save_path='./result', steps='origin')
+    try:
+        jax_img_save(sample_sr, save_path='./result', steps='sr')
+        jax_img_save(sample, save_path='./result', steps='origin')
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
