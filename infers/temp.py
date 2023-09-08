@@ -42,7 +42,7 @@ def go():
     sr_trainer.load()
 
     sample = trainer.sample()
-    sample_sr = sr_trainer.sample(batch=sample)
+    sample_sr = sr_trainer.sample(batch=sample,return_sample=True)
 
     jax_img_save(sample_sr, save_path='./result', steps='sr')
     jax_img_save(sample, save_path='./result', steps='origin')

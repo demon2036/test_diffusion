@@ -32,7 +32,7 @@
   "Gaussian": {
     target: modules.gaussian.gaussian.Gaussian,
     params: {
-      sample_shape: [ 128,128,3 ],
+      sample_shape: [ 64,64,3 ],
       loss: 'charbonnier',
       timesteps: 1000,
       sampling_timesteps: 200,

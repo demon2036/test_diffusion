@@ -38,7 +38,7 @@ class GaussianSR(Gaussian):
 
         return ret
 
-    def sample(self, key, state, lr_image):
+    def sample(self, key, state, lr_image, return_img_only=True):
 
         b, h, w, c = lr_image.shape
         lr_image = jax.image.resize(lr_image, (b, h * self.sr_factor, w * self.sr_factor, c), method='bicubic')
@@ -52,7 +52,10 @@ class GaussianSR(Gaussian):
         if self.predict_residual:
             ret = res + lr_image
 
-        return [ret, res, lr_image]
+        if return_img_only:
+            return ret
+        else:
+            return [ret, res, lr_image]
 
     def p_loss(self, key, state, params, x_start, t):
         noise = self.generate_nosie(key, shape=x_start.shape)
