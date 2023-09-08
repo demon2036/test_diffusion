@@ -4,7 +4,8 @@ from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
-from modules.infer_utils import sample_save_image_diffusion, sample_save_image_sr, jax_img_save
+from modules.infer_utils import sample_save_image_diffusion, sample_save_image_sr, jax_img_save, \
+    sample_save_image_sr_eval
 from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, EMATrainState
 from modules.utils import create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
 import flax
@@ -67,16 +68,23 @@ class DiffSRTrainer(Trainer):
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch=None, save_sample=False, return_sample=False):
+    def sample(self, sample_state=None, batch=None, save_sample=False, return_sample=False, eval=False):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = default(batch, next(self.dl))
 
         try:
-            sr_img = sample_save_image_sr(self.rng,
-                                          self.gaussian,
-                                          sample_state,
-                                          batch,
-                                          )
+
+            if eval:
+                sr_img = sample_save_image_sr_eval(self.rng,
+                                                   self.gaussian,
+                                                   sample_state,
+                                                   batch, )
+            else:
+                sr_img = sample_save_image_sr(self.rng,
+                                              self.gaussian,
+                                              sample_state,
+                                              batch,
+                                              )
 
             if save_sample:
                 jax_img_save(sr_img, self.save_path, self.finished_steps)
@@ -113,7 +121,7 @@ class DiffSRTrainer(Trainer):
 
                 if self.finished_steps % self.sample_steps == 0:
                     print(self.finished_steps, self.sample_steps)
-                    self.sample(state,save_sample=True)
+                    self.sample(state, save_sample=True)
                     self.state = flax.jax_utils.unreplicate(state)
                     self.save()
 
