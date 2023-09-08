@@ -8,7 +8,6 @@ import torch
 import torchvision
 
 
-
 def normal_noise(key, shape):
     return jax.random.normal(key, shape)
 
@@ -52,8 +51,7 @@ def resize_noise(key, shape):
 #     return noise  # / noise.std()  # Scaled back to roughly unit variance
 
 
-def pyramid_nosie(key, shape,discount = 0.9):
-
+def pyramid_nosie(key, shape, discount=0.9):
     b, h, w, c = shape
     key, noise_key = jax.random.split(key, 2)
 

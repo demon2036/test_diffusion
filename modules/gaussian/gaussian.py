@@ -58,6 +58,8 @@ class Gaussian:
             p_loss=False,
             mean=0,
             std=1,
+            clip_x_min=-1,
+            clip_x_max=1,
             clip_x_start=True
 
     ):
@@ -65,6 +67,8 @@ class Gaussian:
         self.sample_shape = sample_shape
         if beta_schedule_configs is None:
             beta_schedule_configs = {}
+        self.clip_x_min=clip_x_min
+        self.clip_x_max=clip_x_max
         self.clip_x_start = clip_x_start
         self.train_state = True
         self.noise_type = noise_type
@@ -210,7 +214,7 @@ class Gaussian:
             model_output = model_predict_ema(state, x, t, x_self_cond)
 
         clip_x_start = self.clip_x_start
-        maybe_clip = partial(jnp.clip, a_min=-1., a_max=1.) if clip_x_start else identity
+        maybe_clip = partial(jnp.clip, a_min=self.clip_x_min, a_max=self.clip_x_max) if clip_x_start else identity
 
         if self.objective == 'predict_noise':
             pred_noise = model_output
