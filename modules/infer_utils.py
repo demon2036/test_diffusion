@@ -52,16 +52,20 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_diffusion(key, c: Gaussian, steps, state: EMATrainState, save_path):
-    os.makedirs(save_path, exist_ok=True)
+def sample_save_image_diffusion(key, c: Gaussian, state: EMATrainState, batch_size):
     c.eval()
-    sample = c.sample(key, state, )
+    sample = c.sample(key, state, batch_size=batch_size)
     c.train()
-    sample = sample / 2 + 0.5
-    sample = einops.rearrange(sample, 'b h w c->b c h w')
-    sample = np.array(sample)
-    sample = torch.Tensor(sample)
-    save_image(sample, f'{save_path}/{steps}.png')
+    return sample
+
+
+def jax_img_save(img, save_path, steps):
+    os.makedirs(save_path, exist_ok=True)
+    img = img / 2 + 0.5
+    img = einops.rearrange(img, 'b h w c->b c h w')
+    img = np.array(img)
+    img = torch.Tensor(img)
+    save_image(img, f'{save_path}/{steps}.png')
 
 
 def sample_save_image_diffusion_multi(key, c: GaussianMulti, steps, state: EMATrainState, save_path, gaussian_configs):
@@ -107,10 +111,6 @@ def sample_save_image_latent_diffusion(key, c, steps,
 @jax.pmap
 def diff_encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=DiffEncoder.encode)
-
-
-
-
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):

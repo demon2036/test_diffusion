@@ -4,7 +4,7 @@ from flax.jax_utils import replicate
 from tqdm import tqdm
 import jax.random
 from data.dataset import generator
-from modules.infer_utils import sample_save_image_diffusion
+from modules.infer_utils import sample_save_image_diffusion, jax_img_save
 from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, EMATrainState
 from modules.utils import create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
 import flax
@@ -65,17 +65,23 @@ class DiffTrainer(Trainer):
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None):
+    def sample(self, sample_state=None, batch_size=16, return_sample=False, save_sample=True):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
-        batch = next(self.dl)
-        #sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
+
+        # sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
         try:
-            sample_save_image_diffusion(self.rng,
-                                        self.gaussian,
-                                        self.finished_steps,
-                                        sample_state,
-                                        self.save_path,
-                                        )
+            sample = sample_save_image_diffusion(self.rng,
+                                                 self.gaussian,
+                                                 sample_state,
+                                                 batch_size
+                                                 )
+
+            if save_sample:
+                jax_img_save(sample, self.save_path, self.finished_steps)
+
+            if return_sample:
+                return sample
+
         except Exception as e:
             print(e)
 
