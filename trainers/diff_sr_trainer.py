@@ -70,6 +70,7 @@ class DiffSRTrainer(Trainer):
     def sample(self, sample_state=None, batch=None, save_sample=False, return_sample=False):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = default(batch, next(self.dl))
+
         try:
             sr_img = sample_save_image_sr(self.rng,
                                           self.gaussian,

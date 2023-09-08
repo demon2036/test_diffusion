@@ -64,7 +64,6 @@ class DiffTrainer(Trainer):
             self.state=self.state.replace(params=None)
 
 
-
     def save(self):
         model_ckpt = {'model': self.state, 'steps': self.finished_steps}
         save_args = orbax_utils.save_args_from_target(model_ckpt)
