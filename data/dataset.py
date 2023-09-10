@@ -158,9 +158,30 @@ def random_crop_batch(rng_key, images, crop_size):
 
 
 if __name__ == '__main__':
+
     start = time.time()
     image_size = 256
     dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
+
+    from tqdm import tqdm
+
+    # for x in tqdm(dl):
+    #     pass
+
+    total = 10
+    total_step = 20
+    for i in range(21):
+        time.sleep(0.5)
+
+        xing = '*' * int(total * (i / total_step))
+        gang = '>' * int(total-total * (i / total_step))
+
+        print(f'\r[{xing}{gang}]    {100*i/total_step}%   ', end='')
+
+        # print(x.shape)
+
+    """
+    
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     os.environ['XLA_FLAGS'] = 'TF_USE_NVLINK_FOR_PARALLEL_COMPILATION=0'
@@ -196,3 +217,4 @@ if __name__ == '__main__':
         count += 1
 
     print(end - start)
+    """
