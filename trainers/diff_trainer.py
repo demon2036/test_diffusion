@@ -69,7 +69,7 @@ class DiffTrainer(Trainer):
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch_size=16, return_sample=False, save_sample=True):
+    def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
 
         # sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])

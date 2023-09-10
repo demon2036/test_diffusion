@@ -118,7 +118,7 @@ def sample_save_image_sr_eval(key, diffusion: GaussianSR, state: EMATrainState, 
     lr_image = jax.image.resize(batch, (b, h // diffusion.sr_factor, w // diffusion.sr_factor, c), method='bilinear')
     diffusion.eval()
     sample = diffusion.sample(key, state, lr_image)
-    diffusion.train()
+    diffusion.eval()
     sample.append(batch)
     all_image = jnp.concatenate(sample, axis=0)
     all_image = einops.rearrange(all_image, '(n b) h w c->b  (n h) w c', n=len(sample))
@@ -126,5 +126,7 @@ def sample_save_image_sr_eval(key, diffusion: GaussianSR, state: EMATrainState, 
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, state: EMATrainState, lr_image):
+    diffusion.eval()
     sample = diffusion.sample(key, state, lr_image, return_img_only=True)
+    diffusion.eval()
     return sample
