@@ -52,7 +52,7 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_diffusion(key, c: Gaussian, state: EMATrainState, batch_size):
+def sample_save_image_diffusion(key, c, state: EMATrainState, batch_size):
     c.eval()
     sample = c.sample(key, state, batch_size=batch_size)
     c.train()

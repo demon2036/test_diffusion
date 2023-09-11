@@ -144,6 +144,7 @@ class Unet(nn.Module):
             x = jnp.concatenate([x, x_self_cond], axis=3)
 
         time_dim = self.dim * 4
+
         t = nn.Sequential([
             SinusoidalPosEmb(self.dim),
             nn.Dense(time_dim, dtype=self.dtype),
@@ -449,7 +450,7 @@ class UnetTest(nn.Module):
         cond_emb = None
         if self.use_encoder:
             latent = x_self_cond
-            assert self.encoder_type in ['1D', '2D', 'Both','2D_as_1D']
+            assert self.encoder_type in ['1D', '2D', 'Both', '2D_as_1D']
             print(f'latent shape:{latent.shape}')
             if self.encoder_type == '1D':
                 cond_emb = latent

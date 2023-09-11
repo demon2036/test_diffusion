@@ -47,7 +47,7 @@ class DiffTrainer(Trainer):
         self.gaussian = gaussian
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
-    def load(self, model_path=None, template_ckpt=None,only_ema=False):
+    def load(self, model_path=None, template_ckpt=None, only_ema=False):
 
         if model_path is not None:
             checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=1)
@@ -61,25 +61,23 @@ class DiffTrainer(Trainer):
         self.finished_steps = model_ckpt['steps']
 
         if only_ema:
-            self.state=self.state.replace(params=None)
-
+            self.state = self.state.replace(params=None)
 
     def save(self):
         model_ckpt = {'model': self.state, 'steps': self.finished_steps}
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True):
-        sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
+    def sample(self, sample_state=None, batch_size=8, return_sample=False, save_sample=True):
+        # sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
+        sample_state=self.state
 
-        # sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
         try:
             sample = sample_save_image_diffusion(self.rng,
                                                  self.gaussian,
                                                  sample_state,
                                                  batch_size
                                                  )
-
             if save_sample:
                 jax_img_save(sample, self.save_path, self.finished_steps)
 
