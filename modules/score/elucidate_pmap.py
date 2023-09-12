@@ -1,6 +1,6 @@
 from math import sqrt
 
-from flax.training.common_utils import shard
+from flax.training.common_utils import shard, shard_prng_key
 from flax.training.train_state import TrainState
 import flax.training.train_state
 import torch
@@ -90,7 +90,8 @@ class ElucidatedDiffusion:
             self.loss = charbonnier_loss
 
         self.train_state = True
-        self.pmap_preconditioned_network_forward = self.preconditioned_network_forward
+        self.pmap_preconditioned_network_forward = jax.pmap(self.preconditioned_network_forward)
+        self.pmap_sample = jax.pmap(self._sample, )
 
     # derived preconditioning params - Table 1
 
@@ -136,7 +137,7 @@ class ElucidatedDiffusion:
         # padded_sigma = sigma
 
         # if params is None:
-        # print(sigma.shape, padded_sigma.shape, self_cond)
+        print(sigma.shape, padded_sigma.shape, self_cond)
 
         net_out = state.apply_fn({'params': params},
                                  self.c_in(padded_sigma) * noised_images,
@@ -172,37 +173,23 @@ class ElucidatedDiffusion:
         # sigmas = F.pad(sigmas, (0, 1), value=0.)  # last step is sigma value of 0.
         return sigmas
 
-    def sample(self, rng, state: EMATrainState, batch_size=16, num_sample_steps=None, clamp=True):
+    def _sample(self, rng, state, num_sample_steps=None, clamp=True):
 
         if self.train_state:
             params = state.params
         else:
             params = state.ema_params
-        # params = flax.jax_utils.replicate(params)
+        params = flax.jax_utils.replicate(params)
 
         rng_noise, rng_sample = jax.random.split(rng)
 
         num_sample_steps = default(num_sample_steps, self.num_sample_steps)
 
-        shape = (batch_size, *self.sample_shape)
+        shape = (8, *self.sample_shape)
 
         # get the schedule, which is returned as (sigma, gamma) tuple, and pair up with the next sigma and gamma
 
         sigmas = self.sample_schedule(num_sample_steps)
-
-        # gammas = torch.where(
-        #     (sigmas >= self.S_tmin) & (sigmas <= self.S_tmax),
-        #     min(self.S_churn / num_sample_steps, sqrt(2) - 1),
-        #     0.
-        # )
-
-        # gammas = jax.lax.cond(
-        #     (sigmas >= self.S_tmin) & (sigmas <= self.S_tmax),
-        #     lambda _: min(self.S_churn / num_sample_steps, sqrt(2) - 1),
-        #     lambda _: 0.
-        # )
-        #
-        # sigmas_and_gammas = list(zip(sigmas[:-1], sigmas[1:], gammas[:-1]))
 
         sigmas_and_gammas = list(zip(sigmas[:-1], sigmas[1:]))
 
@@ -231,13 +218,16 @@ class ElucidatedDiffusion:
             sigma_hat = sigma + gamma * sigma
             images_hat = images + sqrt(sigma_hat ** 2 - sigma ** 2) * eps
 
+            sigma_hat = shard(sigma_hat)
+            images_hat = shard(images_hat)
+
             self_cond = x_start if self.self_condition else None
 
             # images_hat = shard(images_hat)
             # sigma_hat = shard(sigma_hat)
-
-            model_output = self.preconditioned_network_forward(images_hat, sigma_hat, self_cond, clamp=clamp,
-                                                               state=state, params=params)
+            print(state.shape)
+            model_output = self.pmap_preconditioned_network_forward(images_hat, sigma_hat,  # self_cond, clamp=clamp,
+                                                                    state=state, params=params)
             denoised_over_sigma = (images_hat - model_output) / sigma_hat
 
             images_next = images_hat + (sigma_next - sigma_hat) * denoised_over_sigma
@@ -247,8 +237,9 @@ class ElucidatedDiffusion:
             if sigma_next != 0:
                 self_cond = model_output if self.self_condition else None
 
-                model_output_next = self.preconditioned_network_forward(images_next, sigma_next, self_cond, clamp=clamp,
-                                                                        state=state, params=params)
+                model_output_next = self.pmap_preconditioned_network_forward(images_next, sigma_next, self_cond,
+                                                                             clamp=clamp,
+                                                                             state=state, params=params)
                 denoised_prime_over_sigma = (images_next - model_output_next) / sigma_next
                 images_next = images_hat + 0.5 * (sigma_next - sigma_hat) * (
                         denoised_over_sigma + denoised_prime_over_sigma)
@@ -261,7 +252,15 @@ class ElucidatedDiffusion:
         images = jnp.clip(images, -1, 1)
 
         return images
-        # return unnormalize_to_zero_to_one(images)
+
+    def sample(self, rng, state: EMATrainState, batch_size=16, num_sample_steps=None, clamp=True):
+
+        pmap_batch_size = jnp.array([batch_size // jax.device_count()])
+        shape = (pmap_batch_size, *self.sample_shape)
+        # rng, state: EMATrainState, shape, num_sample_steps = None, clamp = True)
+        samples = self._sample(rng, state, )
+        samples = jnp.reshape(samples, *self.sample_shape)
+        return samples
 
     # def sample_using_dpmpp(self, batch_size=16, num_sample_steps=None):
     #     """

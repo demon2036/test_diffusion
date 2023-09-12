@@ -69,8 +69,15 @@ class DiffTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def sample(self, sample_state=None, batch_size=8, return_sample=False, save_sample=True):
-        # sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
-        sample_state=self.state
+        sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
+        # sample_state=self.state
+        print(sample_state.shape)
+
+        sample = sample_save_image_diffusion(self.rng,
+                                             self.gaussian,
+                                             sample_state,
+                                             batch_size
+                                             )
 
         try:
             sample = sample_save_image_diffusion(self.rng,
@@ -89,6 +96,8 @@ class DiffTrainer(Trainer):
 
     def train(self):
         state = flax.jax_utils.replicate(self.state)
+        state = shard(state)
+        print(state.shape)
         self.finished_steps += 1
         with tqdm(total=self.total_steps) as pbar:
             pbar.update(self.finished_steps)
