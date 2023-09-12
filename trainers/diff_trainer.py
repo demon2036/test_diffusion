@@ -70,7 +70,12 @@ class DiffTrainer(Trainer):
 
     def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
-        sample_state=self.state
+
+        sample = sample_save_image_diffusion(self.rng,
+                                             self.gaussian,
+                                             sample_state,
+                                             batch_size
+                                             )
 
         try:
             sample = sample_save_image_diffusion(self.rng,

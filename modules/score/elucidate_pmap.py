@@ -224,16 +224,23 @@ class ElucidatedDiffusion:
             sigma_hat = sigma + gamma * sigma
             images_hat = images + sqrt(sigma_hat ** 2 - sigma ** 2) * eps
 
-            sigma_hat = shard(sigma_hat)
-            images_hat = shard(images_hat)
-            sigma_next = shard(sigma_next)
+            # sigma_hat = flax.jax_utils.replicate(sigma_hat)
+            # images_hat = shard(images_hat)
+            # sigma_next = flax.jax_utils.replicate(sigma_next)
 
             self_cond = x_start if self.self_condition else None
 
             # images_hat = shard(images_hat)
             # sigma_hat = shard(sigma_hat)
-            model_output = self.pmap_preconditioned_network_forward(images_hat, sigma_hat,  # self_cond, clamp=clamp,
+            # model_output = self.pmap_preconditioned_network_forward(images_hat, sigma_hat,  # self_cond, clamp=clamp,
+            #                                                         state=state, params=params)
+            model_output = self.pmap_preconditioned_network_forward(shard(images_hat),
+                                                                    flax.jax_utils.replicate(sigma_hat),  #
+                                                                    # self_cond, clamp=clamp,
                                                                     state=state, params=params)
+
+            model_output = model_output.reshape(-1, *self.sample_shape)
+
             denoised_over_sigma = (images_hat - model_output) / sigma_hat
 
             images_next = images_hat + (sigma_next - sigma_hat) * denoised_over_sigma
@@ -243,9 +250,16 @@ class ElucidatedDiffusion:
             if sigma_next != 0:
                 self_cond = model_output if self.self_condition else None
 
-                model_output_next = self.pmap_preconditioned_network_forward(images_next, sigma_next,  # self_cond,
+                # model_output_next = self.pmap_preconditioned_network_forward(images_next, sigma_next,  # self_cond,
+                #                                                              # clamp=flax.jax_utils.replicate(clamp),
+                #                                                              state=state, params=params)
+
+                model_output_next = self.pmap_preconditioned_network_forward(shard(images_next), flax.jax_utils.replicate(sigma_next),  # self_cond,
                                                                              # clamp=flax.jax_utils.replicate(clamp),
                                                                              state=state, params=params)
+
+                model_output_next=model_output_next.reshape(-1, *self.sample_shape)
+
                 denoised_prime_over_sigma = (images_next - model_output_next) / sigma_next
                 images_next = images_hat + 0.5 * (sigma_next - sigma_hat) * (
                         denoised_over_sigma + denoised_prime_over_sigma)
@@ -253,7 +267,6 @@ class ElucidatedDiffusion:
             images = images_next
             x_start = model_output_next if sigma_next != 0 else model_output
 
-            images = images.reshape(-1, *self.sample_shape)
             x_start = x_start.reshape(-1, *self.sample_shape)
 
         # images = images.clamp(-1., 1.)
