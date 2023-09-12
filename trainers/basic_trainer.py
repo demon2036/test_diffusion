@@ -35,4 +35,4 @@ class Trainer:
         self.save_path = save_path
         self.model_path = model_path
         self.checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=ckpt_max_to_keep)
-        self.finished_steps = 1
+        self.finished_steps = 0
