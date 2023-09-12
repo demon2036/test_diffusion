@@ -1,44 +1,46 @@
 {
   "train": {
-      image_size: 128,
+      image_size: 64,
       batch_size: 64,
       file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
-      total_steps: 500000,
+      total_steps: 5000000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
   },
   "State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,128,128,3 ],[ 1, ] ],
+    Input_Shape: [ [ 1,64,64,3 ],[ 1, ],[ 1,64,64,3 ] ],
     Model: {
       target: modules.models.unet.Unet,
       params: {
-        dim: 192,
+        dim: 128,
         out_channels: 3,
-        dim_mults: [ 1, 2,4,4],
+        dim_mults: [ 2, 2, 2 ],
+        num_res_blocks: 4,
       }
     },
     Optimizer: {
-      target: optax.lion,
+      target: optax.adamw,
       params: {
-        learning_rate: 3.0e-5,
-#        b1: 0.9,
-#        b2: 0.99
+        learning_rate: 8.0e-5,
+        b1: 0.9,
+        b2: 0.99
       }
     },
   },
   "Gaussian": {
     target: modules.gaussian.gaussian.Gaussian,
     params: {
-      sample_shape: [ 128,128,3 ],
-      loss: 'charbonnier',
+      sample_shape: [ 64,64,3 ],
+      loss: 'l1',
       timesteps: 1000,
       sampling_timesteps: 200,
       objective: 'predict_noise',
-      beta_schedule: 'linear',
-      #scale_factor: 0.5,
+      beta_schedule: 'cosine',
+      self_condition: True,
+#      scale_factor: 0.5,
       p_loss: False
     },
   },

@@ -52,7 +52,7 @@ def sample_save_image_diffusion_encoder(key, c: GaussianDecoder, steps, state: E
     save_image(sample, f'{save_path}/{steps}.png')
 
 
-def sample_save_image_diffusion(key, c: Gaussian, state: EMATrainState, batch_size):
+def sample_save_image_diffusion(key, c, state: EMATrainState, batch_size):
     c.eval()
     sample = c.sample(key, state, batch_size=batch_size)
     c.train()
@@ -113,23 +113,20 @@ def diff_encode(state: EMATrainState, x):
     return state.apply_fn({'params': state.ema_params}, x, method=DiffEncoder.encode)
 
 
-def sample_save_image_sr_eval(key, diffusion: GaussianSR, steps, state: EMATrainState, batch, save_path):
-    os.makedirs(save_path, exist_ok=True)
+def sample_save_image_sr_eval(key, diffusion: GaussianSR, state: EMATrainState, batch):
     b, h, w, c = batch.shape
     lr_image = jax.image.resize(batch, (b, h // diffusion.sr_factor, w // diffusion.sr_factor, c), method='bilinear')
-    os.makedirs(save_path, exist_ok=True)
-    diffusion.set_state(state)
+    diffusion.eval()
     sample = diffusion.sample(key, state, lr_image)
+    diffusion.eval()
     sample.append(batch)
     all_image = jnp.concatenate(sample, axis=0)
-    all_image = all_image / 2 + 0.5
-    diffusion.state = None
-    all_image = einops.rearrange(all_image, '(n b) h w c->b c (n h) w', n=len(sample))
-    all_image = np.array(all_image)
-    all_image = torch.Tensor(all_image)
-    save_image(all_image, f'{save_path}/{steps}.png')
+    all_image = einops.rearrange(all_image, '(n b) h w c->b  (n h) w c', n=len(sample))
+    return all_image
 
 
 def sample_save_image_sr(key, diffusion: GaussianSR, state: EMATrainState, lr_image):
-    sample = diffusion.sample(key, state, lr_image,return_img_only=True)
+    diffusion.eval()
+    sample = diffusion.sample(key, state, lr_image, return_img_only=True)
+    diffusion.eval()
     return sample

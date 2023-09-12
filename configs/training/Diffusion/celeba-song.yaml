@@ -1,11 +1,11 @@
 {
   "train": {
       image_size: 64,
-      batch_size: 2,
-      file_path: '/home/john/data/celeba-128/celeba-128',
+      batch_size: 64,
+      file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
       total_steps: 5000000,
-      sample_steps: 1,
+      sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
   },
@@ -31,16 +31,16 @@
     },
   },
   "Gaussian": {
-    target: modules.score.elucidate.ElucidatedDiffusion,
+    target: modules.gaussian.gaussian.Gaussian,
     params: {
       sample_shape: [ 64,64,3 ],
-      loss: 'l2',
-#      timesteps: 1000,
-#      sampling_timesteps: 200,
-#      objective: 'predict_noise',
-#      beta_schedule: 'cosine',
+      loss: 'l1',
+      timesteps: 1000,
+      sampling_timesteps: 200,
+      objective: 'predict_noise',
+      beta_schedule: 'cosine',
 #      scale_factor: 0.5,
-#      p_loss: False
+      p_loss: False
     },
   },
 }

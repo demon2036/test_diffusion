@@ -1,21 +1,15 @@
-import argparse
-
-from flax.jax_utils import replicate
-from tqdm import tqdm
-import jax.random
-from data.dataset import generator
-from modules.infer_utils import sample_save_image_diffusion, jax_img_save
-from modules.state_utils import create_state, apply_ema_decay, copy_params_to_ema, ema_decay_schedule, EMATrainState
-from modules.utils import create_checkpoint_manager, load_ckpt, read_yaml, update_ema, get_obj_from_str, default
-import flax
 import os
 from functools import partial
+
+import flax
+import jax.numpy as jnp
+import jax.random
 from flax.training import orbax_utils
 from flax.training.common_utils import shard, shard_prng_key
-from jax_smi import initialise_tracking
-from modules.gaussian.gaussian import Gaussian
-import jax.numpy as jnp
+from tqdm import tqdm
 
+from modules.infer_utils import sample_save_image_diffusion, jax_img_save
+from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, default
 from trainers.basic_trainer import Trainer
 
 
@@ -47,7 +41,7 @@ class DiffTrainer(Trainer):
         self.gaussian = gaussian
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
-    def load(self, model_path=None, template_ckpt=None,only_ema=False):
+    def load(self, model_path=None, template_ckpt=None, only_ema=False):
 
         if model_path is not None:
             checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=1)
@@ -61,25 +55,22 @@ class DiffTrainer(Trainer):
         self.finished_steps = model_ckpt['steps']
 
         if only_ema:
-            self.state=self.state.replace(params=None)
-
+            self.state = self.state.replace(params=None)
 
     def save(self):
         model_ckpt = {'model': self.state, 'steps': self.finished_steps}
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch_size=16, return_sample=False, save_sample=True):
+    def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
 
-        # sample_save_image_diffusion(key, c, steps, state, trainer_configs['save_path'])
         try:
             sample = sample_save_image_diffusion(self.rng,
                                                  self.gaussian,
                                                  sample_state,
                                                  batch_size
                                                  )
-
             if save_sample:
                 jax_img_save(sample, self.save_path, self.finished_steps)
 

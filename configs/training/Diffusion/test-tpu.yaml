@@ -1,8 +1,8 @@
 {
   "train": {
       image_size: 64,
-      batch_size: 2,
-      file_path: '/home/john/data/celeba-128/celeba-128',
+      batch_size: 8,
+      file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
       total_steps: 5000000,
       sample_steps: 1,
@@ -31,7 +31,7 @@
     },
   },
   "Gaussian": {
-    target: modules.score.elucidate.ElucidatedDiffusion,
+    target: modules.score.elucidate_pmap.ElucidatedDiffusion,
     params: {
       sample_shape: [ 64,64,3 ],
       loss: 'l2',

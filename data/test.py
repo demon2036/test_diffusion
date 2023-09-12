@@ -157,64 +157,57 @@ def random_crop_batch(rng_key, images, crop_size):
 # Example usage
 
 
+class VELoss:
+    def __init__(self, sigma_min=0.02, sigma_max=100):
+        self.sigma_min = sigma_min
+        self.sigma_max = sigma_max
+
+    def __call__(self, net, images, labels, augment_pipe=None):
+        rnd_uniform = torch.rand([images.shape[0], 1, 1, 1], device=images.device)
+        sigma = self.sigma_min * ((self.sigma_max / self.sigma_min) ** rnd_uniform)
+        weight = 1 / sigma ** 2
+        y, augment_labels = augment_pipe(images) if augment_pipe is not None else (images, None)
+        n = torch.randn_like(y) * sigma
+        D_yn = net(y + n, sigma, labels, augment_labels=augment_labels)
+        loss = weight * ((D_yn - y) ** 2)
+        return loss
+
+
+def sample(images):
+    sigma_min = 0.02
+    sigma_max = 80
+
+    rnd_uniform = torch.rand([images.shape[0], 1, 1, 1], device=images.device)
+    sigma = sigma_min * ((sigma_max / sigma_min) ** rnd_uniform)
+    weight = 1 / sigma ** 2
+    y = images
+    n = torch.randn_like(y) * sigma
+    return y + n
+
+
 if __name__ == '__main__':
 
     start = time.time()
     image_size = 256
     dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
 
-    from tqdm import tqdm
-
-    # for x in tqdm(dl):
-    #     pass
-
-    total = 10
-    total_step = 20
-    for i in range(21):
-        time.sleep(0.5)
-
-        xing = '*' * int(total * (i / total_step))
-        gang = '>' * int(total-total * (i / total_step))
-
-        print(f'\r[{xing}{gang}]    {100*i/total_step}%   ', end='')
-
-        # print(x.shape)
-
-    """
-    
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
     os.environ['XLA_FLAGS'] = 'TF_USE_NVLINK_FOR_PARALLEL_COMPILATION=0'
-    # os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
     rng_key = random.PRNGKey(0)
     count = 0
     for data in dl:
         data = data / 2 + 0.5
-        data = data.numpy()
-        y = jnp.asarray(data)
-        print(data.shape)
+        data=einops.rearrange(data,'b h w c->b c h w ')
 
-        crop_size = (128, 128)
+        noise = sample(data)
+        print(noise.shape)
+        torchvision.utils.save_image(noise, 'test1.png')
+        break
 
-        # Create a random PRNG key
-        rng_key, crop_rng = jax.random.split(rng_key, 2)
-
-        crop = jax.random.choice(crop_rng, jnp.array([64, 256]), p=jnp.array([0.1, 0.9]))
-        crop_size = (crop, crop)
-
-        # Generate random crops for the batch of images
-        cropped_images = random_crop_batch(rng_key, data, crop_size)
-
-        data = cropped_images
-
-        data = np.asarray(data)
-        data = torch.Tensor(data)
-        print(data.shape)
-
-        data = einops.rearrange(data, 'b  h w c->(b ) c h w', )
-        torchvision.utils.save_image(data, f'./test/{count}.png', nrow=4)
-        count += 1
+        # data = data.numpy()
+        # y = jnp.asarray(data)
+        # print(data.shape)
 
     print(end - start)
-    """

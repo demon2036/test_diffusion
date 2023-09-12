@@ -67,8 +67,8 @@ class Gaussian:
         self.sample_shape = sample_shape
         if beta_schedule_configs is None:
             beta_schedule_configs = {}
-        self.clip_x_min=clip_x_min
-        self.clip_x_max=clip_x_max
+        self.clip_x_min = clip_x_min
+        self.clip_x_max = clip_x_max
         self.clip_x_start = clip_x_start
         self.train_state = True
         self.noise_type = noise_type
@@ -358,6 +358,12 @@ class Gaussian:
 
         return img
 
+    def q_sample(self, x_start, t, noise):
+        return (
+                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
+                extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
+        )
+
     def sample(self, key, state, self_condition=None, batch_size=64):
         if self_condition is not None:
             batch_size = self_condition.shape[0]
@@ -373,12 +379,6 @@ class Gaussian:
         samples = self.denormalize(samples)
 
         return samples
-
-    def q_sample(self, x_start, t, noise):
-        return (
-                extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
-                extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
-        )
 
     def p_loss(self, key, state, params, x_start, t):
         key, cond_key, z_rng = jax.random.split(key, 3)
@@ -399,7 +399,7 @@ class Gaussian:
             x_self_cond = jax.lax.cond(jax.random.uniform(cond_key, shape=(1,))[0] < 0.5, estimate, lambda _: zeros,
                                        None)
 
-        model_output = state.apply_fn({"params": params}, x, t, x_self_cond,z_rng=z_rng)
+        model_output = state.apply_fn({"params": params}, x, t, x_self_cond, z_rng=z_rng)
 
         if self.objective == 'predict_noise':
             target = noise
@@ -411,7 +411,7 @@ class Gaussian:
         elif self.objective == 'predict_mx':
             target = -x_start
         else:
-            raise  NotImplemented()
+            raise NotImplemented()
 
         p_loss = self.loss(target, model_output)
 
