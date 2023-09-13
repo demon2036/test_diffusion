@@ -1,6 +1,6 @@
 {
   "train": {
-      image_size: 64,
+      image_size: 128,
       batch_size: 64,
       file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
@@ -11,7 +11,7 @@
   },
   "State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,64,64,3 ],[ 1, ] ],
+    Input_Shape: [ [ 1,128,128,3 ],[ 1, ] ],
     Model: {
       target: modules.models.unet.Unet,
       params: {
@@ -33,8 +33,9 @@
   "Gaussian": {
     target: modules.score.elucidate_pmap.ElucidatedDiffusion,
     params: {
-      sample_shape: [ 64,64,3 ],
+      sample_shape: [ 128,128,3 ],
       loss: 'l2',
+      block_size: 2,
 #      timesteps: 1000,
 #      sampling_timesteps: 200,
 #      objective: 'predict_noise',

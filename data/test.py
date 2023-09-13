@@ -1,7 +1,7 @@
 import os
 import time
 import random
-
+from modules.noise.noise import *
 import einops
 import flax.linen
 import numpy as np
@@ -185,11 +185,28 @@ def sample(images):
     return y + n
 
 
+
+
+
+# def test_block_noise(x):
+#     x = einops.rearrange(x, 'b h w c->b c h w  ')
+#     temp = []
+#
+#     block_size = 16
+#     for px in range(block_size):
+#         for py in range(block_size):
+#             temp.append(torch.roll(x, shifts=(px, py), dims=(-2, -1)))
+#
+#     out = torch.cat(temp)
+#     out = out / 2 + 0.5
+#     torchvision.utils.save_image(out, 'test.png')
+
+
 if __name__ == '__main__':
 
     start = time.time()
-    image_size = 256
-    dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
+    image_size = 1024
+    dl = get_dataloader(64, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
 
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
@@ -198,12 +215,19 @@ if __name__ == '__main__':
     rng_key = random.PRNGKey(0)
     count = 0
     for data in dl:
-        data = data / 2 + 0.5
-        data=einops.rearrange(data,'b h w c->b c h w ')
+        # test_roll(data)
 
-        noise = sample(data)
-        print(noise.shape)
-        torchvision.utils.save_image(noise, 'test1.png')
+        data = torch_to_jax(data)
+
+        # noise = sample(data)
+        noise = block_noise(rng_key, data.shape,block_size=16) * 0.3
+
+        noised_image = data + noise
+        noised_image = noised_image / 2 + 0.5
+        noised_image = einops.rearrange(noised_image, 'b h w c->b c h w ')
+        noised_image = torch.Tensor(np.array(noised_image))
+
+        torchvision.utils.save_image(noised_image, 'test2.png')
         break
 
         # data = data.numpy()

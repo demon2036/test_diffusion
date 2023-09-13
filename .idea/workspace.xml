@@ -5,15 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/training/DiffusionSR/ffhq256-sr8-elucidate.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/configs/training/DiffusionSR/test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-128-song-elucidate-block2.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-song-elucidate.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-128-song-elucidate.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/infer_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/infer_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/score/elucidateSR.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/score/elucidateSR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/score/elucidate_pmap.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/score/elucidate_pmap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/diff_sr_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/diff_sr_trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,16 +61,16 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "test",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/DiffusionSR",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/Diffusion",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/configs/training/DiffusionSR" />
       <recent name="$PROJECT_DIR$/modules/score" />
-      <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/configs/training/ldm_2d" />
       <recent name="$PROJECT_DIR$/infers" />
     </key>
@@ -84,7 +82,7 @@
       <recent name="$PROJECT_DIR$/configs/preprocess/diff_ae/2D" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train_diff_sr">
+  <component name="RunManager" selected="Python.train_diff">
     <configuration name="dataset" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -127,6 +125,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="diffusion" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="train_diff" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -140,27 +159,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_diff.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="train_diff_encoder" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="diffusion" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_diff_encoder.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -192,11 +190,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_diff_sr" />
         <item itemvalue="Python.train_diff" />
+        <item itemvalue="Python.test" />
+        <item itemvalue="Python.train_diff_sr" />
         <item itemvalue="Python.diff_trainer" />
         <item itemvalue="Python.dataset" />
-        <item itemvalue="Python.train_diff_encoder" />
       </list>
     </recent_temporary>
   </component>
@@ -210,22 +208,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00259" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693795544580</created>
-      <option name="number" value="00259" />
-      <option name="presentableId" value="LOCAL-00259" />
-      <option name="project" value="LOCAL" />
-      <updated>1693795544580</updated>
-    </task>
-    <task id="LOCAL-00260" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693795913423</created>
-      <option name="number" value="00260" />
-      <option name="presentableId" value="LOCAL-00260" />
-      <option name="project" value="LOCAL" />
-      <updated>1693795913424</updated>
     </task>
     <task id="LOCAL-00261" summary="commit">
       <option name="closed" value="true" />
@@ -603,7 +585,23 @@
       <option name="project" value="LOCAL" />
       <updated>1694583260280</updated>
     </task>
-    <option name="localTasksCounter" value="308" />
+    <task id="LOCAL-00308" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694585266124</created>
+      <option name="number" value="00308" />
+      <option name="presentableId" value="LOCAL-00308" />
+      <option name="project" value="LOCAL" />
+      <updated>1694585266124</updated>
+    </task>
+    <task id="LOCAL-00309" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694585624511</created>
+      <option name="number" value="00309" />
+      <option name="presentableId" value="LOCAL-00309" />
+      <option name="project" value="LOCAL" />
+      <updated>1694585624511</updated>
+    </task>
+    <option name="localTasksCounter" value="310" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

@@ -13,7 +13,17 @@ from modules.noise.noise import normal_noise, resize_noise, truncate_noise, offs
 from modules.state_utils import EMATrainState
 
 
-# helpers
+def block_noise( g_noise, block_size=1, ):
+    if block_size == 1:
+        return g_noise
+
+    blk_noise = jnp.zeros(g_noise.shape, )
+    for px in range(block_size):
+        for py in range(block_size):
+            blk_noise += jnp.roll(g_noise, shift=(px, py), axis=(1, 2))
+
+    blk_noise = blk_noise / block_size  # to maintain the same std on each pixel
+    return blk_noise
 
 def exists(val):
     return val is not None
@@ -45,6 +55,7 @@ class ElucidatedDiffusion:
             sample_shape,
             loss,
             self_condition=False,
+            block_size=1,
             noise_type='normal',
             num_sample_steps=32,  # number of sampling steps
             sigma_min=0.002,  # min noise level
@@ -61,6 +72,7 @@ class ElucidatedDiffusion:
 
         self.self_condition = self_condition
         self.noise_type = noise_type
+        self.block_size=block_size
 
         # image dimensions
         self.sample_shape = sample_shape
@@ -97,15 +109,18 @@ class ElucidatedDiffusion:
 
     def generate_noise(self, key, shape):
         if self.noise_type == 'normal':
-            return normal_noise(key, shape)
+            gen_noise = normal_noise(key, shape)
         elif self.noise_type == 'truncate':
-            return truncate_noise(key, shape)
+            gen_noise = truncate_noise(key, shape)
         elif self.noise_type == 'resize':
-            return resize_noise(key, shape)
+            gen_noise = resize_noise(key, shape)
         elif self.noise_type == 'offset':
-            return offset_noise(key, shape)
+            gen_noise = offset_noise(key, shape)
         elif self.noise_type == 'pyramid':
-            return pyramid_nosie(key, shape)
+            gen_noise = pyramid_nosie(key, shape)
+        else:
+            raise NotImplemented()
+        return block_noise(gen_noise,self.block_size)
 
     def c_skip(self, sigma):
         return (self.sigma_data ** 2) / (sigma ** 2 + self.sigma_data ** 2)
@@ -143,7 +158,6 @@ class ElucidatedDiffusion:
         # padded_sigma = sigma
 
         # if params is None:
-        print(sigma.shape, padded_sigma.shape, self_cond)
 
         net_out = state.apply_fn({'params': params},
                                  self.c_in(padded_sigma) * noised_images,
@@ -216,7 +230,6 @@ class ElucidatedDiffusion:
 
         x_start = None
 
-        print(f'x_self_cond:{x_self_cond.shape}')
         # gradually denoise
         # for sigma, sigma_next, gamma in tqdm(sigmas_and_gammas, desc='sampling time step'):
         for sigma, sigma_next in tqdm(sigmas_and_gammas, desc='sampling time step'):
