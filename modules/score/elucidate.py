@@ -139,7 +139,7 @@ class ElucidatedDiffusion:
     # equation (7) in the paper
 
     def preconditioned_network_forward(self, noised_images, sigma, self_cond=None, clamp=False,
-                                       state: EMATrainState = None, params=None):
+                                       state: EMATrainState = None, params=None,return_mod_vars=False,z_rng=None):
         batch = noised_images.shape[0]
 
         if params is None:
@@ -148,34 +148,28 @@ class ElucidatedDiffusion:
             else:
                 params = state.ema_params
 
-        # if isinstance(sigma, float):
-        #     sigma = jnp.full((batch,), sigma)
-        #     # sigma = torch.full((batch,), sigma, device=device)
-        # else:
-        #     print(type(sigma))
-
         sigma = jnp.full((batch,), sigma)
         padded_sigma = rearrange(sigma, 'b -> b 1 1 1')
-        # padded_sigma = sigma
 
-        # if params is None:
-
-        net_out = state.apply_fn({'params': params},
-                                 self.c_in(padded_sigma) * noised_images,
-                                 self.c_noise(sigma),
-                                 self_cond
-                                 )
+        net_out, mod_vars = state.apply_fn({'params': params},
+                                           self.c_in(padded_sigma) * noised_images,
+                                           self.c_noise(sigma),
+                                           self_cond,
+                                           z_rng=z_rng,
+                                           mutable='intermediates'
+                                           )
 
         out = self.c_skip(padded_sigma) * noised_images + self.c_out(padded_sigma) * net_out
 
         if clamp:
             out = jnp.clip(out, -1., 1.)
-            # out = out.clamp(-1., 1.)
 
-        return out
+        if return_mod_vars:
+            return out,mod_vars
+        else:
+            return out
 
     # sampling
-
     # sample schedule
     # equation (5) in the paper
 

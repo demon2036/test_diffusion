@@ -68,14 +68,11 @@ class DiffSRTrainer(Trainer):
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch=None, save_sample=False, return_sample=False, eval=False,batch_size=16):
+    def sample(self, sample_state=None, batch=None, save_sample=False, return_sample=False, eval=False, batch_size=16):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = default(batch, next(self.dl))[:batch_size]
 
-
-
         try:
-
             if eval:
                 sr_img = sample_save_image_sr_eval(self.rng,
                                                    self.gaussian,
@@ -123,7 +120,7 @@ class DiffSRTrainer(Trainer):
 
                 if self.finished_steps % self.sample_steps == 0:
                     print(self.finished_steps, self.sample_steps)
-                    self.sample(state, save_sample=True,eval=True)
+                    self.sample(state, save_sample=True, eval=True)
                     self.state = flax.jax_utils.unreplicate(state)
                     self.save()
 
