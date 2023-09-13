@@ -9,7 +9,11 @@ import yaml
 import json
 
 
-
+def extract(a, t, x_shape):
+    b = t.shape[0]
+    # b, *_ = t.shape
+    out = a[t]
+    return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 
 def exists(x):

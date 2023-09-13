@@ -179,7 +179,7 @@ class ElucidatedDiffusion:
         # sigmas = F.pad(sigmas, (0, 1), value=0.)  # last step is sigma value of 0.
         return sigmas
 
-    def _sample(self, rng, state, shape, num_sample_steps=None, clamp=True):
+    def _sample(self, rng, state, shape, num_sample_steps=None, x_self_cond=None):
 
         if self.train_state:
             params = state.params
@@ -208,6 +208,12 @@ class ElucidatedDiffusion:
 
         # for self conditioning
 
+        if x_self_cond is not None:
+            x_self_cond = shard(x_self_cond)
+            has_condition = True
+        else:
+            has_condition = False
+
         x_start = None
 
         # gradually denoise
@@ -228,14 +234,20 @@ class ElucidatedDiffusion:
             # images_hat = shard(images_hat)
             # sigma_next = flax.jax_utils.replicate(sigma_next)
 
-            self_cond = x_start if self.self_condition else None
+            # self_cond = x_start if self.self_condition else None
+            if has_condition:
+                pass
+            elif self.self_condition:
+                x_self_cond = x_start
+            else:
+                x_self_cond = None
 
             # images_hat = shard(images_hat)
             # sigma_hat = shard(sigma_hat)
             # model_output = self.pmap_preconditioned_network_forward(images_hat, sigma_hat,  # self_cond, clamp=clamp,
             #                                                         state=state, params=params)
             model_output = self.pmap_preconditioned_network_forward(shard(images_hat),
-                                                                    flax.jax_utils.replicate(sigma_hat),  #
+                                                                    flax.jax_utils.replicate(sigma_hat),  x_self_cond,
                                                                     # self_cond, clamp=clamp,
                                                                     state=state, params=params)
 
@@ -254,11 +266,13 @@ class ElucidatedDiffusion:
                 #                                                              # clamp=flax.jax_utils.replicate(clamp),
                 #                                                              state=state, params=params)
 
-                model_output_next = self.pmap_preconditioned_network_forward(shard(images_next), flax.jax_utils.replicate(sigma_next),  # self_cond,
+                model_output_next = self.pmap_preconditioned_network_forward(shard(images_next),
+                                                                             flax.jax_utils.replicate(sigma_next),
+                                                                             self_cond,
                                                                              # clamp=flax.jax_utils.replicate(clamp),
                                                                              state=state, params=params)
 
-                model_output_next=model_output_next.reshape(-1, *self.sample_shape)
+                model_output_next = model_output_next.reshape(-1, *self.sample_shape)
 
                 denoised_prime_over_sigma = (images_next - model_output_next) / sigma_next
                 images_next = images_hat + 0.5 * (sigma_next - sigma_hat) * (
@@ -275,7 +289,7 @@ class ElucidatedDiffusion:
 
         return images
 
-    def sample(self, rng, state: EMATrainState, batch_size=16, num_sample_steps=None, clamp=True):
+    def sample(self, rng, state: EMATrainState, batch_size=16, num_sample_steps=None, ):
 
         # pmap_batch_size = jnp.array([batch_size // jax.device_count()])
         shape = (batch_size, *self.sample_shape)
@@ -330,25 +344,22 @@ class ElucidatedDiffusion:
         noise = self.generate_noise(key, (batch_size,))
         return jnp.exp(self.P_mean + self.P_std * noise)
 
-    def __call__(self, key, state, params, images):
+    def p_loss(self, key, state, params, images, x_self_cond=None):
 
         key_noise, key_sigmas, key_noise = jax.random.split(key, 3)
 
         batch_size = images.shape[0]
 
-        # batch_size, c, h, w, device, image_size, channels = *images.shape, images.device, self.image_size, self.channels
-
         assert images.shape[1:] == tuple(self.sample_shape)
 
         sigmas = self.noise_distribution(key_sigmas, batch_size)
         padded_sigmas = rearrange(sigmas, 'b -> b 1 1 1')
-        # padded_sigmas = sigmas
 
         noise = self.generate_noise(key_noise, images.shape)
 
         noised_images = images + padded_sigmas * noise  # alphas are 1. in the paper
 
-        self_cond = None
+        # todo : implement self condition
         #
         # if self.self_condition and random() < 0.5:
         #     # from hinton's group's bit diffusion paper
@@ -356,7 +367,7 @@ class ElucidatedDiffusion:
         #         self_cond = self.preconditioned_network_forward(noised_images, sigmas)
         #         self_cond.detach_()
 
-        denoised = self.preconditioned_network_forward(noised_images, sigmas, self_cond, state=state, params=params)
+        denoised = self.preconditioned_network_forward(noised_images, sigmas, x_self_cond, state=state, params=params)
 
         losses = self.loss(denoised, images)
         losses = reduce(losses, 'b ... -> b', 'mean')
@@ -364,6 +375,9 @@ class ElucidatedDiffusion:
         losses = losses * self.loss_weight(sigmas)
 
         return losses.mean()
+
+    def __call__(self, key, state, params, images):
+        return self.p_loss(key, state, params, images)
 
     def train(self):
         self.train_state = True
