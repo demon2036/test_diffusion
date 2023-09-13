@@ -213,7 +213,7 @@ class ElucidatedDiffusion:
         init_sigma = sigmas[0]
 
         # images = init_sigma * torch.randn(shape, device=self.device)
-        images = init_sigma * jax.random.normal(rng_noise, shape, )
+        images = init_sigma * self.generate_noise(rng_noise, shape, )
 
         # for self conditioning
 
@@ -234,7 +234,7 @@ class ElucidatedDiffusion:
             gamma = min(self.S_churn / num_sample_steps, sqrt(2) - 1) if self.S_tmin <= sigma <= self.S_tmax else 0
 
             # eps = self.S_noise * torch.randn(shape, device=self.device)  # stochastic sampling
-            eps = self.S_noise * jax.random.normal(rng_sample, shape, )  # stochastic sampling
+            eps = self.S_noise * self.generate_noise(rng_sample, shape, )  # stochastic sampling
 
             sigma_hat = sigma + gamma * sigma
             images_hat = images + sqrt(sigma_hat ** 2 - sigma ** 2) * eps

@@ -193,13 +193,7 @@ class ElucidatedDiffusion(nn.Module):
 
             # second order correction, if not the last timestep
 
-            if sigma_next != 0:
-                self_cond = model_output if self.self_condition else None
-
-                model_output_next = self.preconditioned_network_forward(images_next, sigma_next, self_cond, clamp=clamp)
-                denoised_prime_over_sigma = (images_next - model_output_next) / sigma_next
-                images_next = images_hat + 0.5 * (sigma_next - sigma_hat) * (
-                            denoised_over_sigma + denoised_prime_over_sigma)
+          b
 
             images = images_next
             x_start = model_output_next if sigma_next != 0 else model_output
