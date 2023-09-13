@@ -34,14 +34,14 @@ class ElucidateSR(ElucidatedDiffusion):
 
         b, h, w, c = lr_image.shape
         lr_image = jax.image.resize(lr_image, (b, h * self.sr_factor, w * self.sr_factor, c), method='bicubic')
-        res = self._sample(key,state,lr_image.shape)
+        res = self._sample(key,state,lr_image.shape,x_self_cond=lr_image)
         if self.predict_residual:
             ret = res + lr_image
         else:
             ret = res
 
         if return_img_only:
-            return ret
+            return [ret]
         else:
             return [ret, res, lr_image]
 

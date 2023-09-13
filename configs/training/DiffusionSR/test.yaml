@@ -1,0 +1,40 @@
+{
+  "train": {
+      image_size: 256,
+      batch_size: 4,
+      file_path: '/home/john/data/FFHQ',
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 100,
+      save_path: 'result',
+      model_path: 'check_points/SR'
+  },
+  "State": {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [ [ 1,256,256,3 ],[ 1, ] ,[ 1,256,256,3 ]],
+    Model: {
+      target: modules.models.unet.Unet,
+      params: {
+        dim: 32,
+        out_channels: 3,
+        dim_mults: [ 1, 2, 4, 4, 8, 8 ],
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 1.0e-4,
+        b1: 0.9,
+        b2: 0.99
+      }
+    },
+  },
+  "Gaussian": {
+    target: modules.score.elucidateSR.ElucidateSR,
+    params: {
+      sample_shape: [ 256,256,3 ],
+      sr_factor: 8,
+      loss: 'l2',
+    },
+  },
+}

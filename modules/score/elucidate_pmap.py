@@ -216,6 +216,7 @@ class ElucidatedDiffusion:
 
         x_start = None
 
+        print(f'x_self_cond:{x_self_cond.shape}')
         # gradually denoise
         # for sigma, sigma_next, gamma in tqdm(sigmas_and_gammas, desc='sampling time step'):
         for sigma, sigma_next in tqdm(sigmas_and_gammas, desc='sampling time step'):
@@ -268,7 +269,7 @@ class ElucidatedDiffusion:
 
                 model_output_next = self.pmap_preconditioned_network_forward(shard(images_next),
                                                                              flax.jax_utils.replicate(sigma_next),
-                                                                             self_cond,
+                                                                             x_self_cond,
                                                                              # clamp=flax.jax_utils.replicate(clamp),
                                                                              state=state, params=params)
 

@@ -72,6 +72,8 @@ class DiffSRTrainer(Trainer):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = default(batch, next(self.dl))[:batch_size]
 
+
+
         try:
 
             if eval:
@@ -121,7 +123,7 @@ class DiffSRTrainer(Trainer):
 
                 if self.finished_steps % self.sample_steps == 0:
                     print(self.finished_steps, self.sample_steps)
-                    self.sample(state, save_sample=True)
+                    self.sample(state, save_sample=True,eval=True)
                     self.state = flax.jax_utils.unreplicate(state)
                     self.save()
 
