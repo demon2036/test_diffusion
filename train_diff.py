@@ -21,5 +21,5 @@ if __name__ == "__main__":
                                          state_configs=config['State'])
     trainer = DiffTrainer(train_state, train_gaussian, **config['train'])
     trainer.load()
-    trainer.sample()
+    # trainer.sample()
     trainer.train()
