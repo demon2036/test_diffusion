@@ -13,8 +13,8 @@ from modules.noise.noise import normal_noise, resize_noise, truncate_noise, offs
 from modules.state_utils import EMATrainState
 
 
-def block_noise( g_noise, block_size=1, ):
-    if block_size == 1:
+def block_noise(g_noise, block_size=1, ):
+    if block_size == 1 or len(g_noise.shape) == 1:
         return g_noise
 
     blk_noise = jnp.zeros(g_noise.shape, )
@@ -24,6 +24,7 @@ def block_noise( g_noise, block_size=1, ):
 
     blk_noise = blk_noise / block_size  # to maintain the same std on each pixel
     return blk_noise
+
 
 def exists(val):
     return val is not None
@@ -72,7 +73,7 @@ class ElucidatedDiffusion:
 
         self.self_condition = self_condition
         self.noise_type = noise_type
-        self.block_size=block_size
+        self.block_size = block_size
 
         # image dimensions
         self.sample_shape = sample_shape
@@ -120,7 +121,7 @@ class ElucidatedDiffusion:
             gen_noise = pyramid_nosie(key, shape)
         else:
             raise NotImplemented()
-        return block_noise(gen_noise,self.block_size)
+        return block_noise(gen_noise, self.block_size)
 
     def c_skip(self, sigma):
         return (self.sigma_data ** 2) / (sigma ** 2 + self.sigma_data ** 2)
@@ -261,7 +262,7 @@ class ElucidatedDiffusion:
             # model_output = self.pmap_preconditioned_network_forward(images_hat, sigma_hat,  # self_cond, clamp=clamp,
             #                                                         state=state, params=params)
             model_output = self.pmap_preconditioned_network_forward(shard(images_hat),
-                                                                    flax.jax_utils.replicate(sigma_hat),  x_self_cond,
+                                                                    flax.jax_utils.replicate(sigma_hat), x_self_cond,
                                                                     # self_cond, clamp=clamp,
                                                                     state=state, params=params)
 

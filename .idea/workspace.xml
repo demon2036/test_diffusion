@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-128-song-elucidate-block2.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-song-elucidate.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-128-song-elucidate.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/score/elucidate_pmap.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/score/elucidate_pmap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_diff.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -208,22 +204,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00261" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693796282473</created>
-      <option name="number" value="00261" />
-      <option name="presentableId" value="LOCAL-00261" />
-      <option name="project" value="LOCAL" />
-      <updated>1693796282473</updated>
-    </task>
-    <task id="LOCAL-00262" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693797400649</created>
-      <option name="number" value="00262" />
-      <option name="presentableId" value="LOCAL-00262" />
-      <option name="project" value="LOCAL" />
-      <updated>1693797400649</updated>
     </task>
     <task id="LOCAL-00263" summary="commit">
       <option name="closed" value="true" />
@@ -601,7 +581,23 @@
       <option name="project" value="LOCAL" />
       <updated>1694585624511</updated>
     </task>
-    <option name="localTasksCounter" value="310" />
+    <task id="LOCAL-00310" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694593320539</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1694593320540</updated>
+    </task>
+    <task id="LOCAL-00311" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694594052142</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1694594052142</updated>
+    </task>
+    <option name="localTasksCounter" value="312" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
