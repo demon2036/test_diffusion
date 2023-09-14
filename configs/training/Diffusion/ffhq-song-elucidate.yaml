@@ -31,7 +31,7 @@
     },
   },
   "Gaussian": {
-    target: modules.score.elucidate_pmap.ElucidatedDiffusion,
+    target: modules.score.elucidate.ElucidatedDiffusion,
     params: {
       sample_shape: [ 64,64,3 ],
       loss: 'l2',
