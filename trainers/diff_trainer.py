@@ -1,4 +1,5 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 import flax
@@ -10,6 +11,7 @@ from tqdm import tqdm
 
 from modules.infer_utils import sample_save_image_diffusion, jax_img_save
 from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, default
+from tools.resize_dataset import save_image
 from trainers.basic_trainer import Trainer
 
 
@@ -62,8 +64,9 @@ class DiffTrainer(Trainer):
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
-    def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True):
+    def sample(self, sample_state=None, batch_size=64, return_sample=False, save_sample=True, save_path=None):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
+        save_path = default(save_path, self.save_path)
 
         try:
             sample = sample_save_image_diffusion(self.rng,
@@ -72,13 +75,26 @@ class DiffTrainer(Trainer):
                                                  batch_size
                                                  )
             if save_sample:
-                jax_img_save(sample, self.save_path, self.finished_steps)
+                jax_img_save(sample, save_path, self.finished_steps)
 
             if return_sample:
                 return sample
 
         except Exception as e:
             print(e)
+
+    def sample_images(self, sample_state=None, batch_size=64, save_path=None, total_samples=30000):
+        save_path = default(save_path, self.save_path)
+        os.makedirs(save_path,exist_ok=True)
+        count = 0;
+        with ThreadPoolExecutor() as pool:
+            for _ in tqdm(range(total_samples // batch_size)):
+                sample_batch = self.sample(batch_size=batch_size, return_sample=True, save_sample=False)
+                for x in sample_batch:
+                    pool.submit(save_image, x, count, save_path)
+                    count += 1
+
+
 
     def train(self):
         state = flax.jax_utils.replicate(self.state)

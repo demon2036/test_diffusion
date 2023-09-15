@@ -32,7 +32,7 @@ class ElucidateSR(ElucidatedDiffusion):
             ret = res
 
         if return_img_only:
-            return [ret]
+            return ret
         else:
             return [ret, res, lr_image]
 

@@ -22,4 +22,5 @@ if __name__ == "__main__":
     trainer = DiffTrainer(train_state, train_gaussian, **config['train'])
     trainer.load()
     # trainer.sample()
-    trainer.train()
+    trainer.sample_images(batch_size=512,save_path=trainer.save_path+f'/{trainer.finished_steps}')
+    #trainer.train()
