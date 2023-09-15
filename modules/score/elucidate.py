@@ -298,12 +298,14 @@ class ElucidatedDiffusion:
 
         return images
 
-    def sample(self, rng, state: EMATrainState, batch_size=16, num_sample_steps=None, ):
+    def sample(self, rng, state: EMATrainState,self_condition=None, batch_size=16, num_sample_steps=None, ):
+        if self_condition is not None:
+            batch_size = self_condition.shape[0]
 
         # pmap_batch_size = jnp.array([batch_size // jax.device_count()])
         shape = (batch_size, *self.sample_shape)
         # rng, state: EMATrainState, shape, num_sample_steps = None, clamp = True)
-        samples = self._sample(rng, state, shape)
+        samples = self._sample(rng, state, shape,num_sample_steps,self_condition)
         samples = jnp.reshape(samples, (-1, *self.sample_shape))
         return samples
 
