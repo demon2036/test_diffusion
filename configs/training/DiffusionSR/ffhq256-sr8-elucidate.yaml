@@ -35,7 +35,7 @@
       sample_shape: [ 512,512,3 ],
       sr_factor: 8,
       loss: 'l2',
-      predict_residual: False,
+      predict_residual: True,
     },
   },
 }
