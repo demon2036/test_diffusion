@@ -174,9 +174,9 @@ if __name__ == '__main__':
         time.sleep(0.5)
 
         xing = '*' * int(total * (i / total_step))
-        gang = '>' * int(total-total * (i / total_step))
+        gang = '>' * int(total - total * (i / total_step))
 
-        print(f'\r[{xing}{gang}]    {100*i/total_step}%   ', end='')
+        print(f'\r[{xing}{gang}]    {100 * i / total_step}%   ', end='')
 
         # print(x.shape)
 

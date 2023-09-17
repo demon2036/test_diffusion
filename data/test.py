@@ -1,7 +1,8 @@
+import argparse
 import os
 import time
 import random
-from modules.noise.noise import *
+
 import einops
 import flax.linen
 import numpy as np
@@ -157,81 +158,26 @@ def random_crop_batch(rng_key, images, crop_size):
 # Example usage
 
 
-class VELoss:
-    def __init__(self, sigma_min=0.02, sigma_max=100):
-        self.sigma_min = sigma_min
-        self.sigma_max = sigma_max
-
-    def __call__(self, net, images, labels, augment_pipe=None):
-        rnd_uniform = torch.rand([images.shape[0], 1, 1, 1], device=images.device)
-        sigma = self.sigma_min * ((self.sigma_max / self.sigma_min) ** rnd_uniform)
-        weight = 1 / sigma ** 2
-        y, augment_labels = augment_pipe(images) if augment_pipe is not None else (images, None)
-        n = torch.randn_like(y) * sigma
-        D_yn = net(y + n, sigma, labels, augment_labels=augment_labels)
-        loss = weight * ((D_yn - y) ** 2)
-        return loss
-
-
-def sample(images):
-    sigma_min = 0.02
-    sigma_max = 80
-
-    rnd_uniform = torch.rand([images.shape[0], 1, 1, 1], device=images.device)
-    sigma = sigma_min * ((sigma_max / sigma_min) ** rnd_uniform)
-    weight = 1 / sigma ** 2
-    y = images
-    n = torch.randn_like(y) * sigma
-    return y + n
-
-
-
-
-
-# def test_block_noise(x):
-#     x = einops.rearrange(x, 'b h w c->b c h w  ')
-#     temp = []
-#
-#     block_size = 16
-#     for px in range(block_size):
-#         for py in range(block_size):
-#             temp.append(torch.roll(x, shifts=(px, py), dims=(-2, -1)))
-#
-#     out = torch.cat(temp)
-#     out = out / 2 + 0.5
-#     torchvision.utils.save_image(out, 'test.png')
-
-
 if __name__ == '__main__':
 
-    start = time.time()
-    image_size = 1024
-    dl = get_dataloader(64, '/home/john/data/s', cache=False, image_size=image_size, repeat=2)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-cp', '--config_path', default='./configs/training/DiffusionEncoder/test.yaml')
+    args = parser.parse_args()
+    print(args)
 
-    end = time.time()
-    os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
-    os.environ['XLA_FLAGS'] = 'TF_USE_NVLINK_FOR_PARALLEL_COMPILATION=0'
+    image_size = 256
+    dl = get_dataloader(16, args.config_path, cache=False, image_size=image_size, repeat=2)
 
-    rng_key = random.PRNGKey(0)
-    count = 0
+    from tqdm import tqdm
+
+    # for x in tqdm(dl):
+    #     pass
+
+    total = 10
+    total_step = 20
     for data in dl:
-        # test_roll(data)
-
-        data = torch_to_jax(data)
-
-        # noise = sample(data)
-        noise = block_noise(rng_key, data.shape,block_size=16) * 0.3
-
-        noised_image = data + noise
-        noised_image = noised_image / 2 + 0.5
-        noised_image = einops.rearrange(noised_image, 'b h w c->b c h w ')
-        noised_image = torch.Tensor(np.array(noised_image))
-
-        torchvision.utils.save_image(noised_image, 'test2.png')
-        break
-
-        # data = data.numpy()
-        # y = jnp.asarray(data)
-        # print(data.shape)
-
-    print(end - start)
+        data = data / 2 + 0.5
+        data = data.numpy()
+        #y = jnp.asarray(data)
+        print(data.shape)
+        # print(x.shape)
