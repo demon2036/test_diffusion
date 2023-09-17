@@ -12,6 +12,6 @@ if __name__ == '__main__':
     print(args)
     dataset = wds.WebDataset('//root/fused_bucket/temp/FFHQ256_split-{000000..000069}.tar').shuffle(1000).decode('rgb').to_tuple('jpg')
     dl = DataLoader(dataset, batch_size=64, num_workers=8)
-    for sample in tqdm(dl):
+    for sample in tqdm(dl,total=len(dl)):
         print(sample[0].shape)
         data = sample[0] / 2 + 0.5
