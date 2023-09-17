@@ -165,7 +165,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-    image_size = 1024
+    image_size = 256
     dl = get_dataloader(64, args.config_path, cache=False, image_size=image_size, repeat=2)
 
     from tqdm import tqdm
