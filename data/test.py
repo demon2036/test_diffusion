@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     total = 10
     total_step = 20
-    for data in dl:
+    for data in tqdm(dl):
         data = data / 2 + 0.5
         data = data.numpy()
         #y = jnp.asarray(data)
