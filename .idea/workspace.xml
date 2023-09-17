@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/data/test2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/test2.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/test2.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -204,30 +203,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00275" summary="commit">
-      <option name="closed" value="true" />
-      <created>1693975916775</created>
-      <option name="number" value="00275" />
-      <option name="presentableId" value="LOCAL-00275" />
-      <option name="project" value="LOCAL" />
-      <updated>1693975916775</updated>
-    </task>
-    <task id="LOCAL-00276" summary="commit">
-      <option name="closed" value="true" />
-      <created>1694053415634</created>
-      <option name="number" value="00276" />
-      <option name="presentableId" value="LOCAL-00276" />
-      <option name="project" value="LOCAL" />
-      <updated>1694053415634</updated>
-    </task>
-    <task id="LOCAL-00277" summary="commit">
-      <option name="closed" value="true" />
-      <created>1694053860849</created>
-      <option name="number" value="00277" />
-      <option name="presentableId" value="LOCAL-00277" />
-      <option name="project" value="LOCAL" />
-      <updated>1694053860849</updated>
     </task>
     <task id="LOCAL-00278" summary="commit">
       <option name="closed" value="true" />
@@ -597,7 +572,31 @@
       <option name="project" value="LOCAL" />
       <updated>1694938721058</updated>
     </task>
-    <option name="localTasksCounter" value="324" />
+    <task id="LOCAL-00324" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694946692221</created>
+      <option name="number" value="00324" />
+      <option name="presentableId" value="LOCAL-00324" />
+      <option name="project" value="LOCAL" />
+      <updated>1694946692221</updated>
+    </task>
+    <task id="LOCAL-00325" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694953016312</created>
+      <option name="number" value="00325" />
+      <option name="presentableId" value="LOCAL-00325" />
+      <option name="project" value="LOCAL" />
+      <updated>1694953016312</updated>
+    </task>
+    <task id="LOCAL-00326" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694953615665</created>
+      <option name="number" value="00326" />
+      <option name="presentableId" value="LOCAL-00326" />
+      <option name="project" value="LOCAL" />
+      <updated>1694953615665</updated>
+    </task>
+    <option name="localTasksCounter" value="327" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
