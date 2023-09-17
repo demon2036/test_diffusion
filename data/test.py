@@ -161,12 +161,12 @@ def random_crop_batch(rng_key, images, crop_size):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/DiffusionEncoder/test.yaml')
+    parser.add_argument('-cp', '--config_path', default='/home/john/data/FFHQ')
     args = parser.parse_args()
     print(args)
 
-    image_size = 256
-    dl = get_dataloader(16, args.config_path, cache=False, image_size=image_size, repeat=2)
+    image_size = 1024
+    dl = get_dataloader(64, args.config_path, cache=False, image_size=image_size, repeat=2)
 
     from tqdm import tqdm
 
