@@ -18,7 +18,7 @@
                   latent_type: 'double_z',
                   encoder_configs: {
                     dims: [ 64,128,256,256 ],
-                    latent: 4,
+                    latent: 3,
                     dtype: 'bfloat16',
                   }
                 }
@@ -48,7 +48,7 @@
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,32,32,4 ],[ 1, ] ],
+    Input_Shape: [ [ 1,32,32,3 ],[ 1, ] ],
     Model: {
       target: modules.models.unet.Unet,
       params: {
@@ -63,14 +63,14 @@
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 1.0e-4,
+        learning_rate: 5.0e-5,
       }
     },
   },
   "Gaussian": {
     target: modules.score.elucidate.ElucidatedDiffusion,
     params: {
-      sample_shape: [ 32,32,4 ],
+      sample_shape: [ 32,32,3 ],
       loss: 'l2',
       #      timesteps: 1000,
       #      sampling_timesteps: 200,
