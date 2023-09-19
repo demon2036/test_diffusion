@@ -1,6 +1,6 @@
 import jax
 
-from data.dataset import generator, get_dataloader
+from data.dataset import generator, get_dataloader, MyDataSet,SRDataSet
 from modules.utils import create_checkpoint_manager
 
 
@@ -15,6 +15,7 @@ class Trainer:
                  drop_last=True,
                  shuffle=True,
                  dataset_type='generator',
+                 dataset=MyDataSet,
                  seed=43,
                  total_steps=3000000,
                  sample_steps=50000,
@@ -26,9 +27,9 @@ class Trainer:
 
         assert dataset_type in ['generator', 'dataloader']
         if dataset_type == 'generator':
-            self.dl = generator(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle)
+            self.dl = generator(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle,dataset)
         else:
-            self.dl = get_dataloader(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle)
+            self.dl = get_dataloader(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle,dataset)
         self.rng = jax.random.PRNGKey(seed)
         self.total_steps = total_steps
         self.sample_steps = sample_steps

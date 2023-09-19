@@ -1,13 +1,14 @@
 {
   "train": {
-      image_size: 256,
+      image_size: 512,
       batch_size: 1,
-      file_path: '/root/data/FFHQ256',
+      file_path: '/home/john/data/FFHQ256',
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
       save_path: 'result',
-      model_path: 'check_points/SR'
+      model_path: 'check_points/SR',
+      dataset: data.dataset.SRDataSet
   },
   "State": {
     target: modules.state_utils.EMATrainState,
@@ -32,10 +33,10 @@
   "Gaussian": {
     target: modules.score.elucidateSR.ElucidateSR,
     params: {
-      sample_shape: [ 256,256,3 ],
+      sample_shape: [ 512,512,3 ],
       sr_factor: 8,
       loss: 'l2',
-      predict_residual: False,
+      predict_residual: True,
     },
   },
 }
