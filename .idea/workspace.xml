@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+      <change afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-ffhq-2D-z-elucidate-kl-test.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/test2.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/test2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-ffhq-2D-z-elucidate-kl.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-ffhq-2D-z-elucidate-kl.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,18 +57,18 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;test&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/infers&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/john/pythonfile/diffusion/configs/training/ldm_2d&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/training/ldm_2d" />
       <recent name="$PROJECT_DIR$/infers" />
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
       <recent name="$PROJECT_DIR$/configs/training/DiffusionEncoder" />
       <recent name="$PROJECT_DIR$/modules/score" />
-      <recent name="$PROJECT_DIR$/configs/training/DiffusionSR" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/modules/score/deprecated" />
@@ -203,30 +204,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00278" summary="commit">
-      <option name="closed" value="true" />
-      <created>1694069682468</created>
-      <option name="number" value="00278" />
-      <option name="presentableId" value="LOCAL-00278" />
-      <option name="project" value="LOCAL" />
-      <updated>1694069682468</updated>
-    </task>
-    <task id="LOCAL-00279" summary="commit">
-      <option name="closed" value="true" />
-      <created>1694069978083</created>
-      <option name="number" value="00279" />
-      <option name="presentableId" value="LOCAL-00279" />
-      <option name="project" value="LOCAL" />
-      <updated>1694069978083</updated>
-    </task>
-    <task id="LOCAL-00280" summary="commit">
-      <option name="closed" value="true" />
-      <created>1694070455437</created>
-      <option name="number" value="00280" />
-      <option name="presentableId" value="LOCAL-00280" />
-      <option name="project" value="LOCAL" />
-      <updated>1694070455437</updated>
     </task>
     <task id="LOCAL-00281" summary="commit">
       <option name="closed" value="true" />
@@ -596,7 +573,31 @@
       <option name="project" value="LOCAL" />
       <updated>1694953615665</updated>
     </task>
-    <option name="localTasksCounter" value="327" />
+    <task id="LOCAL-00327" summary="commit">
+      <option name="closed" value="true" />
+      <created>1694957489655</created>
+      <option name="number" value="00327" />
+      <option name="presentableId" value="LOCAL-00327" />
+      <option name="project" value="LOCAL" />
+      <updated>1694957489655</updated>
+    </task>
+    <task id="LOCAL-00328" summary="commit">
+      <option name="closed" value="true" />
+      <created>1695019018583</created>
+      <option name="number" value="00328" />
+      <option name="presentableId" value="LOCAL-00328" />
+      <option name="project" value="LOCAL" />
+      <updated>1695019018583</updated>
+    </task>
+    <task id="LOCAL-00329" summary="commit">
+      <option name="closed" value="true" />
+      <created>1695019324658</created>
+      <option name="number" value="00329" />
+      <option name="presentableId" value="LOCAL-00329" />
+      <option name="project" value="LOCAL" />
+      <updated>1695019324658</updated>
+    </task>
+    <option name="localTasksCounter" value="330" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
