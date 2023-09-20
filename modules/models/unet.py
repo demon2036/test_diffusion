@@ -94,7 +94,7 @@ class Unet(nn.Module):
     n: int = 8
 
     @nn.compact
-    def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
+    def __call__(self, x, time, x_self_cond=None, sr_factors=None, z_rng=None, *args, **kwargs):
 
         y = x
 
@@ -152,6 +152,14 @@ class Unet(nn.Module):
             nn.Dense(time_dim, dtype=self.dtype)
         ])(time)
 
+        if sr_factors is not None:
+            t += nn.Sequential([
+                SinusoidalPosEmb(self.dim),
+                nn.Dense(time_dim, dtype=self.dtype),
+                nn.gelu,
+                nn.Dense(time_dim, dtype=self.dtype)
+            ])(sr_factors)
+
         x = einops.rearrange(x, 'b (h p1) (w p2) c->b h w (c p1 p2)', p1=self.patch_size, p2=self.patch_size)
 
         x = nn.Conv(self.dim, (3, 3), (1, 1), padding="SAME",
@@ -200,7 +208,6 @@ class Unet(nn.Module):
             x = x + y
 
         return x
-
 
 
 class UnetTest(nn.Module):

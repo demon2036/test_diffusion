@@ -26,8 +26,8 @@ def block_noise(g_noise, block_size=1, ):
     return blk_noise
 
 
-    def exists(val):
-        return val is not None
+def exists(val):
+    return val is not None
 
 
 def default(val, d):
