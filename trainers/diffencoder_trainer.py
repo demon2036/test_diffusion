@@ -65,8 +65,6 @@ class DiffEncoderTrainer(Trainer):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = next(self.dl)
 
-
-
         try:
             sample_save_image_diffusion_encoder(self.rng,
                                                 self.gaussian,
