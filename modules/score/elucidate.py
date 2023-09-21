@@ -1,3 +1,5 @@
+import string
+import sys
 from math import sqrt
 
 from flax.training.common_utils import shard, shard_prng_key
@@ -75,7 +77,9 @@ class ElucidatedDiffusion:
 
         if apply_method is not None:
             if not callable(apply_method):
-                apply_method = get_obj_from_str(apply_method)
+                cls, method = apply_method.rsplit('.', 1)
+                cls_obj=get_obj_from_str(cls)
+                apply_method = getattr(cls_obj,method)
         self.apply_method = apply_method
         print(f'self.apply_method:{self.apply_method}')
 

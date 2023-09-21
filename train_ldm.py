@@ -1,7 +1,7 @@
 import jax
 import argparse
 from modules.state_utils import create_state, create_obj_by_config, create_state_by_config, EMATrainState
-from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt,get_obj_from_str
+from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, get_obj_from_str
 import os
 import flax
 
@@ -49,5 +49,7 @@ if __name__ == "__main__":
                                          state_configs=config['State'])
     trainer = LdmTrainer(train_state, train_gaussian, ae_state, first_stage_gaussian, **config['train'])
     trainer.load()
-    trainer.sample()
+    # trainer.sample()
     trainer.train()
+    """
+    """

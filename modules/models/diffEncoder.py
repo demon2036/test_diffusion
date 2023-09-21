@@ -1,20 +1,13 @@
 import copy
-import math
-from functools import partial
-import einops
+from typing import *
+
+import flax
+import flax.linen as nn
 import jax
 import jax.numpy as jnp
-import flax.linen as nn
-from typing import *
-from einops.layers.flax import Rearrange
-import optax
-from modules.models.nafnet import NAFBlock
-from modules.models.autoencoder import Encoder, AutoEncoderKL, AutoEncoder
-from modules.models.transformer import Transformer
-from modules.models.embedding import SinusoidalPosEmb
-from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock, GlobalAveragePool
+
+from modules.models.autoencoder import Encoder
 from modules.models.unet import Unet
-import flax
 
 
 # from .attention import Attention
