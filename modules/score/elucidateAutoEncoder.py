@@ -30,12 +30,12 @@ class ElucidateAutoEncoder(ElucidatedDiffusion):
             **kwargs):
         super().__init__(*args, **kwargs)
 
-        if apply_method is not None:
-            if not callable(apply_method):
-                apply_method = get_obj_from_str(apply_method)
+        # if apply_method is not None:
+        #     if not callable(apply_method):
+        #         apply_method = get_obj_from_str(apply_method)
         self.kl_loss = kl_loss
-        self.apply_method = apply_method
-        print(f'self.apply_method:{self.apply_method}')
+        # self.apply_method = apply_method
+        # print(f'self.apply_method:{self.apply_method}')
 
     def p_loss(self, key, state, params, images, x_self_cond=None):
 

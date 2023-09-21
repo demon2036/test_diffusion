@@ -11,6 +11,7 @@ from einops import rearrange, repeat, reduce
 from modules.loss.loss import l2_loss, l1_loss, charbonnier_loss
 from modules.noise.noise import normal_noise, resize_noise, truncate_noise, offset_noise, pyramid_nosie
 from modules.state_utils import EMATrainState
+from modules.utils import get_obj_from_str
 
 
 def block_noise(g_noise, block_size=1, ):
@@ -69,7 +70,14 @@ class ElucidatedDiffusion:
             S_tmin=0.05,
             S_tmax=50,
             S_noise=1.003,
+            apply_method=None,
     ):
+
+        if apply_method is not None:
+            if not callable(apply_method):
+                apply_method = get_obj_from_str(apply_method)
+        self.apply_method = apply_method
+        print(f'self.apply_method:{self.apply_method}')
 
         self.self_condition = self_condition
         self.noise_type = noise_type
@@ -139,7 +147,7 @@ class ElucidatedDiffusion:
     # equation (7) in the paper
 
     def preconditioned_network_forward(self, noised_images, sigma, self_cond=None, clamp=False,
-                                       state: EMATrainState = None, params=None,return_mod_vars=False,z_rng=None):
+                                       state: EMATrainState = None, params=None, return_mod_vars=False, z_rng=None):
         batch = noised_images.shape[0]
 
         if params is None:
@@ -156,7 +164,8 @@ class ElucidatedDiffusion:
                                            self.c_noise(sigma),
                                            self_cond,
                                            z_rng=z_rng,
-                                           mutable='intermediates'
+                                           mutable='intermediates',
+                                           method=self.apply_method
                                            )
 
         out = self.c_skip(padded_sigma) * noised_images + self.c_out(padded_sigma) * net_out
@@ -165,7 +174,7 @@ class ElucidatedDiffusion:
             out = jnp.clip(out, -1., 1.)
 
         if return_mod_vars:
-            return out,mod_vars
+            return out, mod_vars
         else:
             return out
 
@@ -298,14 +307,14 @@ class ElucidatedDiffusion:
 
         return images
 
-    def sample(self, rng, state: EMATrainState,self_condition=None, batch_size=16, num_sample_steps=None, ):
+    def sample(self, rng, state: EMATrainState, self_condition=None, batch_size=16, num_sample_steps=None, ):
         if self_condition is not None:
             batch_size = self_condition.shape[0]
 
         # pmap_batch_size = jnp.array([batch_size // jax.device_count()])
         shape = (batch_size, *self.sample_shape)
         # rng, state: EMATrainState, shape, num_sample_steps = None, clamp = True)
-        samples = self._sample(rng, state, shape,num_sample_steps,self_condition)
+        samples = self._sample(rng, state, shape, num_sample_steps, self_condition)
         samples = jnp.reshape(samples, (-1, *self.sample_shape))
         return samples
 
