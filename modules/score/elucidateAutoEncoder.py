@@ -24,7 +24,6 @@ def model_predict(model, x, time, x_self_cond=None, method=None):
 class ElucidateAutoEncoder(ElucidatedDiffusion):
     def __init__(
             self,
-            apply_method=None,
             kl_loss=0,
             *args,
             **kwargs):
