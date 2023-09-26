@@ -30,7 +30,7 @@
     Optimizer: {
         target: optax.adamw,
         params: {
-          learning_rate: 2.0e-4,
+          learning_rate: 1.0e-4,
           b1: 0.9,
           b2: 0.99
         }

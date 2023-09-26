@@ -70,7 +70,7 @@ class DiffEncoder(nn.Module):
     encoder_type: str = '2D'
     res_type: Any = 'default'
     latent_type: Any = 'tanh'
-    patch_size:int =1
+    patch_size: int = 1
 
     def setup(self):
         encoder_configs = flax.core.frozen_dict.unfreeze(copy.deepcopy(self.encoder_configs))
@@ -100,7 +100,7 @@ class DiffEncoder(nn.Module):
         elif self.latent_type == 'double_z':
             if z_rng is None:
                 print('z_rng is None ,z_rng will default as 42')
-                z_rng=jax.random.PRNGKey(42)
+                z_rng = jax.random.PRNGKey(42)
 
             mean, log_var = jnp.split(x, 2, -1)
             # mean = mean.clip(-3, 3)
@@ -108,8 +108,8 @@ class DiffEncoder(nn.Module):
             self.sow('intermediates', 'mean', mean)
             self.sow('intermediates', 'log_var', log_var)
             x = self.reparameter(z_rng, mean, log_var)
-        elif self.latent_type=='clip':
-            x=jnp.clip(x,-1,1)
+        elif self.latent_type == 'clip':
+            x = jnp.clip(x, -1, 1)
         return x
 
     def decode(self, x, time, latent=None, *args, **kwargs):
