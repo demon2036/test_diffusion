@@ -11,7 +11,7 @@
   },
   "State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [[1,256,256,3],[1,],[1,256,256,3]],
+    Input_Shape: [[1,512,512,3],[1,],[1,512,512,3]],
     Model: {
       target: modules.models.diffEncoder.DiffEncoder,
       params: {

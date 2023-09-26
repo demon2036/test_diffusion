@@ -1,8 +1,8 @@
 import os
 import sys
-curpath=os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append(curpath)
 
+curpath = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(curpath)
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -23,11 +23,7 @@ initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
-
-
-
 print(curpath)
-
 
 
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
@@ -47,7 +43,7 @@ def train_step(state, batch, train_key, cls):
 
 
 def train():
-    os.makedirs('sample/samples',exist_ok=True)
+    os.makedirs('sample/samples', exist_ok=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default='../configs/Sample/Diffusion/test.yaml')
     args = parser.parse_args()
@@ -80,12 +76,12 @@ def train():
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
     count = 0
-    batch_size=4096
+    batch_size = 4096
     with ThreadPoolExecutor() as pool:
-        with tqdm(total=30000//batch_size) as pbar2:
-            for _ in range(30000//batch_size):
+        with tqdm(total=30000 // batch_size) as pbar2:
+            for _ in range(30000 // batch_size):
                 key, train_step_key = jax.random.split(key, num=2)
-                sample=c.sample(key,state,None,batch_size=batch_size)
+                sample = c.sample(key, state, None, batch_size=batch_size)
                 for x in sample:
                     pool.submit(save_image, x, count, 'sample/samples')
                     count += 1
