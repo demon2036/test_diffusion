@@ -108,7 +108,7 @@ class LdmTrainer(Trainer):
                 self.rng, train_step_key = jax.random.split(self.rng, num=2)
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
-                batch = shard(batch)
+                # batch = shard(batch)
 
                 if self.data_type == 'np':
                     state, metrics = train_step(state, batch, train_step_key, self.gaussian)

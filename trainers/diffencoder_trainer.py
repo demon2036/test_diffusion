@@ -64,6 +64,7 @@ class DiffEncoderTrainer(Trainer):
     def sample(self, sample_state=None):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = next(self.dl)
+        batch=batch.reshape(-1,*batch.shape[2:])
 
         try:
             sample_save_image_diffusion_encoder(self.rng,
@@ -85,7 +86,8 @@ class DiffEncoderTrainer(Trainer):
                 self.rng, train_step_key = jax.random.split(self.rng, num=2)
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
-                batch = shard(batch)
+                print(batch.shape)
+                # batch = shard(batch)
 
                 state, metrics = train_step(state, batch, train_step_key, self.gaussian)
 

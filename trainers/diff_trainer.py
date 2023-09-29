@@ -85,16 +85,14 @@ class DiffTrainer(Trainer):
 
     def sample_images(self, sample_state=None, batch_size=64, save_path=None, total_samples=30000):
         save_path = default(save_path, self.save_path)
-        os.makedirs(save_path,exist_ok=True)
-        count = 0;
+        os.makedirs(save_path, exist_ok=True)
+        count = 0
         with ThreadPoolExecutor() as pool:
             for _ in tqdm(range(total_samples // batch_size)):
                 sample_batch = self.sample(batch_size=batch_size, return_sample=True, save_sample=False)
                 for x in sample_batch:
                     pool.submit(save_image, x, count, save_path)
                     count += 1
-
-
 
     def train(self):
         state = flax.jax_utils.replicate(self.state)
@@ -105,7 +103,6 @@ class DiffTrainer(Trainer):
                 self.rng, train_step_key = jax.random.split(self.rng, num=2)
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
-                batch = shard(batch)
 
                 state, metrics = train_step(state, batch, train_step_key, self.gaussian)
 
