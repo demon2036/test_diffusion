@@ -86,7 +86,6 @@ class DiffEncoderTrainer(Trainer):
                 self.rng, train_step_key = jax.random.split(self.rng, num=2)
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
-                print(batch.shape)
                 # batch = shard(batch)
 
                 state, metrics = train_step(state, batch, train_step_key, self.gaussian)
