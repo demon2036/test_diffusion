@@ -20,7 +20,7 @@ def sample_save_image_autoencoder(state, save_path, steps, data, z_rng):
 
     @jax.pmap
     def infer(state, params, data):
-        sample = state.apply_fn({'params': params}, data, z_rng=z_rng)
+        sample = state.apply_fn({'params': params}, data,)
         return sample
 
     if steps < 50000:

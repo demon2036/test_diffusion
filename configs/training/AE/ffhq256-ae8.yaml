@@ -1,0 +1,49 @@
+{
+  "train": {
+      image_size: 256,
+      batch_size: 64,
+      file_path: '/root/data/FFHQ256',
+      seed: 43,
+      total_steps: 500000,
+      sample_steps: 100,
+      disc_start : 50000,
+      save_path: 'result/AE',
+      model_path: 'check_points/AE'
+  },
+  "State": {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [[1,256,256,3],[1,],[1,256,256,3]],
+    Model: {
+      target : modules.models.autoencoder.AutoEncoder,
+      params: {
+        dims: [ 64,128,256,256 ],
+        dtype: 'bfloat16',
+      }
+    },
+    Optimizer: {
+        target: optax.adamw,
+        params: {
+          learning_rate: 2.0e-4,
+          b1: 0.9,
+          b2: 0.99
+        }
+    },
+  },
+  "Disc_State": {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [ [ 1,256,256,3 ],[ 1, ],[ 1,256,256,3 ] ],
+    Model: {
+      target: modules.models.discriminator.NLayerDiscriminator,
+      params:{
+
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 1.0e-3,
+      }
+    },
+  },
+
+}

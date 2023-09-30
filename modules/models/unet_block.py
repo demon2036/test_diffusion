@@ -30,7 +30,7 @@ class EncoderDownBlock(nn.Module):
         #     x=Attention(self.dim,self.dtype)(x)+x
 
         if self.add_down:
-            x = DownSample(self.dim, self.dtype)(x)
+            x = DownSample(self.dim, dtype=self.dtype)(x)
         return x
 
 
@@ -51,13 +51,12 @@ class DecoderUpBlock(nn.Module):
         elif self.block_type == 'efficient':
             block = EfficientBlock
 
-
         for _ in range(self.num_blocks):
-            x = block(self.dim, self.dtype)(x)
+            x = block(self.dim, dtype=self.dtype)(x)
 
         # if self.use_attn:
         #     x=Attention(self.dim,self.dtype)(x)+x
 
         if self.add_up:
-            x = UpSample(self.dim, self.dtype)(x)
+            x = UpSample(self.dim, dtype=self.dtype)(x)
         return x
