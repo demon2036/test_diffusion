@@ -117,13 +117,6 @@ class AutoEncoderTrainer(Trainer):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = next(self.dl)
         # batch = batch.reshape(-1, *batch.shape[2:])
-        # sample_save_image_autoencoder(state, save_path, steps, batch,key)
-        sample_save_image_autoencoder(sample_state,
-                                      self.save_path,
-                                      self.finished_steps,
-                                      batch,
-                                      self.rng
-                                      )
         try:
             sample_save_image_autoencoder(sample_state,
                                           self.save_path,
