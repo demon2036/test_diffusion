@@ -20,12 +20,8 @@ from tqdm import tqdm
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-def save_latent(x,count,save_path):
-
-
-
-    np.save(file=f'{save_path}/{count}.npy',arr=x)
-
+def save_latent(x, count, save_path):
+    np.save(file=f'{save_path}/{count}.npy', arr=x)
 
 
 @partial(jax.jit)
@@ -78,19 +74,19 @@ if __name__ == "__main__":
 
     dl = get_dataloader(**dataloader_configs, drop_last=False)  # file_path
     ae = AutoEncoder(**model_configs)
-    save_path='/home/john/data/latent'
-    os.makedirs(save_path,exist_ok=True)
-    count=0
+    save_path = '/home/john/data/latent'
+    os.makedirs(save_path, exist_ok=True)
+    count = 0
     with ThreadPoolExecutor() as pool:
         for data in tqdm(dl):
             x = data
             x = x.numpy()
             x = jnp.asarray(x)
             latent = encode(state, x)
-            latent=np.array(latent,dtype='float32')
+            latent = np.array(latent, dtype='float32')
             for x in latent:
-                pool.submit(save_latent,x,count,save_path)
-                count+=1
+                pool.submit(save_latent, x, count, save_path)
+                count += 1
 
         # y = decode(state, latent)
         # sample = y / 2 + 0.5

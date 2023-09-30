@@ -4,6 +4,7 @@ import random
 
 import einops
 import flax.linen
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import torch
@@ -149,25 +150,79 @@ def generator(batch_size=32, file_path='/home/john/datasets/celeba-128/celeba-12
     while True:
         for data in d:
 
-            if isinstance(data,list):
-                data=[torch_to_jax(sub_data) for sub_data in data]
+            if isinstance(data, list):
+                data = [torch_to_jax(sub_data) for sub_data in data]
             else:
                 data = torch_to_jax(data)
             yield data
 
 
-if __name__ == '__main__':
+import jax
+import jax.numpy as jnp
 
+
+def random_boundingbox(size, lam):
+    width, height = size, size
+
+    r = np.sqrt(1. - lam)
+    w = np.int32(width * r)
+    h = np.int32(height * r)
+    x = np.random.randint(width)
+    y = np.random.randint(height)
+
+    x1 = np.clip(x - w // 2, 0, width)
+    y1 = np.clip(y - h // 2, 0, height)
+    x2 = np.clip(x + w // 2, 0, width)
+    y2 = np.clip(y + h // 2, 0, height)
+
+    return x1, y1, x2, y2
+
+
+def CutMix(imsize):
+    lam = np.random.beta(1, 1)
+    x1, y1, x2, y2 = random_boundingbox(imsize, lam)
+    # adjust lambda to exactly match pixel ratio
+    lam = 1 - ((x2 - x1) * (y2 - y1) / (imsize * imsize))
+    map = torch.ones((imsize, imsize))
+    map[x1:x2, y1:y2] = 0
+    if torch.rand(1) > 0.5:
+        map = 1 - map
+        lam = 1 - lam
+    # lam is equivalent to map.mean()
+    return map  # , lam
+
+
+if __name__ == '__main__':
+    """
     start = time.time()
     image_size = 256
-    dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2, dataset=SRDataSet)
+    dl = get_dataloader(16, '/home/john/data/s', cache=False, image_size=image_size, repeat=2, dataset=MyDataSet)
 
     from tqdm import tqdm
 
     for x in tqdm(dl):
+        cut_mix_map = jnp.asarray(CutMix(image_size))
+        cut_mix_map=einops.repeat(cut_mix_map,'h w -> h w k',k=3)
+
+        x = np.asarray(x)
+        x = jnp.asarray(x)
+
+        img1 = x[0]
+        img2 = x[1]
+
+        mixed_image = img1 * cut_mix_map + (1 - cut_mix_map) * img2
+        all = jnp.stack([img1, img2, mixed_image])
+
+        data = torch.Tensor(np.array(all))
+
+        data = einops.rearrange(data, 'b  h w c->(b ) c h w', )
+        torchvision.utils.save_image(data, f'{1}.png', nrow=4)
+
+        break
+
         pass
 
-    """
+    
     
     end = time.time()
     os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
