@@ -23,6 +23,6 @@ if __name__ == "__main__":
     disc_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),state_configs=config['Disc_State'])
 
     trainer = AutoEncoderTrainer(train_state, disc_state, **config['train'])
-    # trainer.load()
+    trainer.load()
     #trainer.sample()
     trainer.train()

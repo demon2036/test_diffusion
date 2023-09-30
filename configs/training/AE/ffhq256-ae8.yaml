@@ -12,7 +12,7 @@
   },
   "State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [[1,256,256,3],[1,],[1,256,256,3]],
+    Input_Shape: [[1,256,256,3]],
     Model: {
       target : modules.models.autoencoder.AutoEncoder,
       params: {
@@ -23,19 +23,16 @@
     Optimizer: {
         target: optax.adamw,
         params: {
-          learning_rate: 2.0e-4,
-          b1: 0.9,
-          b2: 0.99
+          learning_rate: 1.0e-4,
         }
     },
   },
   "Disc_State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,256,256,3 ],[ 1, ],[ 1,256,256,3 ] ],
+    Input_Shape: [ [ 1,256,256,3 ] ],
     Model: {
       target: modules.models.discriminator.NLayerDiscriminator,
       params:{
-
       }
     },
     Optimizer: {
