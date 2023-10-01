@@ -4,6 +4,7 @@
       batch_size: 64,
       file_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
+      dataset_type: 'tfds',
       total_steps: 500000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
