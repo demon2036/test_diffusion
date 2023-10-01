@@ -42,6 +42,7 @@ class Trainer:
                  ckpt_max_to_keep=5
                  ):
         self.data_type = data_type
+        self.batch=batch_size
 
         assert dataset_type in ['generator', 'dataloader', 'tfds']
         if dataset_type == 'generator':

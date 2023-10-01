@@ -1,3 +1,4 @@
+import einops
 import optax
 from tqdm import tqdm
 import jax.random
@@ -47,7 +48,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         kl_loss = 0
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
+        return rec_loss + 0.01 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss, kl_loss)), grads = grad_fn(state.params)
@@ -61,7 +62,9 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
 
 
 @partial(jax.pmap, axis_name='batch')  # static_broadcasted_argnums=(3),
-def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState, z_rng):
+def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState, z_rng, mix_label_p):
+    mix_label_p = einops.repeat(mix_label_p, 'b h w -> b h w c', c=3)
+
     def loss_fn(params):
         fake_image = state.apply_fn({'params': state.params}, x, z_rng=z_rng)
         real_image = x
@@ -78,7 +81,15 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,
 
         fake_loss = optax.sigmoid_binary_cross_entropy(logit_fake, jnp.zeros_like(logit_fake))
         real_loss = optax.sigmoid_binary_cross_entropy(logit_real, jnp.ones_like(logit_real))
-        disc_loss = fake_loss.mean() + real_loss.mean()
+
+        mixed_image = mix_label_p * fake_image + (1 - mix_label_p) * real_image
+
+        logit_mixed, mutable = discriminator_state.apply_fn(variable, mixed_image, True,
+                                                            mutable=['batch_stats'])
+
+        loss_mixed = optax.sigmoid_binary_cross_entropy(mix_label_p, logit_mixed)
+
+        disc_loss = fake_loss.mean() + real_loss.mean() + loss_mixed.mean()
         # disc_loss = hinge_d_loss(logit_real, logit_fake)
         return disc_loss, mutable
 
@@ -144,6 +155,8 @@ class AutoEncoderTrainer(Trainer):
 
         self.finished_steps += 1
 
+        temp = jnp.zeros((self.batch, 256, 256, 3))
+
         disc_start = self.finished_steps >= self.disc_start
 
         with tqdm(total=self.total_steps) as pbar:
@@ -163,8 +176,9 @@ class AutoEncoderTrainer(Trainer):
                     disc_start = True
 
                 if self.finished_steps > self.disc_start:
+                    mix_label = get_cut_mix_label(temp, self.rng)
                     discriminator_state, metrics_disc = train_step_disc(state, batch, discriminator_state,
-                                                                        train_step_key)
+                                                                        train_step_key, shard(mix_label))
                     for k, v in metrics_disc.items():
                         metrics_disc.update({k: v[0]})
                     metrics.update(metrics_disc)
