@@ -1,3 +1,4 @@
+import optax
 from tqdm import tqdm
 import jax.random
 from flax.training.train_state import TrainState
@@ -20,10 +21,15 @@ from trainers.basic_trainer import Trainer
 
 def adoptive_weight(disc_start, discriminator_state, reconstruct):
     if disc_start:
-        fake_logit, _ = discriminator_state.apply_fn(
-            {'params': discriminator_state.params, 'batch_stats': discriminator_state.batch_stats}, reconstruct,
-            mutable=['batch_stats'])
-        return -fake_logit.mean()
+
+        variable = {'params': discriminator_state.params}
+        if discriminator_state.batch_stats is not None:
+            variable.update({'batch_stats': discriminator_state.batch_stats})
+
+        fake_logit, _ = discriminator_state.apply_fn(variable, reconstruct, mutable=['batch_stats'])
+
+        return optax.sigmoid_binary_cross_entropy(fake_logit, jnp.ones_like(fake_logit)).mean()
+        # return -fake_logit.mean()
     else:
         return 0
 
@@ -39,7 +45,6 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         # kl_loss = kl_divergence(z_mean, z_variance).mean()
         # + 1e-6 * kl_loss
         kl_loss = 0
-
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
         return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
@@ -61,21 +66,27 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,
         fake_image = state.apply_fn({'params': state.params}, x, z_rng=z_rng)
         real_image = x
 
-        logit_real, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': discriminator_state.batch_stats}, real_image, True,
-            mutable=['batch_stats'])
+        variable = {'params': discriminator_state.params}
+        if discriminator_state.batch_stats is not None:
+            variable.update({'batch_stats': params})
 
-        logit_fake, mutable = discriminator_state.apply_fn(
-            {'params': params, 'batch_stats': mutable['batch_stats']}, fake_image, True,
-            mutable=['batch_stats'])
+        logit_real, mutable = discriminator_state.apply_fn(variable, real_image, True,
+                                                           mutable=['batch_stats'])
 
-        disc_loss = hinge_d_loss(logit_real, logit_fake)
+        logit_fake, mutable = discriminator_state.apply_fn(variable, fake_image, True,
+                                                           mutable=['batch_stats'])
+
+        fake_loss = optax.sigmoid_binary_cross_entropy(logit_fake, jnp.zeros_like(logit_fake))
+        real_loss = optax.sigmoid_binary_cross_entropy(logit_real, jnp.ones_like(logit_real))
+        disc_loss = fake_loss.mean() + real_loss.mean()
+        # disc_loss = hinge_d_loss(logit_real, logit_fake)
         return disc_loss, mutable
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (disc_loss, mutable), grads = grad_fn(discriminator_state.params, )
     grads = jax.lax.pmean(grads, axis_name='batch')
-    new_disc_state = discriminator_state.apply_gradients(grads=grads, batch_stats=mutable['batch_stats'])
+    new_disc_state = discriminator_state.apply_gradients(grads=grads, batch_stats=mutable[
+        'batch_stats'] if 'batch_stats' in mutable else None)
     disc_loss = jax.lax.pmean(disc_loss, axis_name='batch')
     metric = {'disc_loss': disc_loss}
     return new_disc_state, metric
