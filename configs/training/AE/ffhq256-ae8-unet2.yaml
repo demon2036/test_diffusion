@@ -33,7 +33,7 @@
     Model: {
       target: modules.models.discriminator.UnetDiscriminator,
       params:{
-        dim: 32,
+        dim: 16,
         dim_mults: [ 1,1,2,4,8 ]
       }
     },
