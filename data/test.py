@@ -1,25 +1,14 @@
+import jax
 import jax.numpy as jnp
+import jax
+import jax.numpy as np
+from jax import random, jit
+import tensorflow_models as tfm
+import tensorflow as tf
 
-def create_mask(x1, x2, y1, y2, h, w):
-    x_indices = slice(x1, x2)
-    y_indices = slice(y1, y2)
+cutmix = tfm.vision.augment.MixupAndCutmix(num_classes=1000)
 
-    x_mask = (jnp.arange(w) >= x_indices.start) & (jnp.arange(w) < x_indices.stop)
-    y_mask = (jnp.arange(h) >= y_indices.start) & (jnp.arange(h) < y_indices.stop)
-
-    print(x_mask)
-
-    mask = jnp.outer(y_mask, x_mask)
-
-    return mask
-
-# Example usage:
-x1 = 1
-x2 = 4
-y1 = 2
-y2 = 5
-h = 5
-w = 5
-
-mask = create_mask(x1, x2, y1, y2, h, w)
-print(mask)
+shape = (2, 224, 224, 3)
+z = tf.zeros(shape)
+label = tf.zeros((2,))
+cutmix(z, label)
