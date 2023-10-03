@@ -6,7 +6,7 @@
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
-      disc_start : 10000,
+      disc_start : 50000,
       save_path: 'result/AE',
       model_path: 'check_points/AE'
   },
