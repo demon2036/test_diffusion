@@ -3,7 +3,7 @@ import jax
 import jax.numpy as jnp
 
 
-def get_cut_mix_params(keys, w, h):
+def get_cut_mix_params(keys, w, h,b):
     key_lam, key_x, key_y = jax.random.split(keys, 3)
     lam = jax.random.beta(key_lam, 1, 1, shape=())
     r = jnp.sqrt(1 - lam)
@@ -21,18 +21,27 @@ def get_cut_mix_params(keys, w, h):
 
 def get_cut_mix_label(img, keys):
     b, h, w, c = img.shape
-    x1, y1, x2, y2 = get_cut_mix_params(keys, w, h, )
+    x1, y1, x2, y2 = get_cut_mix_params(keys, w, h, b)
 
     def create_mask(x1, x2, y1, y2):
         x_indices = slice(x1, x2)
         y_indices = slice(y1, y2)
-        x_mask = (jnp.arange(w) >= x_indices.start) & (jnp.arange(w) < x_indices.stop)
-        y_mask = (jnp.arange(h) >= y_indices.start) & (jnp.arange(h) < y_indices.stop)
-        mask = jnp.outer(y_mask, x_mask)
+
+
+
+        x_mask = (jnp.tile(jnp.arange(w),[b,1]) >= x_indices.start) & (jnp.tile(jnp.arange(w),[b,1]) < x_indices.stop)
+        y_mask = (jnp.tile(jnp.arange(h),[b,1]) >= y_indices.start) & (jnp.tile(jnp.arange(h),[b,1]) < y_indices.stop)
+
+        x_mask = jnp.expand_dims(x_mask, axis=-1)
+        y_mask = jnp.expand_dims(y_mask, axis=1)
+        # 计算外积
+        mask = jnp.logical_and(y_mask, x_mask)
+        # mask = jnp.outer(y_mask, x_mask)
         return jnp.where(mask, 1.0, 0.0)
 
     cut_mix_label = create_mask(x1, x2, y1, y2, )
     cut_mix_label=jnp.expand_dims(cut_mix_label,-1)
+
     return cut_mix_label
 
 
