@@ -2,7 +2,7 @@ import flax
 import jax
 from flax.training.common_utils import shard
 import tensorflow_datasets as tfds
-from data.dataset import generator, get_dataloader, MyDataSet, SRDataSet
+from data.dataset import generator, get_dataloader, MyDataSet, SRDataSet, torch_to_jax
 from data.input_pipeline import create_split
 from modules.utils import create_checkpoint_manager
 
@@ -55,6 +55,7 @@ class Trainer:
         else:
             self.dl = get_dataloader(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle,
                                      dataset)
+            self.dl=map(torch_to_jax,self.dl)
         self.dl = map(shard, self.dl)
         self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
 

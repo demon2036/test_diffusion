@@ -76,7 +76,7 @@ class MyDataSet(Dataset):
 
 
 def torch_to_jax(x):
-    x = np.array(x)
+    x = np.asarray(x)
     x = jnp.asarray(x)
     return x
 

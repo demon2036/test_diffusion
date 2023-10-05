@@ -20,7 +20,7 @@ def sample_save_image_autoencoder(state, save_path, steps, data, z_rng):
 
     @jax.pmap
     def infer(state, params, data):
-        sample = state.apply_fn({'params': params}, data,)
+        sample = state.apply_fn({'params': params}, data, )
         return sample
 
     if steps < 50000:
@@ -92,14 +92,17 @@ def decode(state: EMATrainState, x):
 
 def sample_save_image_latent_diffusion(key, c, steps,
                                        state: EMATrainState, save_path, ae_state: EMATrainState,
-                                       first_stage_gaussian: GaussianTest):
+                                       first_stage_gaussian: GaussianTest = None):
     os.makedirs(save_path, exist_ok=True)
     c.eval()
     sample_latent = c.sample(key, state, batch_size=8)
     c.train()
     print(sample_latent.shape)
     first_stage_gaussian.eval()
-    sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    if first_stage_gaussian is not None:
+        sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
+    else:
+        sample = decode(ae_state,sample_latent )
     print(sample.shape)
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'b h w c->( b) c h w')
@@ -118,7 +121,7 @@ def sample_save_image_sr_eval(key, diffusion, state: EMATrainState, batch):
     lr_image = jax.image.resize(batch, (b, h // diffusion.sr_factor, w // diffusion.sr_factor, c), method='bilinear')
     print(lr_image.shape)
     diffusion.eval()
-    sample = diffusion.sample(key, state, lr_image,return_img_only=False)
+    sample = diffusion.sample(key, state, lr_image, return_img_only=False)
     diffusion.eval()
     sample.append(batch)
     all_image = jnp.concatenate(sample, axis=0)
