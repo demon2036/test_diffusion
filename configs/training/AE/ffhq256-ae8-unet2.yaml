@@ -33,14 +33,14 @@
     Model: {
       target: modules.models.discriminator.UnetDiscriminator,
       params:{
-        dim: 16,
+        dim: 32,
         dim_mults: [ 1,1,2,4,8 ]
       }
     },
     Optimizer: {
       target: optax.adamw,
       params: {
-          learning_rate: 1.0e-4,
+          learning_rate: 1.0e-3,
       }
     },
   },

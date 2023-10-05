@@ -29,8 +29,8 @@ def adoptive_weight(disc_start, discriminator_state, reconstruct):
 
         fake_logit, _ = discriminator_state.apply_fn(variable, reconstruct, mutable=['batch_stats'])
 
-        return optax.l2_loss(fake_logit, jnp.ones_like(fake_logit)).mean()
-        # return -fake_logit.mean()
+        # return optax.sigmoid_binary_cross_entropy(fake_logit, jnp.ones_like(fake_logit)).mean()
+        return -fake_logit.mean()
     else:
         return 0
 
@@ -48,7 +48,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         kl_loss = 0
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + 0.05 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)
+        return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)#+ 0.05 * gan_loss
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss, kl_loss)), grads = grad_fn(state.params)
@@ -77,21 +77,20 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,
         logit_fake, mutable = discriminator_state.apply_fn(variable, fake_image, True,
                                                            mutable=['batch_stats'])
 
-        fake_loss = optax.l2_loss(logit_fake, jnp.zeros_like(logit_fake))
-        real_loss = optax.l2_loss(logit_real, jnp.ones_like(logit_real))
+        fake_loss = optax.sigmoid_binary_cross_entropy(logit_fake, jnp.zeros_like(logit_fake))
+        real_loss = optax.sigmoid_binary_cross_entropy(logit_real, jnp.ones_like(logit_real))
         mix_label_p = get_cut_mix_label(x, z_rng)
         mixed_image = mix_label_p * real_image + (1 - mix_label_p) * fake_image
         logit_mixed, mutable = discriminator_state.apply_fn(variable, mixed_image, True,
                                                             mutable=['batch_stats'])
-        loss_cut_mix = optax.l2_loss(mix_label_p, logit_mixed)
-
+        loss_cut_mix = optax.sigmoid_binary_cross_entropy(mix_label_p, logit_mixed)
         mix_up_label = get_mix_up_label(x.shape, z_rng)
         mixed_image = mix_up_label * real_image + (1 - mix_up_label) * fake_image
         logit_mixed, mutable = discriminator_state.apply_fn(variable, mixed_image, True,
                                                             mutable=['batch_stats'])
-        loss_mixe_up = optax.l2_loss(mix_up_label, logit_mixed)
+        loss_mixe_up = optax.sigmoid_binary_cross_entropy(mix_up_label, logit_mixed)
 
-        disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean()).mean()
+        disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean())/4
         # disc_loss = hinge_d_loss(logit_real, logit_fake)
         return disc_loss, mutable
 
