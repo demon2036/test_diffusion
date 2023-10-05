@@ -10,33 +10,33 @@
                     b2: 0.99
                 }
               },
-                params: {
+              params: {
                   dim: 64,
                   out_channels: 3,
+                  num_res_blocks: 2,
                   dim_mults: [ 1, 1, 2, 2, 4, 4 ],
-                  encoder_type: '2D',
-                  latent_type: 'tanh',
+                  encoder_type: '1D',
                   encoder_configs: {
-                    dims: [ 64,128,256,256 ],
-                    latent: 3,
+                    dims: [ 64,128,256,256,512,512,512 ],
                     dtype: 'bfloat16',
+                    latent: 512,
                   }
                 }
           },
       "Gaussian": {
         target: modules.score.elucidateAutoEncoder.ElucidateAutoEncoder,
         params: {
-          sample_shape: [ 256,256,3 ],
+          sample_shape: [ 128,128,3 ],
           loss: 'l2',
           apply_method: modules.models.diffEncoder.DiffEncoder.decode,
         },
       }
   },
   "train": {
-      image_size: 256,
+      image_size: 128,
       batch_size: 1,
 #      file_path: '/root/data/latent2D-16',
-      file_path: '/home/john/data/FFHQ256',
+      file_path: '/home/john/data/FFHQ',
       data_type: 'img',
       repeat: 1,
       seed: 43,
@@ -48,36 +48,28 @@
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,32,32,3 ],[ 1, ] ],
+    Input_Shape: [ [ 1,512],[ 1, ] ],
     Model: {
-      target: modules.models.unet.Unet,
-      params: {
-        dim: 128,
-        num_res_blocks : [2,2,2,2],
-        dim_mults: [ 1,2,4,8 ],
-        out_channels: 3,
-        dtype: 'bfloat16',
-        self_condition: True
-        }
+        target: modules.models.latentnet.LatentNet,
+        params: {
+          num_layers: 10,
+          dim: 2048,
+          out_dim: 512,
+          dtype: 'bfloat16'
+      }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
-        learning_rate: 5.0e-5,
+        learning_rate: 3.0e-5,
       }
     },
   },
   "Gaussian": {
     target: modules.score.elucidate.ElucidatedDiffusion,
     params: {
-      sample_shape: [ 32,32,3 ],
+      sample_shape: [ 512 ],
       loss: 'l2',
-      #      timesteps: 1000,
-      #      sampling_timesteps: 200,
-      #      objective: 'predict_noise',
-      #      beta_schedule: 'cosine',
-      #      scale_factor: 0.5,
-      #      p_loss: False
     },
   }
 }

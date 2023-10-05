@@ -10,7 +10,7 @@
                     b2: 0.99
                 }
               },
-                params: {
+              params: {
                   dim: 64,
                   out_channels: 3,
                   num_res_blocks: 2,
@@ -28,7 +28,9 @@
         params: {
           sample_shape: [ 128,128,3 ],
           loss: 'l2',
+          apply_method: modules.models.diffEncoder.DiffEncoder.decode,
         },
+      }
   },
   "train": {
       image_size: 128,
@@ -36,7 +38,7 @@
 #      file_path: '/root/data/latent2D-16',
       file_path: 'dataraws',
       data_type: 'np',
-      repeat: 1,
+      repeat: 100,
       seed: 43,
       total_steps: 3000000,
       sample_steps: 50000,
@@ -48,13 +50,11 @@
     target: modules.state_utils.EMATrainState,
     Input_Shape: [ [ 1,512],[ 1, ] ],
     Model: {
-      target: modules.models.unet.Unet,
-      params: {
         target: modules.models.latentnet.LatentNet,
         params: {
           num_layers: 10,
           dim: 2048,
-          out_dim: 2048,
+          out_dim: 512,
           dtype: 'bfloat16'
         }
     },
@@ -70,12 +70,6 @@
     params: {
       sample_shape: [ 512 ],
       loss: 'l2',
-      #      timesteps: 1000,
-      #      sampling_timesteps: 200,
-      #      objective: 'predict_noise',
-      #      beta_schedule: 'cosine',
-      #      scale_factor: 0.5,
-      #      p_loss: False
     },
   }
 }

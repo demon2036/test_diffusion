@@ -161,7 +161,8 @@ class ElucidatedDiffusion:
                 params = state.ema_params
 
         sigma = jnp.full((batch,), sigma)
-        padded_sigma = rearrange(sigma, 'b -> b 1 1 1')
+        pattern=f'b -> b {" ".join ("1" for _ in self.sample_shape) }'
+        padded_sigma = rearrange(sigma, pattern)
 
         net_out, mod_vars = state.apply_fn({'params': params},
                                            self.c_in(padded_sigma) * noised_images,
@@ -171,7 +172,7 @@ class ElucidatedDiffusion:
                                            mutable='intermediates',
                                            method=self.apply_method
                                            )
-
+        print(net_out.shape,noised_images.shape)
         out = self.c_skip(padded_sigma) * noised_images + self.c_out(padded_sigma) * net_out
 
         if clamp:
@@ -377,7 +378,8 @@ class ElucidatedDiffusion:
         assert images.shape[1:] == tuple(self.sample_shape)
 
         sigmas = self.noise_distribution(key_sigmas, batch_size)
-        padded_sigmas = rearrange(sigmas, 'b -> b 1 1 1')
+        pattern = f'b -> b {" ".join("1" for _ in self.sample_shape)}'
+        padded_sigmas = rearrange(sigmas, pattern)
 
         noise = self.generate_noise(key_noise, images.shape)
 

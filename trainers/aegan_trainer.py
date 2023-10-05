@@ -90,7 +90,8 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,
                                                             mutable=['batch_stats'])
         loss_mixe_up = optax.sigmoid_binary_cross_entropy(mix_up_label, logit_mixed)
 
-        disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean())/4
+        #disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean())/4
+        disc_loss=fake_loss.mean() + real_loss.mean()
         # disc_loss = hinge_d_loss(logit_real, logit_fake)
         return disc_loss, mutable
 
