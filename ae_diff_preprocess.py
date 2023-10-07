@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 sample = einops.rearrange(sample, '( b) h w c->( b ) c h w', )
                 sample = np.array(sample)
                 sample = torch.Tensor(sample)
-                save_image(sample, f'result/test{trainer.finished_steps}.png')
+                save_image(sample, f'{trainer.finished_steps}.png')
 
             for x in latent:
                 pool.submit(save_latent, x, count, trainer.save_path)

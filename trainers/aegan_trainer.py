@@ -48,7 +48,7 @@ def train_step(state: EMATrainState, x, discriminator_state: EMATrainState, test
         kl_loss = 0
         gan_loss = adoptive_weight(test, discriminator_state, reconstruct)
         rec_loss = l1_loss(reconstruct, x).mean()
-        return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)#+ 0.05 * gan_loss
+        return rec_loss + 0.5 * gan_loss + 1e-6 * kl_loss, (rec_loss, gan_loss, kl_loss)  # + 0.05 * gan_loss
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (rec_loss, gan_loss, kl_loss)), grads = grad_fn(state.params)
@@ -90,7 +90,7 @@ def train_step_disc(state: EMATrainState, x, discriminator_state: EMATrainState,
                                                             mutable=['batch_stats'])
         loss_mixe_up = optax.sigmoid_binary_cross_entropy(mix_up_label, logit_mixed)
 
-        #disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean())/4
+        # disc_loss = (fake_loss.mean() + real_loss.mean() + loss_mixe_up.mean() + loss_cut_mix.mean())/4
         # disc_loss=fake_loss.mean() + real_loss.mean()
         disc_loss = hinge_d_loss(logit_real, logit_fake)
         return disc_loss, mutable
@@ -165,7 +165,6 @@ class AutoEncoderTrainer(Trainer):
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
                 # batch = shard(batch)
-
 
                 state, metrics = train_step(state, batch, discriminator_state, disc_start, train_step_key)
 
