@@ -24,7 +24,7 @@
         encoder_configs: {
           dims: [ 64,128,256,256,512,512,512 ],
           dtype: 'bfloat16',
-          latent: 512,
+          latent: 1024,
         }
       }
     },
