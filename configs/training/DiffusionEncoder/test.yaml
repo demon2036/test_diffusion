@@ -1,6 +1,6 @@
 {
   "train": {
-      image_size: 128,
+      image_size: 256,
       batch_size: 1,
       file_path: '/home/john/data/FFHQ256',
       seed: 43,
@@ -11,26 +11,26 @@
   },
   "State": {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [[1,128,128,3],[1,],[1,128,128,3]],
+    Input_Shape: [[1,256,256,3],[1,],[1,256,256,3]],
     Model: {
       target: modules.models.diffEncoder.DiffEncoder,
       params: {
         dim: 64,
         out_channels: 3,
-        num_res_blocks: 2,
         dim_mults: [ 1, 1, 2, 2, 4, 4 ],
-        encoder_type: '1D',
+        encoder_type: '2D',
+        latent_type: 'clip',
         encoder_configs: {
-          dims: [ 64,128,256,256,512,512,512 ],
+          dims: [ 64,128,256,256 ],
+          latent: 3,
           dtype: 'bfloat16',
-          latent: 512,
         }
       }
     },
     Optimizer: {
         target: optax.adamw,
         params: {
-          learning_rate: 2.0e-4,
+          learning_rate: 1.0e-4,
           b1: 0.9,
           b2: 0.99
         }
@@ -39,7 +39,7 @@
   "Gaussian": {
     target: modules.score.elucidateAutoEncoder.ElucidateAutoEncoder,
     params: {
-      sample_shape: [ 128,128,3 ],
+      sample_shape: [ 256,256,3 ],
       loss: 'l2',
     },
   }
