@@ -97,7 +97,6 @@ class Unet(nn.Module):
     def __call__(self, x, time, x_self_cond=None, sr_factors=None, z_rng=None, *args, **kwargs):
 
         y = x
-
         if type(self.num_res_blocks) == int:
             num_res_blocks = (self.num_res_blocks,) * len(self.dim_mults)
         else:
