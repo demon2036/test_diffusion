@@ -88,6 +88,8 @@ class LdmTrainer(Trainer):
 
     def sample(self, sample_state=None):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
+
+
         try:
             sample_save_image_latent_diffusion(self.rng,
                                                self.gaussian,
