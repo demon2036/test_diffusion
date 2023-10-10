@@ -50,14 +50,14 @@
     target: modules.state_utils.EMATrainState,
     Input_Shape: [ [ 1,32,32,3 ],[ 1, ] ],
     Model: {
-      target: modules.models.unet.Unet,
+      target: modules.models.unet.UnetTest,
       params: {
-        dim: 128,
+        dim: 192,
         num_res_blocks : [2,2,2,2],
-        dim_mults: [ 1,2,4,8 ],
+        dim_mults: [ 1,2,4,4 ],
         out_channels: 3,
         dtype: 'bfloat16',
-        self_condition: True
+#        self_condition: True
         }
     },
     Optimizer: {
