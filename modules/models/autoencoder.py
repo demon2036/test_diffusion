@@ -44,7 +44,7 @@ class Encoder(nn.Module):
                                  dtype=self.dtype, )(x)
 
         x=nn.GroupNorm(dtype=self.dtype)(x)
-        x=nn.silu()
+        x=nn.silu(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
 
         if self.encoder_type == '1D':
