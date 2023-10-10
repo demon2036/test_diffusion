@@ -1,0 +1,76 @@
+{
+  "FirstStage": {
+    "AutoEncoder": {
+          target: modules.models.diffEncoder.DiffEncoder,
+              optimizer: {
+                optimizer: optax.adamw,
+                optimizer_configs: {
+                  learning_rate: 2.0e-4,
+                    b1: 0.9,
+                    b2: 0.99
+                }
+              },
+              params: {
+                  dim: 64,
+                  out_channels: 3,
+                  num_res_blocks: 2,
+                  dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+                  encoder_type: '1D',
+                  latent_type: 'clip',
+                  encoder_configs: {
+                    dims: [ 64,128,256,256,512,512,512 ],
+                    dtype: 'float32',
+                    latent: 1024,
+                  }
+                }
+          },
+      "Gaussian": {
+        target: modules.score.elucidateAutoEncoder.ElucidateAutoEncoder,
+        params: {
+          sample_shape: [ 128,128,3 ],
+          loss: 'l2',
+          apply_method: modules.models.diffEncoder.DiffEncoder.decode,
+        },
+      }
+  },
+  "train": {
+      image_size: 128,
+      batch_size: 4096,
+#      file_path: '/root/data/latent2D-16',
+      file_path: 'dataraws',
+      data_type: 'np',
+      repeat: 100,
+      seed: 43,
+      total_steps: 3000000,
+      sample_steps: 50000,
+      save_path: 'result/Diffusion',
+      model_path: 'check_points/Diffusion'
+
+  },
+  State: {
+    target: modules.state_utils.EMATrainState,
+    Input_Shape: [ [ 1,1024],[ 1, ] ],
+    Model: {
+        target: modules.models.latentnet.LatentNet,
+        params: {
+          num_layers: 10,
+          dim: 2048,
+          out_dim: 512,
+          dtype: 'float32'
+        }
+    },
+    Optimizer: {
+      target: optax.lion,
+      params: {
+        learning_rate: 3.0e-5,
+      }
+    },
+  },
+  "Gaussian": {
+    target: modules.score.elucidate.ElucidatedDiffusion,
+    params: {
+      sample_shape: [ 512 ],
+      loss: 'l2',
+    },
+  }
+}
