@@ -68,7 +68,7 @@ def l2norm(t, axis=1, eps=1e-12):
 class Attention(nn.Module):
     dim: int
     scale: int = 10
-    dtype: Any = jnp.float32
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x):
