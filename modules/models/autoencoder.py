@@ -8,7 +8,6 @@ from einops.layers.flax import Rearrange
 from modules.models.resnet import GlobalAveragePool
 from modules.models.unet_block import DecoderUpBlock, EncoderDownBlock
 import jax.numpy as jnp
-from diffusers import AutoencoderKL
 
 
 class Encoder2DLatent(nn.Module):
