@@ -43,8 +43,8 @@ class Encoder(nn.Module):
                                  block_type=self.block_type,
                                  dtype=self.dtype, )(x)
 
-        x=nn.GroupNorm(dtype=self.dtype)(x)
-        x=nn.silu(x)
+        x = nn.GroupNorm(dtype=self.dtype)(x)
+        x = nn.silu(x)
         x = nn.Conv(self.latent, (1, 1), dtype=self.dtype)(x)
 
         if self.encoder_type == '1D':
