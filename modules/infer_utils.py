@@ -95,7 +95,7 @@ def sample_save_image_latent_diffusion(key, c, steps,
                                        first_stage_gaussian: GaussianTest = None):
     os.makedirs(save_path, exist_ok=True)
     c.eval()
-    sample_latent = c.sample(key, state, batch_size=32)
+    sample_latent = c.sample(key, state, batch_size=16)
     c.train()
     print(sample_latent.shape)
     first_stage_gaussian.eval()
