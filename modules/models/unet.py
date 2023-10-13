@@ -95,7 +95,7 @@ class Unet(nn.Module):
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, sr_factors=None, z_rng=None, *args, **kwargs):
-
+        b, h, w, c = x.shape
         y = x
         if type(self.num_res_blocks) == int:
             num_res_blocks = (self.num_res_blocks,) * len(self.dim_mults)
@@ -123,6 +123,17 @@ class Unet(nn.Module):
             elif self.encoder_type == '2D':
                 cond_emb = None
                 x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
+
+                if z_rng is not None:
+                    print(f'z_rng:{z_rng}')
+                    z_rng, p_key = jax.random.split(z_rng)
+                    p = jax.random.uniform(p_key, (b,))
+                    mask = jax.random.bernoulli(z_rng, p, shape=(1, h, w, b)).reshape(b, h, w, 1)
+                    x_self_cond = x_self_cond * mask
+                else:
+                    print(f'z_rng:{z_rng}')
+
+
             elif self.encoder_type == '2D_as_1D':
                 cond_emb = Encoder1DLatent(2048)(x)
                 x_self_cond = None

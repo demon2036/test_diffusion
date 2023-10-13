@@ -112,13 +112,13 @@ class DiffEncoder(nn.Module):
             x = jnp.clip(x, -1, 1)
         return x
 
-    def decode(self, x, time, latent=None, *args, **kwargs):
-        x = self.unet(x, time, latent)
+    def decode(self, x, time, latent=None,z_rng=None, *args, **kwargs):
+        x = self.unet(x, time, latent,z_rng=z_rng)
         return x
 
     def __call__(self, x, time, x_self_cond=None, z_rng=None, *args, **kwargs):
         latent = self.encode(x_self_cond, z_rng=z_rng)
-        x = self.decode(x, time, latent)
+        x = self.decode(x, time, latent,z_rng=z_rng)
         return x
 
     def reparameter(self, rng, mean, logvar):
