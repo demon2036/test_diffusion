@@ -51,8 +51,11 @@ class ElucidateAutoEncoder(ElucidatedDiffusion):
 
         noised_images = images + padded_sigmas * noise  # alphas are 1. in the paper
 
-        denoised, mod_vars = self.preconditioned_network_forward(noised_images, sigmas, x_self_cond, state=state,
-                                                                 params=params, return_mod_vars=True,z_rng=train_key)
+        denoised, mod_vars = self.preconditioned_network_forward(noised_images, sigmas, x_self_cond,
+                                                                 state=state,
+                                                                 params=params,
+                                                                 return_mod_vars=True,
+                                                                 z_rng=train_key if self.train_state else None)
 
         if self.kl_loss > 0:
             mean = mod_vars['intermediates']['mean'][0]
