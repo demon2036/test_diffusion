@@ -41,7 +41,7 @@
       repeat: 1,
       seed: 43,
       total_steps: 3000000,
-      sample_steps: 50000,
+      sample_steps: 10000,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion'
 
