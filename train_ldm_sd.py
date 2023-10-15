@@ -43,7 +43,7 @@ if __name__ == "__main__":
     config = read_yaml(args.config_path)
 
     model = 'sd/models--CompVis--stable-diffusion-v1-4/snapshots/133a221b8aa7292a167afc5127cb63fb5005638b'
-    # model = 'CompVis/stable-diffusion-v1-4'
+    model = 'CompVis/stable-diffusion-v1-4'
     vae, params = FlaxAutoencoderKL.from_pretrained(model, from_pt=True, subfolder='vae',
                                                     cache_dir='sd', dtype='bfloat16'
                                                     )
