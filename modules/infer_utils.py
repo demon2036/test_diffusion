@@ -2,6 +2,8 @@ import os
 import einops
 import numpy as np
 import torch
+from flax.jax_utils import replicate
+from flax.training.common_utils import shard
 from torchvision.utils import save_image
 import jax
 import jax.numpy as jnp
@@ -13,6 +15,7 @@ from modules.gaussian.gaussian_test import GaussianTest
 from modules.models.autoencoder import AutoEncoder
 from modules.models.diffEncoder import DiffEncoder
 from modules.state_utils import EMATrainState
+from diffusers import FlaxAutoencoderKL
 
 
 def sample_save_image_autoencoder(state, save_path, steps, data, z_rng):
@@ -92,20 +95,49 @@ def decode(state: EMATrainState, x):
 
 def sample_save_image_latent_diffusion(key, c, steps,
                                        state: EMATrainState, save_path, ae_state: EMATrainState,
-                                       first_stage_gaussian: GaussianTest = None):
+                                       first_stage_gaussian: GaussianTest = None, latent_type='flax'):
     os.makedirs(save_path, exist_ok=True)
     c.eval()
     sample_latent = c.sample(key, state, batch_size=16)
     c.train()
     print(sample_latent.shape)
-    first_stage_gaussian.eval()
+
+    if latent_type == 'torch':
+        sample_latent = einops.rearrange(sample_latent, 'b h w c -> b c h w')
+
     if first_stage_gaussian is not None:
+        first_stage_gaussian.eval()
         sample = first_stage_gaussian.sample(key, ae_state, sample_latent)
     else:
-        sample = decode(ae_state,sample_latent )
+        sample = decode(ae_state, sample_latent)
     print(sample.shape)
     sample = sample / 2 + 0.5
     sample = einops.rearrange(sample, 'b h w c->( b) c h w')
+    sample = np.array(sample)
+    sample = torch.Tensor(sample)
+    save_image(sample, f'{save_path}/{steps}.png')
+
+
+
+
+
+def sample_save_image_latent_diffusion_sd(key, c, steps,
+                                          state: EMATrainState, save_path, vae_dummy,):
+    os.makedirs(save_path, exist_ok=True)
+    c.eval()
+    sample_latent = c.sample(key, state, batch_size=8)
+    c.train()
+    print(sample_latent.shape)
+    sample_latent = einops.rearrange(sample_latent, 'b h w c -> b c h w')
+    @jax.pmap
+    def decode_sd( vae_dummy, data):
+        data=data/vae_dummy.vae.scaling_factor
+        return vae_dummy.vae.apply({'params': vae_dummy.vae_params}, data, method=vae_dummy.vae.decode).sample
+
+    sample = decode_sd(replicate(vae_dummy), shard(sample_latent))
+    print(sample.shape)
+    sample = sample / 2 + 0.5
+    sample = einops.rearrange(sample, 'n b c h w ->(n b) c h w')
     sample = np.array(sample)
     sample = torch.Tensor(sample)
     save_image(sample, f'{save_path}/{steps}.png')

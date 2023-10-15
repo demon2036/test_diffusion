@@ -5,9 +5,11 @@ from modules.utils import read_yaml, create_checkpoint_manager, load_ckpt, get_o
 import os
 import flax
 import jax.numpy as jnp
+
+from trainers.ldm_sd_trainer import LdmSDTrainer
 from trainers.ldm_trainer import LdmTrainer
 
-from diffusers import UNet2DModel
+from diffusers import UNet2DModel, FlaxAutoencoderKL
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
@@ -17,11 +19,7 @@ def get_auto_encoder_diff(config):
 
     key = jax.random.PRNGKey(seed=43)
 
-    state=create_state_by_config(key,state_configs=config['State'])
-
-
-
-
+    state = create_state_by_config(key, state_configs=config['State'])
 
     model_ckpt = {'model': state, 'steps': 0}
     save_path = './check_points/DiffAE'
@@ -30,8 +28,6 @@ def get_auto_encoder_diff(config):
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     model_ckpt['model'] = model_ckpt['model'].replace(params=None)
-
-
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
 
@@ -46,16 +42,17 @@ if __name__ == "__main__":
     print(args)
     config = read_yaml(args.config_path)
 
+    # model = 'sd/models--CompVis--stable-diffusion-v1-4/snapshots/133a221b8aa7292a167afc5127cb63fb5005638b/vae'
+    model = 'CompVis/stable-diffusion-v1-4'
+    vae, params = FlaxAutoencoderKL.from_pretrained(model, from_pt=True,  # subfolder='vae',
+                                                    cache_dir='sd', dtype='bfloat16'
+                                                    )
+
     train_gaussian = create_obj_by_config(config['Gaussian'])
-    first_stage_config = config['FirstStage']
-    ae_state, first_stage_gaussian = get_auto_encoder_diff(first_stage_config)
 
     train_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),
                                          state_configs=config['State'])
-    trainer = LdmTrainer(train_state, train_gaussian, ae_state, first_stage_gaussian, **config['train'])
+    trainer = LdmSDTrainer(train_state, train_gaussian, vae, params, **config['train'])
     trainer.load()
-    trainer.sample()
-
+    # trainer.sample()
     trainer.train()
-    """
-    """

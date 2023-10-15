@@ -1,18 +1,18 @@
 import optax
-from flax.training import train_state
+import flax.training.train_state
 from typing import Any
 import jax.numpy as jnp
 import jax
 from modules.utils import get_obj_from_str
 
 
-class EMATrainState(train_state.TrainState):
+class EMATrainState(flax.training.train_state.TrainState):
     batch_stats: Any = None
     ema_params: Any = None
 
 
 def create_state(rng, model_cls, input_shapes, train_state, print_model=True, optimizer_dict=None, batch_size=1,
-                 model_kwargs=None, ):
+                 model_kwargs=None, apply_fn=None):
     model = model_cls(**model_kwargs)
 
     inputs = list(map(lambda shape: jnp.empty(shape), input_shapes))
@@ -34,7 +34,7 @@ def create_state(rng, model_cls, input_shapes, train_state, print_model=True, op
     tx = optax.chain(
         *args
     )
-    return train_state.create(apply_fn=model.apply,
+    return train_state.create(apply_fn=model.apply if apply_fn is None else get_obj_from_str(apply_fn),
                               params=variables['params'],
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
@@ -61,6 +61,7 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
     tx = optax.chain(
         *args
     )
+
     train_state = get_obj_from_str(state_configs['target'])
 
     return train_state.create(apply_fn=model.apply,

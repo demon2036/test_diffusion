@@ -1,34 +1,37 @@
 {
   "FirstStage": {
-    "AutoEncoder": {
+      State: {
+        target: modules.state_utils.EMATrainState,
+        Input_Shape: [ [ 1,128,128,3 ],[ 1, ] ,[ 1,128,128,3 ]],
+        apply_fn: modules.models.diffEncoder.DiffEncoder.decode,
+        Model: {
           target: modules.models.diffEncoder.DiffEncoder,
-              optimizer: {
-                optimizer: optax.adamw,
-                optimizer_configs: {
-                  learning_rate: 2.0e-4,
-                    b1: 0.9,
-                    b2: 0.99
-                }
-              },
-                params: {
-                  dim: 64,
-                  out_channels: 3,
-                  dim_mults: [ 1, 1, 2, 2, 4, 4 ],
-                  encoder_type: '2D',
-                  latent_type: 'clip',
-                  encoder_configs: {
-                    dims: [ 128,128,256,512 ],
-                    latent: 3,
-                    dtype: 'bfloat16',
-                  }
-                }
+          params: {
+              dim: 64,
+              out_channels: 3,
+              dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+              encoder_type: '2D',
+              latent_type: 'clip',
+              encoder_configs: {
+                dims: [ 128,128,256,512 ],
+                latent: 3,
+                dtype: 'bfloat16',
+              }
+            }
           },
+        Optimizer: {
+          target: optax.lion,
+          params: {
+            learning_rate: 1.0e-4,
+            weight_decay: 0.01
+          }
+        },
+      },
       "Gaussian": {
         target: modules.score.elucidateAutoEncoder.ElucidateAutoEncoder,
         params: {
           sample_shape: [ 256,256,3 ],
           loss: 'l2',
-          apply_method: modules.models.diffEncoder.DiffEncoder.decode,
         },
       }
   },

@@ -81,6 +81,12 @@ def torch_to_jax(x):
     return x
 
 
+def jax_to_torch(x):
+    x = np.asarray(x)
+    x = torch.Tensor(x)
+    return x
+
+
 class SRDataSet(Dataset):
     def __init__(self, path, cache=True, image_size=64, repeat=1, data_type='img'):
         self.repeat = repeat
@@ -138,7 +144,7 @@ def get_dataloader(batch_size=32, file_path='/home/john/data/s', image_size=64, 
     data = dataset(file_path, cache, image_size, repeat=repeat, data_type=data_type)
 
     dataloader = DataLoader(data, batch_size=batch_size,
-                            num_workers=48#jax.device_count() * 2
+                            num_workers=48  # jax.device_count() * 2
                             , persistent_workers=True, pin_memory=True, shuffle=shuffle,
                             drop_last=drop_last)
     return dataloader
@@ -189,7 +195,8 @@ if __name__ == '__main__':
     factor = 2
     # mix_up_label = einops.repeat(mix_up_label, 'b h w -> b h w k', k=3)
 
-    data2 = jax.image.resize(jax.image.resize(data1, (b, h // factor, w // factor, c),method='bicubic'), (b, h, w, c),method='bicubic')
+    data2 = jax.image.resize(jax.image.resize(data1, (b, h // factor, w // factor, c), method='bicubic'), (b, h, w, c),
+                             method='bicubic')
 
     mixed = data1 * mix_up_label + (1 - mix_up_label) * data2
 

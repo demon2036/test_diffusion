@@ -182,6 +182,7 @@ class Unet(nn.Module):
             dim = self.dim * dim_mul
             for _ in range(num_res_block):
                 x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+                x=Attention(dim=dim,dtype=self.dtype)(x)+x
                 h.append(x)
 
             if i != len(self.dim_mults) - 1:
@@ -201,6 +202,7 @@ class Unet(nn.Module):
             for _ in range(num_res_block + 1):
                 x = jnp.concatenate([x, h.pop()], axis=3)
                 x = res_block(dim, dtype=self.dtype)(x, t, cond_emb)
+                x = Attention(dim=dim, dtype=self.dtype)(x) + x
 
             if i != len(self.dim_mults) - 1:
                 x = UpSample(dim, dtype=self.dtype)(x)

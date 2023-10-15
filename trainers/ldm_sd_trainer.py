@@ -1,17 +1,25 @@
+import einops
+from diffusers import FlaxAutoencoderKL
+from flax.jax_utils import replicate
 from flax.training import orbax_utils
 from flax.training.common_utils import shard_prng_key, shard
 from functools import partial
 import jax
 import jax.numpy as jnp
 
-from modules.infer_utils import sample_save_image_latent_diffusion
+from modules.infer_utils import sample_save_image_latent_diffusion, sample_save_image_latent_diffusion_sd
 from modules.models.diffEncoder import DiffEncoder
-from modules.utils import  create_checkpoint_manager, load_ckpt, update_ema, default
+from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, default
 import os
 import flax
 from tqdm import tqdm
 
 from trainers.basic_trainer import Trainer
+
+
+# vae, params = FlaxAutoencoderKL.from_pretrained('CompVis/stable-diffusion-v1-4', from_pt=True, subfolder='vae',
+#                                                 # cache_dir='sd'
+#                                                 )
 
 
 @partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
@@ -30,14 +38,14 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step_with_encode(state, batch, train_key, cls, first_stage_state, ):
+@partial(jax.pmap, static_broadcasted_argnums=(3, 4), axis_name='batch')
+def train_step_with_encode(state, batch, train_key, cls, dummy_vae):
     train_key, z_rng = jax.random.split(train_key, 2)
+    data = einops.rearrange(batch, 'b h w c->b c h w ')
 
     def loss_fn(params):
-        latent = first_stage_state.apply_fn({'params': first_stage_state.ema_params}, batch, z_rng=z_rng,
-                                            method=DiffEncoder.encode)
-
+        posterior = dummy_vae.vae.apply({'params': dummy_vae.vae_params}, data, method=FlaxAutoencoderKL.encode)
+        latent = posterior.latent_dist.sample(z_rng)*dummy_vae.vae.scaling_factor
         loss = cls(train_key, state, params, latent)
         return loss
 
@@ -51,20 +59,26 @@ def train_step_with_encode(state, batch, train_key, cls, first_stage_state, ):
     return new_state, metric
 
 
-class LdmTrainer(Trainer):
+class Dummy:
+    def __init__(self, vae, vae_params):
+        self.vae = vae
+        self.vae_params = vae_params
+
+
+class LdmSDTrainer(Trainer):
     def __init__(self,
                  state,
                  gaussian,
-                 first_stage_state,
-                 first_state_gaussian,
+                 vae,
+                 vae_params,
                  *args,
                  **kwargs
                  ):
         super().__init__(*args, **kwargs)
         self.state = state
         self.gaussian = gaussian
-        self.first_stage_state = first_stage_state
-        self.first_state_gaussian = first_state_gaussian
+        self.vae_dummy = Dummy(vae, vae_params)
+        # self.vae_params = vae_params
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
     def load(self, model_path=None, template_ckpt=None):
@@ -81,7 +95,6 @@ class LdmTrainer(Trainer):
         self.finished_steps = model_ckpt['steps']
 
     def save(self):
-
         model_ckpt = {'model': self.state, 'steps': self.finished_steps}
         save_args = orbax_utils.save_args_from_target(model_ckpt)
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
@@ -90,13 +103,12 @@ class LdmTrainer(Trainer):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
 
         try:
-            sample_save_image_latent_diffusion(self.rng,
-                                               self.gaussian,
-                                               self.finished_steps,
-                                               sample_state,
-                                               self.save_path,
-                                               self.first_stage_state,
-                                               self.first_state_gaussian, )
+            sample_save_image_latent_diffusion_sd(self.rng,
+                                                  self.gaussian,
+                                                  self.finished_steps,
+                                                  sample_state,
+                                                  self.save_path,
+                                                  self.vae_dummy)
         except Exception as e:
             print(e)
 
@@ -115,7 +127,8 @@ class LdmTrainer(Trainer):
                     state, metrics = train_step(state, batch, train_step_key, self.gaussian)
                 elif self.data_type == 'img':
                     state, metrics = train_step_with_encode(state, batch, train_step_key, self.gaussian,
-                                                            self.first_stage_state)
+                                                            self.vae_dummy,
+                                                            )
                 else:
                     raise NotImplemented()
 
