@@ -14,7 +14,6 @@ from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
 
-
 # from .attention import Attention
 
 
@@ -212,9 +211,8 @@ class Unet(nn.Module):
         # x = jnp.concatenate([x, r], axis=3)
         # x = res_block(dim, dtype=self.dtype)(x, t)
         x = nn.GroupNorm()(x)
-        x = nn.silu(x)
         x = nn.Conv(self.out_channels * self.patch_size ** 2, (3, 3), dtype="float32")(x)
-        x = einops.rearrange(x, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=self.patch_size, p2=self.patch_size)
+        # x = einops.rearrange(x, 'b h w (c p1 p2)->b (h p1) (w p2) c', p1=self.patch_size, p2=self.patch_size)
 
         if self.residual:
             x = x + y
