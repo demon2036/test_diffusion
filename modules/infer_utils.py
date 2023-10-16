@@ -132,7 +132,7 @@ def sample_save_image_latent_diffusion_sd(key, c, steps,
     sample_latent = einops.rearrange(sample_latent, 'b h w c -> b c h w')
     @functools.partial(jax.pmap,static_broadcasted_argnums=(0,))
     def decode_sd( vae_dummy, data):
-        data=data
+        data=data/vae_dummy.vae.scaling_factor
         return vae_dummy.vae.apply({'params': vae_dummy.vae_params}, data, method=vae_dummy.vae.decode).sample
 
     sample = decode_sd(vae_dummy, shard(sample_latent))
