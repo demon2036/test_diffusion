@@ -1,4 +1,4 @@
-ldm-ffhq-2D-sd-elucidate_diff_sigam140.yaml{
+{
   "FirstStage": {
     "AutoEncoder": {
           target: modules.models.diffEncoder.DiffEncoder,
