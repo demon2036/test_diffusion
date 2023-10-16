@@ -45,7 +45,7 @@ def train_step_with_encode(state, batch, train_key, cls, dummy_vae):
 
     def loss_fn(params):
         posterior = dummy_vae.vae.apply({'params': dummy_vae.vae_params}, data, method=FlaxAutoencoderKL.encode)
-        latent = posterior.latent_dist.sample(z_rng)*dummy_vae.vae.scaling_factor
+        latent = posterior.latent_dist.sample(z_rng)
         loss = cls(train_key, state, params, latent)
         return loss
 
