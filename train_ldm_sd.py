@@ -54,5 +54,5 @@ if __name__ == "__main__":
                                          state_configs=config['State'])
     trainer = LdmSDTrainer(train_state, train_gaussian, vae, params, **config['train'])
     trainer.load()
-    # trainer.sample()
+    trainer.sample()
     trainer.train()

@@ -75,6 +75,7 @@
       sampling_timesteps: 200,
       objective: 'predict_v',
       beta_schedule: 'cosine',
+      clip_x_start: False,
 #      scale_factor: 0.5,
 #      p_loss: False
     },

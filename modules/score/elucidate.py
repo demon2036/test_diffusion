@@ -308,7 +308,7 @@ class ElucidatedDiffusion:
 
         # images = images.clamp(-1., 1.)
 
-        images = jnp.clip(images, -1, 1)
+        # images = jnp.clip(images, -1, 1)
 
         return images
 
