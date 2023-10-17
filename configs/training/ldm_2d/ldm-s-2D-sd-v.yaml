@@ -35,7 +35,7 @@
   "train": {
       image_size: 256,
       batch_size: 64,
-      file_path: '/root/data/FFHQ256',
+      file_path: '/root/data/s',
 #      file_path: 'dataraws',
       data_type: 'img',
       repeat: 1,
@@ -53,26 +53,31 @@
       target: modules.models.unet.Unet,
       params: {
         dim: 128,
-        num_res_blocks : [2,2,2,2],
-        dim_mults: [ 1,2,4,4 ],
+        dim_mults: [ 2, 2, 2 ],
+        num_res_blocks: 4,
         out_channels: 4,
         dtype: 'bfloat16',
 #        self_condition: True
         }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
-        learning_rate: 1.0e-4,
+        learning_rate: 3.0e-5,
       }
     },
   },
   "Gaussian": {
-    target: modules.score.elucidate.ElucidatedDiffusion,
+    target: modules.gaussian.gaussian.Gaussian,
     params: {
       sample_shape: [ 32,32,4 ],
-      loss: 'l2',
-      sigma_max: 120
+      timesteps: 1000,
+      sampling_timesteps: 200,
+      objective: 'predict_v',
+      beta_schedule: 'cosine',
+      clip_x_start: False,
+#      scale_factor: 0.5,
+#      p_loss: False
     },
   }
 }
