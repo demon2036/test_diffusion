@@ -58,7 +58,7 @@ class Trainer:
                                      dataset)
             self.dl=map(torch_to_jax,self.dl)
         self.dl = map(shard, self.dl)
-        #self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
+        self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
 
         self.rng = jax.random.PRNGKey(seed)
         self.total_steps = total_steps
