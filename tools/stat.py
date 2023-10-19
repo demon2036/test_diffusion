@@ -11,7 +11,7 @@ def cal_mean_std():
     args = parser.parse_args()
 
     config = read_yaml(args.config_path)
-    config['train']['file_path']=config['train']['save_path']
+    config['train']['file_path']='dataraws'#config['train']['save_path']
     config['train']['data_type'] = 'np'
     trainer = Trainer(**config['train'], dataset_type='dataloader', drop_last=False)
     print(args)

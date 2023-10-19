@@ -14,15 +14,8 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 def get_auto_encoder_diff(config):
     first_stage_gaussian = create_obj_by_config(config['Gaussian'])
-
     key = jax.random.PRNGKey(seed=43)
-
     state=create_state_by_config(key,state_configs=config['State'])
-
-
-
-
-
     model_ckpt = {'model': state, 'steps': 0}
     save_path = './check_points/DiffAE'
     checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=1)
@@ -54,7 +47,7 @@ if __name__ == "__main__":
                                          state_configs=config['State'])
     trainer = LdmTrainer(train_state, train_gaussian, ae_state, first_stage_gaussian, **config['train'])
     trainer.load()
-    trainer.sample()
+    # trainer.sample()
 
     trainer.train()
     """

@@ -10,19 +10,21 @@ from flax.training.common_utils import shard, shard_prng_key
 from tqdm import tqdm
 
 from modules.infer_utils import sample_save_image_diffusion, jax_img_save
+from modules.training import accumulate_gradient
 from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, default
 from tools.resize_dataset import save_image
 from trainers.basic_trainer import Trainer
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step(state, batch, train_key, cls):
-    def loss_fn(params):
-        loss = cls(train_key, state, params, batch)
+@partial(jax.pmap, static_broadcasted_argnums=(3, 4), axis_name='batch')
+def train_step(state, batch, train_key, cls, gradient_accumulate_steps):
+    def loss_fn(params, images):
+        loss = cls(train_key, state, params, images)
         return loss
 
     grad_fn = jax.value_and_grad(loss_fn)
-    loss, grads = grad_fn(state.params)
+    loss, grads = accumulate_gradient(grad_fn, state.params, batch, gradient_accumulate_steps)
+
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
@@ -104,7 +106,7 @@ class DiffTrainer(Trainer):
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
 
-                state, metrics = train_step(state, batch, train_step_key, self.gaussian)
+                state, metrics = train_step(state, batch, train_step_key, self.gaussian,self.gradient_accumulate_steps)
 
                 for k, v in metrics.items():
                     metrics.update({k: v[0]})

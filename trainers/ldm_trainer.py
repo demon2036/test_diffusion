@@ -6,6 +6,7 @@ import jax.numpy as jnp
 
 from modules.infer_utils import sample_save_image_latent_diffusion
 from modules.models.diffEncoder import DiffEncoder
+from modules.training import accumulate_gradient
 from modules.utils import  create_checkpoint_manager, load_ckpt, update_ema, default
 import os
 import flax
@@ -30,19 +31,19 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step_with_encode(state, batch, train_key, cls, first_stage_state, ):
+@partial(jax.pmap, static_broadcasted_argnums=(3,5), axis_name='batch')
+def train_step_with_encode(state, batch, train_key, cls, first_stage_state,gradient_accumulate_steps ):
     train_key, z_rng = jax.random.split(train_key, 2)
 
-    def loss_fn(params):
-        latent = first_stage_state.apply_fn({'params': first_stage_state.ema_params}, batch, z_rng=z_rng,
+    def loss_fn(params,images):
+        latent = first_stage_state.apply_fn({'params': first_stage_state.ema_params}, images, z_rng=z_rng,
                                             method=DiffEncoder.encode)
 
         loss = cls(train_key, state, params, latent)
         return loss
 
     grad_fn = jax.value_and_grad(loss_fn)
-    loss, grads = grad_fn(state.params)
+    loss, grads = accumulate_gradient(grad_fn,state.params,batch,gradient_accumulate_steps)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
@@ -115,7 +116,7 @@ class LdmTrainer(Trainer):
                     state, metrics = train_step(state, batch, train_step_key, self.gaussian)
                 elif self.data_type == 'img':
                     state, metrics = train_step_with_encode(state, batch, train_step_key, self.gaussian,
-                                                            self.first_stage_state)
+                                                            self.first_stage_state,self.gradient_accumulate_steps)
                 else:
                     raise NotImplemented()
 

@@ -34,7 +34,7 @@
   },
   "train": {
       image_size: 256,
-      batch_size: 64,
+      batch_size: 1024,
       file_path: '/root/data/s',
 #      file_path: 'dataraws',
       data_type: 'img',
@@ -43,8 +43,8 @@
       total_steps: 3000000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
-      model_path: 'check_points/Diffusion'
-
+      model_path: 'check_points/Diffusion'，
+      gradient_accumulate_steps: 16
   },
   State: {
     target: modules.state_utils.EMATrainState,
@@ -64,6 +64,7 @@
       target: optax.adamw,
       params: {
         learning_rate: 1.0e-4,
+        weight_decay: 0.001
       }
     },
   },

@@ -39,7 +39,8 @@ class Trainer:
                  sample_steps=50000,
                  save_path='result/Diffusion',
                  model_path='check_points/Diffusion',
-                 ckpt_max_to_keep=5
+                 ckpt_max_to_keep=5,
+                 gradient_accumulate_steps=1
                  ):
         self.data_type = data_type
         self.batch=batch_size
@@ -57,12 +58,13 @@ class Trainer:
                                      dataset)
             self.dl=map(torch_to_jax,self.dl)
         self.dl = map(shard, self.dl)
-        self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
+        #self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
 
         self.rng = jax.random.PRNGKey(seed)
         self.total_steps = total_steps
         self.sample_steps = sample_steps
         self.save_path = save_path
         self.model_path = model_path
+        self.gradient_accumulate_steps=gradient_accumulate_steps
         self.checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=ckpt_max_to_keep)
         self.finished_steps = 0

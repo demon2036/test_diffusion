@@ -2,7 +2,7 @@
   "FirstStage": {
       State: {
         target: modules.state_utils.EMATrainState,
-        Input_Shape: [ [ 1,128,128,3 ],[ 1, ] ,[ 1,128,128,3 ]],
+        Input_Shape: [ [ 1,256,256,3 ],[ 1, ] ,[ 1,256,256,3 ]],
         Model: {
           target: modules.models.diffEncoder.DiffEncoder,
           params: {
@@ -10,16 +10,16 @@
               out_channels: 3,
               dim_mults: [ 1, 1, 2, 2, 4, 4 ],
               encoder_type: '2D',
-              latent_type: 'clip',
+              latent_type: 'double_z',
               encoder_configs: {
-                dims: [ 128,128,256,512 ],
+                dims: [ 64,128,256,256 ],
                 latent: 3,
                 dtype: 'bfloat16',
               }
             }
           },
         Optimizer: {
-          target: optax.sgd,
+          target: optax.adamw,
           params: {
                 learning_rate: 1.0e-4
           }
@@ -36,47 +36,50 @@
   },
   "train": {
       image_size: 256,
-      batch_size: 4,
+      batch_size: 64,
 #      file_path: '/root/data/latent2D-16',
-      file_path: '/home/john/data/FFHQ256',
+      file_path: '/root/data/FFHQ256',
       data_type: 'img',
       repeat: 1,
       seed: 43,
       total_steps: 3000000,
       sample_steps: 50000,
       save_path: 'result/Diffusion',
-      model_path: 'check_points/Diffusion',
-      gradient_accumulate_steps: 4
+      model_path: 'check_points/Diffusion'
 
   },
   State: {
     target: modules.state_utils.EMATrainState,
-    Input_Shape: [ [ 1,32,32,4 ],[ 1, ] ],
-#    apply_fn: modules.models.diffEncoder.DiffEncoder.encode,
+    Input_Shape: [ [ 1,32,32,3 ],[ 1, ] ],
     Model: {
       target: modules.models.unet.Unet,
       params: {
         dim: 128,
         num_res_blocks : [2,2,2,2],
-        dim_mults: [ 1,2,4,4 ],
-        out_channels: 4,
+        dim_mults: [ 1,2,4,8 ],
+        out_channels: 3,
         dtype: 'bfloat16',
-#        self_condition: True
+        self_condition: True
         }
     },
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 3.0e-5,
-        weight_decay: 0.01
+        learning_rate: 5.0e-5,
       }
     },
   },
   "Gaussian": {
     target: modules.score.elucidate.ElucidatedDiffusion,
     params: {
-      sample_shape: [ 32,32,4 ],
+      sample_shape: [ 32,32,3 ],
       loss: 'l2',
+      #      timesteps: 1000,
+      #      sampling_timesteps: 200,
+      #      objective: 'predict_noise',
+      #      beta_schedule: 'cosine',
+      #      scale_factor: 0.5,
+      #      p_loss: False
     },
   }
 }

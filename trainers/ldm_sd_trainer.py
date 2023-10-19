@@ -6,7 +6,7 @@ from flax.training.common_utils import shard_prng_key, shard
 from functools import partial
 import jax
 import jax.numpy as jnp
-
+from modules.training import accumulate_gradient
 from modules.infer_utils import sample_save_image_latent_diffusion, sample_save_image_latent_diffusion_sd
 from modules.models.diffEncoder import DiffEncoder
 from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, default
@@ -38,19 +38,19 @@ def train_step(state, batch, train_key, cls):
     return new_state, metric
 
 
-@partial(jax.pmap, static_broadcasted_argnums=(3, 4), axis_name='batch')
-def train_step_with_encode(state, batch, train_key, cls, dummy_vae):
+@partial(jax.pmap, static_broadcasted_argnums=(3, 4, 5), axis_name='batch')
+def train_step_with_encode(state, batch, train_key, cls, dummy_vae, gradient_accumulate_steps):
     train_key, z_rng = jax.random.split(train_key, 2)
     data = einops.rearrange(batch, 'b h w c->b c h w ')
 
-    def loss_fn(params):
-        posterior = dummy_vae.vae.apply({'params': dummy_vae.vae_params}, data, method=FlaxAutoencoderKL.encode)
-        latent = posterior.latent_dist.sample(z_rng)*dummy_vae.vae.scaling_factor
+    def loss_fn(params,images):
+        posterior = dummy_vae.vae.apply({'params': dummy_vae.vae_params}, images, method=FlaxAutoencoderKL.encode)
+        latent = posterior.latent_dist.sample(z_rng) * dummy_vae.vae.scaling_factor
         loss = cls(train_key, state, params, latent)
         return loss
 
     grad_fn = jax.value_and_grad(loss_fn)
-    loss, grads = grad_fn(state.params)
+    loss, grads = accumulate_gradient(grad_fn, state.params, data, gradient_accumulate_steps)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
@@ -127,7 +127,7 @@ class LdmSDTrainer(Trainer):
                     state, metrics = train_step(state, batch, train_step_key, self.gaussian)
                 elif self.data_type == 'img':
                     state, metrics = train_step_with_encode(state, batch, train_step_key, self.gaussian,
-                                                            self.vae_dummy,
+                                                            self.vae_dummy, self.gradient_accumulate_steps
                                                             )
                 else:
                     raise NotImplemented()
