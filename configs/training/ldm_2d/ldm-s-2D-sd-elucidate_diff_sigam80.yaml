@@ -43,7 +43,7 @@
       total_steps: 3000000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
-      model_path: 'check_points/Diffusion'，
+      model_path: 'check_points/Diffusion',
       gradient_accumulate_steps: 16
   },
   State: {
