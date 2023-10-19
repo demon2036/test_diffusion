@@ -68,6 +68,38 @@ def pyramid_nosie(key, shape, discount=0.9):
     return noise / noise.std()
 
 
+def pyramid_noise(key, shape, discount=0.9):
+    b, h, w, c = shape
+    key, noise_key = jax.random.split(key, 2)
+
+    noise = normal_noise(noise_key, shape)
+    for i in range(100):
+        key, noise_key = jax.random.split(key, 2)
+        r = 2  # random.random() * 2 +
+        w, h = max(1, int(w / (r ** i))), max(1, int(h / (r ** i)))  #
+        new_shape = (b, w, h, c)
+        new_noise = normal_noise(noise_key, new_shape)
+        noise += jax.image.resize(new_noise, shape, method='bilinear') * discount ** i
+
+        if w == 1 or h == 1: break
+    return noise / noise.std()
+
+
+def get_noise(noise_type, key, shape):
+    if noise_type == 'normal':
+        return normal_noise(key, shape)
+    elif noise_type == 'truncate':
+        return truncate_noise(key, shape)
+    elif noise_type == 'resize':
+        return resize_noise(key, shape)
+    elif noise_type == 'offset':
+        return offset_noise(key, shape)
+    elif noise_type == 'pyramid':
+        return pyramid_noise(key, shape)
+    else:
+        raise NotImplemented()
+
+
 if __name__ == '__main__':
     pass
 

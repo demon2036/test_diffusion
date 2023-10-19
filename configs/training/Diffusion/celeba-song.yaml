@@ -1,13 +1,14 @@
 {
   "train": {
       image_size: 64,
-      batch_size: 64,
+      batch_size: 1024,
       file_path: '/root/data/celeba-128/celeba-128',
       seed: 43,
       total_steps: 5000000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
-      model_path: 'check_points/Diffusion'
+      model_path: 'check_points/Diffusion',
+      gradient_accumulate_steps: 32
   },
   "State": {
     target: modules.state_utils.EMATrainState,
@@ -24,7 +25,7 @@
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 8.0e-5,
+        learning_rate: 1.0e-4,
         b1: 0.9,
         b2: 0.99
       }
@@ -38,7 +39,7 @@
       timesteps: 1000,
       sampling_timesteps: 200,
       objective: 'predict_noise',
-      beta_schedule: 'cosine',
+      beta_schedule: 'linear',
 #      scale_factor: 0.5,
       p_loss: False
     },

@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from modules.score.elucidate import ElucidatedDiffusion
 from modules.state_utils import EMATrainState
 from modules.utils import extract
-
+from  diffusers import FlaxStableDiffusionPipeline
 
 class ElucidateSR(ElucidatedDiffusion):
     def __init__(

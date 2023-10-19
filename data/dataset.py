@@ -144,7 +144,7 @@ def get_dataloader(batch_size=32, file_path='/home/john/data/s', image_size=64, 
     data = dataset(file_path, cache, image_size, repeat=repeat, data_type=data_type)
 
     dataloader = DataLoader(data, batch_size=batch_size,
-                            num_workers= jax.device_count() * 2,prefetch_factor=2
+                            num_workers= jax.device_count() * 2,prefetch_factor=8
                             , persistent_workers=True, pin_memory=True, shuffle=shuffle,
                             drop_last=drop_last)
     return dataloader

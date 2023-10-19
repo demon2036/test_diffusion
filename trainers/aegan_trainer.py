@@ -16,6 +16,9 @@ from flax.training.common_utils import shard, shard_prng_key
 import jax.numpy as jnp
 from modules.augments import get_cut_mix_label, get_mix_up_label
 from trainers.basic_trainer import Trainer
+from diffusers.schedulers import FlaxDDIMScheduler
+from diffusers import FlaxStableDiffusionPipeline
+
 
 """"""
 

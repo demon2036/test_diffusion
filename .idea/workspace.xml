@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+    <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="add support of gradient accumulate">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_2d/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/training.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/training.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/diffencoder_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/diffencoder_trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/celeba-song.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/celeba-song.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/noise/noise.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/noise/noise.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/score/elucidateSR.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/score/elucidateSR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainers/aegan_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/aegan_trainer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -207,14 +207,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00351" summary="commit">
-      <option name="closed" value="true" />
-      <created>1696182848906</created>
-      <option name="number" value="00351" />
-      <option name="presentableId" value="LOCAL-00351" />
-      <option name="project" value="LOCAL" />
-      <updated>1696182848906</updated>
     </task>
     <task id="LOCAL-00352" summary="commit">
       <option name="closed" value="true" />
@@ -600,7 +592,15 @@
       <option name="project" value="LOCAL" />
       <updated>1697698679661</updated>
     </task>
-    <option name="localTasksCounter" value="400" />
+    <task id="LOCAL-00400" summary="add support of gradient accumulate">
+      <option name="closed" value="true" />
+      <created>1697702157260</created>
+      <option name="number" value="00400" />
+      <option name="presentableId" value="LOCAL-00400" />
+      <option name="project" value="LOCAL" />
+      <updated>1697702157260</updated>
+    </task>
+    <option name="localTasksCounter" value="401" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -629,7 +629,8 @@
     <MESSAGE value="fix bug of min snr" />
     <MESSAGE value="fix bug" />
     <MESSAGE value="commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit" />
+    <MESSAGE value="add support of gradient accumulate" />
+    <option name="LAST_COMMIT_MESSAGE" value="add support of gradient accumulate" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
