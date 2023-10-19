@@ -5,20 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-celeba256-2D-z-elucidate-tanh-elucidate_diff.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/training.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-s-2D-sd-elucidate_diff_sigam80.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-s-2D-sd-elucidate_diff_sigam80.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/test.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configs/training/ldm_2d/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/ldm_2d/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/stat.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/stat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ldm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ldm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ldm_sd.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ldm_sd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/basic_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/basic_trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/diff_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/diff_trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/ldm_sd_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/ldm_sd_trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainers/ldm_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/ldm_trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/training.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/training.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainers/diffencoder_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/diffencoder_trainer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +81,7 @@
       <recent name="$PROJECT_DIR$/configs/preprocess/diff_ae/2D" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train_ldm_sd">
+  <component name="RunManager" selected="Python.train_diff">
     <configuration name="train_diff" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="diffusion" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -197,11 +189,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_ldm_sd" />
-        <item itemvalue="Python.train_ldm" />
         <item itemvalue="Python.train_diff" />
-        <item itemvalue="Python.train_ldm_ae" />
         <item itemvalue="Python.train_diff_encoder" />
+        <item itemvalue="Python.train_ldm" />
+        <item itemvalue="Python.train_ldm_sd" />
+        <item itemvalue="Python.train_ldm_ae" />
       </list>
     </recent_temporary>
   </component>
@@ -215,30 +207,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00348" summary="commit">
-      <option name="closed" value="true" />
-      <created>1696061332674</created>
-      <option name="number" value="00348" />
-      <option name="presentableId" value="LOCAL-00348" />
-      <option name="project" value="LOCAL" />
-      <updated>1696061332674</updated>
-    </task>
-    <task id="LOCAL-00349" summary="commit">
-      <option name="closed" value="true" />
-      <created>1696061368585</created>
-      <option name="number" value="00349" />
-      <option name="presentableId" value="LOCAL-00349" />
-      <option name="project" value="LOCAL" />
-      <updated>1696061368585</updated>
-    </task>
-    <task id="LOCAL-00350" summary="commit">
-      <option name="closed" value="true" />
-      <created>1696142362695</created>
-      <option name="number" value="00350" />
-      <option name="presentableId" value="LOCAL-00350" />
-      <option name="project" value="LOCAL" />
-      <updated>1696142362695</updated>
     </task>
     <task id="LOCAL-00351" summary="commit">
       <option name="closed" value="true" />
@@ -608,7 +576,31 @@
       <option name="project" value="LOCAL" />
       <updated>1697520297296</updated>
     </task>
-    <option name="localTasksCounter" value="397" />
+    <task id="LOCAL-00397" summary="commit">
+      <option name="closed" value="true" />
+      <created>1697698582907</created>
+      <option name="number" value="00397" />
+      <option name="presentableId" value="LOCAL-00397" />
+      <option name="project" value="LOCAL" />
+      <updated>1697698582907</updated>
+    </task>
+    <task id="LOCAL-00398" summary="commit">
+      <option name="closed" value="true" />
+      <created>1697698622828</created>
+      <option name="number" value="00398" />
+      <option name="presentableId" value="LOCAL-00398" />
+      <option name="project" value="LOCAL" />
+      <updated>1697698622828</updated>
+    </task>
+    <task id="LOCAL-00399" summary="commit">
+      <option name="closed" value="true" />
+      <created>1697698679661</created>
+      <option name="number" value="00399" />
+      <option name="presentableId" value="LOCAL-00399" />
+      <option name="project" value="LOCAL" />
+      <updated>1697698679661</updated>
+    </task>
+    <option name="localTasksCounter" value="400" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

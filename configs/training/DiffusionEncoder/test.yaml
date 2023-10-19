@@ -1,13 +1,14 @@
 {
   "train": {
       image_size: 256,
-      batch_size: 1,
+      batch_size: 4,
       file_path: '/home/john/data/FFHQ256',
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
       save_path: 'result/Diffusion',
-      model_path: 'check_points/DiffAE'
+      model_path: 'check_points/DiffAE',
+      gradient_accumulate_steps: 4
   },
   "State": {
     target: modules.state_utils.EMATrainState,

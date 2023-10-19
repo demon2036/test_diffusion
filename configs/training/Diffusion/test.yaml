@@ -1,14 +1,14 @@
 {
   "train": {
       image_size: 32,
-      batch_size: 256,
+      batch_size: 1024,
       file_path: '/home/john/data/celeba-128/celeba-128',
       seed: 43,
       total_steps: 5000000,
       sample_steps: 100,
       save_path: 'result/Diffusion',
       model_path: 'check_points/Diffusion',
-      gradient_accumulate_steps: 8
+      gradient_accumulate_steps: 32
   },
   "State": {
     target: modules.state_utils.EMATrainState,

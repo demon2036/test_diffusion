@@ -1,6 +1,6 @@
 from tqdm import tqdm
 import jax.random
-
+from modules.training import  accumulate_gradient
 from modules.infer_utils import sample_save_image_diffusion_encoder
 from modules.utils import create_checkpoint_manager, load_ckpt, update_ema, \
     get_obj_from_str, default
@@ -13,15 +13,15 @@ import jax.numpy as jnp
 
 from trainers.basic_trainer import Trainer
 
-
-@partial(jax.pmap, static_broadcasted_argnums=(3), axis_name='batch')
-def train_step(state, batch, train_key, cls):
-    def loss_fn(params):
-        loss, kl_loss = cls(train_key, state, params, batch)
+"""
+@partial(jax.pmap, static_broadcasted_argnums=(3,4), axis_name='batch')
+def train_step(state, batch, train_key, cls,gradient_accumulate_steps):
+    def loss_fn(params,images):
+        loss, kl_loss = cls(train_key, state, params, images)
         return loss + kl_loss * cls.kl_loss, (loss, kl_loss)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (_, (loss, kl_loss)), grads = grad_fn(state.params)
+    (_, (loss, kl_loss)), grads = accumulate_gradient(grad_fn,state.params,batch,gradient_accumulate_steps)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_state = state.apply_gradients(grads=grads)
@@ -29,6 +29,31 @@ def train_step(state, batch, train_key, cls):
     kl_loss = jax.lax.pmean(kl_loss, axis_name='batch')
     metric = {"loss": loss, 'kl_loss': kl_loss}
     return new_state, metric
+"""
+
+
+
+
+
+
+
+
+@partial(jax.pmap, static_broadcasted_argnums=(3,4), axis_name='batch')
+def train_step(state, batch, train_key, cls,gradient_accumulate_steps):
+    def loss_fn(params,images):
+        loss, kl_loss = cls(train_key, state, params, images)
+        return loss + kl_loss * cls.kl_loss, (loss,kl_loss)
+
+    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
+    (_, (loss,kl_loss)), grads = accumulate_gradient(grad_fn,state.params,batch,gradient_accumulate_steps)
+    #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
+    grads = jax.lax.pmean(grads, axis_name='batch')
+    new_state = state.apply_gradients(grads=grads)
+    loss = jax.lax.pmean(loss, axis_name='batch')
+    kl_loss = jax.lax.pmean(kl_loss, axis_name='batch')
+    metric = {"loss": loss, 'kl_loss': kl_loss}
+    return new_state, metric
+
 
 
 class DiffEncoderTrainer(Trainer):
@@ -72,7 +97,8 @@ class DiffEncoderTrainer(Trainer):
                                                 self.finished_steps,
                                                 sample_state,
                                                 self.save_path,
-                                                batch
+                                                batch,
+
                                                 )
         except Exception as e:
             print(e)
@@ -88,7 +114,7 @@ class DiffEncoderTrainer(Trainer):
                 batch = next(self.dl)
                 # batch = shard(batch)
 
-                state, metrics = train_step(state, batch, train_step_key, self.gaussian)
+                state, metrics = train_step(state, batch, train_step_key, self.gaussian,self.gradient_accumulate_steps)
 
                 for k, v in metrics.items():
                     metrics.update({k: v[0]})
