@@ -1,3 +1,4 @@
+import time
 from collections import namedtuple
 from functools import partial
 
@@ -28,7 +29,7 @@ class DDIMSchedule(BasicSchedule):
 
     ):
         super().__init__(*args, **kwargs)
-        self.intermediate_values=[]
+        self.intermediate_values = []
         self.unet = unet
         self.dynamic_thresholding_ratio = dynamic_thresholding_ratio
         self.return_intermediate = return_intermediate
@@ -66,9 +67,15 @@ class DDIMSchedule(BasicSchedule):
 
         intermediate_values = []
 
-        def collect_callback(intermediate, transform):
+        # def collect_callback(intermediate, transform):
+        #     print(intermediate.shape)
+        #     self.intermediate_values.append(intermediate)
+
+        def collect_callback(intermediate):
             print(intermediate.shape)
             self.intermediate_values.append(intermediate)
+            # print(self.intermediate_values)
+            return intermediate
 
         def loop_body(step, in_args):
             samples = in_args
@@ -80,13 +87,18 @@ class DDIMSchedule(BasicSchedule):
             samples = self.step(model_output, timestep, samples)
 
             if self.return_intermediate:
-                host_callback.id_tap(collect_callback, samples)
+                result_shape_dtype = jax.ShapeDtypeStruct(
+                    shape=samples.shape,
+                    dtype=samples.dtype
+                )
+
+                # jax.pure_callback(collect_callback,result_shape_dtype,samples)
+                # host_callback.id_tap(collect_callback, samples)
+                jax.experimental.io_callback(collect_callback, result_shape_dtype, samples)
 
             return samples
 
         samples = jax.lax.fori_loop(0, self.sample_timestep, loop_body, init_val=(samples))
-
-
 
         print(samples.shape)
         #
@@ -113,8 +125,8 @@ class DDIMSchedule(BasicSchedule):
             samples = jax.jit(self._generate, static_argnums=(3,))(key, params, self_condition, shape)
             # samples = self._generate(key, params, self_condition, shape)
 
+        # samples.block_until_ready()
         host_callback.barrier_wait()
-
         intermediate_values = jnp.concatenate(self.intermediate_values)
         print(intermediate_values.shape)
 
