@@ -48,7 +48,7 @@ def create_obj_by_config(config):
     return obj(**params)
 
 
-def create_state_by_config(rng, print_model=True, state_configs={}):
+def create_state_by_config(rng, print_model=True, state_configs={}, return_model=False):
     inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
     model = create_obj_by_config(state_configs['Model'])
 
@@ -63,12 +63,16 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
     )
 
     train_state = get_obj_from_str(state_configs['target'])
-
-    return train_state.create(apply_fn=model.apply,
-                              params=variables['params'],
-                              tx=tx,
-                              batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
-                              ema_params=variables['params'])
+    train_state = train_state.create(apply_fn=model.apply,
+                                     params=variables['params'],
+                                     tx=tx,
+                                     batch_stats=variables[
+                                         'batch_stats'] if 'batch_stats' in variables.keys() else None,
+                                     ema_params=variables['params'])
+    if return_model:
+        return train_state,model
+    else:
+        return train_state
 
 
 def copy_params_to_ema(state):
