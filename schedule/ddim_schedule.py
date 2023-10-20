@@ -1,5 +1,7 @@
 from collections import namedtuple
 from functools import partial
+
+import flax.jax_utils
 from einops import einops
 from flax.training.common_utils import shard, shard_prng_key
 from modules.noise.noise import get_noise
@@ -103,7 +105,7 @@ class DDIMSchedule(BasicSchedule):
             shape = (b, *_)
 
             samples = jax.pmap(self._generate, static_broadcasted_argnums=(3,))(shard_prng_key(key),
-                                                                                shard(params),
+                                                                                flax.jax_utils.replicate(params),
                                                                                 shard(self_condition),
                                                                                 shape)
             samples = einops.rearrange(samples, 'n b h w c->(n b) h w c')
