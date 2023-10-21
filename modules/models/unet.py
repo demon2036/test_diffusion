@@ -14,6 +14,7 @@ from modules.models.transformer import Transformer
 from modules.models.embedding import SinusoidalPosEmb
 from modules.models.resnet import ResBlock, DownSample, UpSample, EfficientBlock
 
+
 # from .attention import Attention
 
 
@@ -91,6 +92,7 @@ class Unet(nn.Module):
     patch_size: int = 1
     residual: bool = False
     n: int = 8
+    time_embedding: bool = True
 
     @nn.compact
     def __call__(self, x, time, x_self_cond=None, sr_factors=None, z_rng=None, *args, **kwargs):
@@ -154,12 +156,15 @@ class Unet(nn.Module):
 
         time_dim = self.dim * 4
 
-        t = nn.Sequential([
-            SinusoidalPosEmb(self.dim),
-            nn.Dense(time_dim, dtype=self.dtype),
-            nn.gelu,
-            nn.Dense(time_dim, dtype=self.dtype)
-        ])(time)
+        if self.time_embedding:
+            t = nn.Sequential([
+                SinusoidalPosEmb(self.dim),
+                nn.Dense(time_dim, dtype=self.dtype),
+                nn.gelu,
+                nn.Dense(time_dim, dtype=self.dtype)
+            ])(time)
+        else:
+            t = None
 
         if sr_factors is not None:
             t += nn.Sequential([

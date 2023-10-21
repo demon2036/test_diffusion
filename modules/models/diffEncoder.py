@@ -89,7 +89,8 @@ class DiffEncoder(nn.Module):
                          res_type=self.res_type,
                          use_encoder=True,
                          patch_size=self.patch_size,
-                         n=(len(encoder_configs['dims']) - 1) ** 2
+                         n=(len(encoder_configs['dims']) - 1) ** 2,
+                         time_embedding=False
                          )
 
     def encode(self, x, z_rng=None, *args, **kwargs):
