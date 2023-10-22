@@ -5,12 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
+      <change afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-celeba256-2D-z-elucidate-tanh-elucidate_diff_time.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/Diffusion/test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/diffEncoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/diffEncoder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/models/unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/unet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/ddim_schedule.py" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/ddim_schedule.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_sample.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_sample.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/models/resnet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,17 +51,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;test&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/john/wangan&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "test",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/ldm_2d",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs/training/Diffusion" />
