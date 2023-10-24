@@ -35,8 +35,7 @@ class DDIMSchedule(BasicSchedule):
         self.dynamic_thresholding_ratio = dynamic_thresholding_ratio
         self.return_intermediate = return_intermediate
 
-        self.test_data=test_data
-
+        self.test_data = test_data
 
     def _threshold_sample(self, sample):
         b, h, w, c = sample.shape
@@ -66,7 +65,7 @@ class DDIMSchedule(BasicSchedule):
         key, key_image = jax.random.split(key, 2)
         samples = self.generate_noise(key_image, shape=shape)
 
-        samples=self.test_data
+        samples = self.test_data
 
         timesteps = (jnp.arange(0, self.sample_timestep) * self.train_timestep // self.sample_timestep)[::-1]
         print(len(timesteps))
@@ -104,7 +103,6 @@ class DDIMSchedule(BasicSchedule):
 
         samples = jax.lax.fori_loop(0, self.sample_timestep, loop_body, init_val=(samples))
 
-
         return samples
 
     def generate(self, key, params, self_condition=None, shape=None, pmap=True):
@@ -121,7 +119,6 @@ class DDIMSchedule(BasicSchedule):
             samples = einops.rearrange(samples, 'n b h w c->(n b) h w c')
         else:
             samples = jax.jit(self._generate, static_argnums=(3,))(key, params, self_condition, shape)
-
 
         # samples.block_until_ready()
         host_callback.barrier_wait()
