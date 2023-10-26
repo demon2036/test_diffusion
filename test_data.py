@@ -70,7 +70,7 @@ def prepare_tf_data(xs):
 
 
 if __name__ == "__main__":
-    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..000075}.tar '
+    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00075}.tar '
     #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar'
     dataset = wds.WebDataset(
         urls=urls,
