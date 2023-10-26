@@ -76,7 +76,7 @@ if __name__ == "__main__":
         urls=urls,
         shardshuffle=False).map(test)  # .mcached().map(test)
 
-    dl = DataLoader(dataset, num_workers=8, prefetch_factor=4, batch_size=512,
+    dl = DataLoader(dataset, num_workers=24, prefetch_factor=4, batch_size=1024,
                     # collate_fn=collect_fn,
                     persistent_workers=True)
 
