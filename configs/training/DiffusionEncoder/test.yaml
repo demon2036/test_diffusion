@@ -6,9 +6,10 @@
       seed: 43,
       total_steps: 500000,
       sample_steps: 10000,
+      dataset_type: 'gcloud_torch',
       save_path: 'result/Diffusion',
       model_path: 'check_points/DiffAE',
-      gradient_accumulate_steps: 4
+      gradient_accumulate_steps: 1
   },
   "State": {
     target: modules.state_utils.EMATrainState,
