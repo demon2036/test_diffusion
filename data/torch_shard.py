@@ -27,7 +27,7 @@ std = jnp.array(STDDEV_RGB, dtype=np.float32).reshape(1, 1, 3)
 def test(x):
 
     x = x['jpg']
-    x = np.asarray(x)
+    x = np.array(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.SmallestMaxSize(256, cv2.INTER_AREA)(image=x)['image']
     x = A.RandomCrop(256, 256)(image=x)['image']
