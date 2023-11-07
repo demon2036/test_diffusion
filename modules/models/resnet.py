@@ -7,7 +7,6 @@ from typing import *
 from functools import partial
 
 
-from diffusers import AutoencoderKL
 
 class WeightStandardizedConv(nn.Module):
     """
