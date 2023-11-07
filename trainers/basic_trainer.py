@@ -56,8 +56,6 @@ class Trainer:
             self.dl = map(prepare_tf_data, self.dl)
         elif dataset_type == 'gcloud_torch':
             self.dl=create_input_pipeline_torch(batch_size=batch_size)
-
-
         else:
             self.dl = get_dataloader(batch_size, file_path, image_size, cache, data_type, repeat, drop_last, shuffle,
                                      dataset)
