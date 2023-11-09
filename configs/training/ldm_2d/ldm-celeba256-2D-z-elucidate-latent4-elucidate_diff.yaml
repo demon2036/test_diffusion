@@ -74,6 +74,8 @@
     params: {
       sample_shape: [ 32,32,4 ],
       loss: 'l2',
+      P_mean: 0.0,
+      P_std: 1.0
       #      timesteps: 1000,
       #      sampling_timesteps: 200,
       #      objective: 'predict_noise',
