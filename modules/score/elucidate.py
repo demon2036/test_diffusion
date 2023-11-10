@@ -61,7 +61,7 @@ class ElucidatedDiffusion:
             self_condition=False,
             block_size=1,
             noise_type='normal',
-            num_sample_steps=200,  # number of sampling steps 32
+            num_sample_steps=32,  # number of sampling steps 32
             sigma_min=0.002,  # min noise level
             sigma_max=80,  # max noise level
             sigma_data=0.5,  # standard deviation of data distribution
