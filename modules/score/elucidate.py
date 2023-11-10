@@ -172,7 +172,7 @@ class ElucidatedDiffusion:
                                            mutable='intermediates',
                                            method=self.apply_method
                                            )
-        print(net_out.shape,noised_images.shape,z_rng)
+        print(net_out.shape,noised_images.shape,z_rng is None)
         out = self.c_skip(padded_sigma) * noised_images + self.c_out(padded_sigma) * net_out
 
         if clamp:

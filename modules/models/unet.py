@@ -124,8 +124,6 @@ class Unet(nn.Module):
             elif self.encoder_type == '2D':
                 cond_emb = None
 
-
-
                 x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
 
                 if z_rng is not None:
