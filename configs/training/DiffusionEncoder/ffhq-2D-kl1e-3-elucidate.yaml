@@ -40,7 +40,7 @@
     target: modules.score.elucidateAutoEncoder.ElucidateAutoEncoder,
     params: {
       sample_shape: [ 256,256,3 ],
-      loss: 'l1',
+      loss: 'l2',
       kl_loss : 1.0e-3,
     },
   }
