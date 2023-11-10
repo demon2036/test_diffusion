@@ -124,16 +124,17 @@ class Unet(nn.Module):
             elif self.encoder_type == '2D':
                 cond_emb = None
 
-                x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
-
                 if z_rng is not None:
+                    b, h, w, c = latent.shape
                     print(f'z_rng:{z_rng}')
                     z_rng, p_key = jax.random.split(z_rng)
                     p = jax.random.uniform(p_key, (b,))
                     mask = jax.random.bernoulli(z_rng, p, shape=(1, h, w, b)).reshape(b, h, w, 1)
-                    x_self_cond = x_self_cond * mask
+                    latent = latent * mask
                 else:
                     print(f'z_rng:{z_rng}')
+
+                x_self_cond = Encoder2DLatent(shape=x.shape, n=self.n)(latent)
 
             elif self.encoder_type == '2D_as_1D':
                 cond_emb = Encoder1DLatent(2048)(x)
