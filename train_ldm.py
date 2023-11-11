@@ -7,7 +7,7 @@ import flax
 import jax.numpy as jnp
 from trainers.ldm_trainer import LdmTrainer
 
-from diffusers import UNet2DModel
+# from diffusers import UNet2DModel
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
