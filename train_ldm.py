@@ -15,7 +15,7 @@ os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 def get_auto_encoder_diff(config):
     first_stage_gaussian = create_obj_by_config(config['Gaussian'])
     key = jax.random.PRNGKey(seed=43)
-    state=create_state_by_config(key,state_configs=config['State'])
+    state = create_state_by_config(key, state_configs=config['State'])
     model_ckpt = {'model': state, 'steps': 0}
     save_path = './check_points/DiffAE'
     checkpoint_manager = create_checkpoint_manager(save_path, max_to_keep=1)
@@ -23,8 +23,6 @@ def get_auto_encoder_diff(config):
         model_ckpt = load_ckpt(checkpoint_manager, model_ckpt)
 
     model_ckpt['model'] = model_ckpt['model'].replace(params=None)
-
-
 
     state = flax.jax_utils.replicate(model_ckpt['model'])
 
@@ -34,7 +32,7 @@ def get_auto_encoder_diff(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test.yaml')
+    parser.add_argument('-cp', '--config_path', default='./configs/training/ldm_2d/test_diffuser_unet.yaml')
     args = parser.parse_args()
     print(args)
     config = read_yaml(args.config_path)

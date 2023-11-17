@@ -53,14 +53,9 @@
     target: modules.state_utils.EMATrainState,
     Input_Shape: [ [ 1,32,32,4 ],[ 1, ] ],
     Model: {
-      target: modules.models.unet.Unet,
+       target: modules.models.experimental.vae_flax.FlaxUNet2DConditionModel,
       params: {
-        dim: 128,
-        num_res_blocks : [2,2,2,2],
-        dim_mults: [ 1,2,4,8 ],
-        out_channels: 4,
         dtype: 'bfloat16',
-        self_condition: True
         }
     },
     Optimizer: {
