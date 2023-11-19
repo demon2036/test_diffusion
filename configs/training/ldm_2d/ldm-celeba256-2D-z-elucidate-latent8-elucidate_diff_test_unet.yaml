@@ -55,7 +55,9 @@
     Model: {
        target: modules.models.experimental.vae_flax.FlaxUNet2DConditionModel,
       params: {
-        dtype: 'bfloat16',
+          in_channels: 8,
+          out_channels: 8,
+          dtype: 'bfloat16',
         }
     },
     Optimizer: {
