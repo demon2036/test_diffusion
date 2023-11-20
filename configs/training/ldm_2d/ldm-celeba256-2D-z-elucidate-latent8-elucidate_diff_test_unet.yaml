@@ -14,7 +14,8 @@
               encoder_configs: {
                 dims: [ 64,128,256,256 ],
                 latent: 8,
-                dtype: 'bfloat16',
+#                dtype: 'bfloat16',
+                dtype: 'float32',
               }
             }
           },
@@ -57,7 +58,8 @@
       params: {
           in_channels: 8,
           out_channels: 8,
-          dtype: 'bfloat16',
+          #dtype: 'bfloat16',
+          dtype: 'float32',
         }
     },
     Optimizer: {
