@@ -1,7 +1,7 @@
 apt update
 apt install unrar rar
-apt-get -y --force-yes install golang
-
+#apt-get -y --force-yes install golang
+apt-get  install golang
 
 pip install diffusers
 

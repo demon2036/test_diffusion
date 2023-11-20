@@ -6,6 +6,6 @@ sudo update-alternatives --config python3
 sudo rm /usr/bin/pip
 sudo ln -s /usr/local/bin/pip3 /usr/bin/pip
 wget https://bootstrap.pypa.io/get-pip.py
-python3.10 get-pip.py
+python3.11 get-pip.py
 pip install --upgrade pip
 pip install --upgrade setuptools
