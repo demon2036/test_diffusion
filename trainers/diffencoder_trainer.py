@@ -60,12 +60,14 @@ class DiffEncoderTrainer(Trainer):
     def __init__(self,
                  state,
                  gaussian,
+                 sample_size=32,
                  *args,
                  **kwargs
                  ):
         super().__init__(*args, **kwargs)
         self.state = state
         self.gaussian = gaussian
+        self.sample_size=sample_size
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
     def load(self, model_path=None, template_ckpt=None):
@@ -89,7 +91,7 @@ class DiffEncoderTrainer(Trainer):
     def sample(self, sample_state=None):
         sample_state = default(sample_state, flax.jax_utils.replicate(self.state))
         batch = next(self.dl)
-        batch=batch.reshape(-1,*batch.shape[2:])
+        batch=batch.reshape(-1,*batch.shape[2:])[:self.sample_size]
 
         try:
             sample_save_image_diffusion_encoder(self.rng,
