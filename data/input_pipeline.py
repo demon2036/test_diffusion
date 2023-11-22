@@ -15,7 +15,7 @@
 """ImageNet input pipeline."""
 
 import jax
-import keras_cv
+
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
