@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="764c51cb-3c87-436f-acc4-2df2256bdc5f" name="Changes" comment="commit">
-      <change afterPath="$PROJECT_DIR$/configs/training/ldm_2d/ldm-celeba256-2D-z-elucidate-latent8-elucidate_diff.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/laion-2D-Z-latent8-elucidate.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_python311.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build_python311.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/training/DiffusionEncoder/imagenet-2D-Z-latent8-elucidate.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/training/DiffusionEncoder/imagenet-2D-Z-latent8-elucidate.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/torch_shard.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/torch_shard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainers/basic_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainers/basic_trainer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,16 +59,16 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "test",
-    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/ldm_2d",
+    "last_opened_file_path": "/home/john/pythonfile/diffusion/configs/training/DiffusionEncoder",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/training/DiffusionEncoder" />
       <recent name="$PROJECT_DIR$/configs/training/ldm_2d" />
       <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/configs/training/DiffusionEncoder" />
       <recent name="$PROJECT_DIR$/modules/models/experimental" />
       <recent name="$PROJECT_DIR$/data" />
     </key>
@@ -205,70 +206,6 @@
       <updated>1690969668214</updated>
       <workItem from="1691411882203" duration="5000" />
       <workItem from="1692227362716" duration="3000" />
-    </task>
-    <task id="LOCAL-00383" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697378365477</created>
-      <option name="number" value="00383" />
-      <option name="presentableId" value="LOCAL-00383" />
-      <option name="project" value="LOCAL" />
-      <updated>1697378365477</updated>
-    </task>
-    <task id="LOCAL-00384" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697378418164</created>
-      <option name="number" value="00384" />
-      <option name="presentableId" value="LOCAL-00384" />
-      <option name="project" value="LOCAL" />
-      <updated>1697378418165</updated>
-    </task>
-    <task id="LOCAL-00385" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697379024041</created>
-      <option name="number" value="00385" />
-      <option name="presentableId" value="LOCAL-00385" />
-      <option name="project" value="LOCAL" />
-      <updated>1697379024041</updated>
-    </task>
-    <task id="LOCAL-00386" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697379162321</created>
-      <option name="number" value="00386" />
-      <option name="presentableId" value="LOCAL-00386" />
-      <option name="project" value="LOCAL" />
-      <updated>1697379162321</updated>
-    </task>
-    <task id="LOCAL-00387" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697382066834</created>
-      <option name="number" value="00387" />
-      <option name="presentableId" value="LOCAL-00387" />
-      <option name="project" value="LOCAL" />
-      <updated>1697382066834</updated>
-    </task>
-    <task id="LOCAL-00388" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697429765788</created>
-      <option name="number" value="00388" />
-      <option name="presentableId" value="LOCAL-00388" />
-      <option name="project" value="LOCAL" />
-      <updated>1697429765789</updated>
-    </task>
-    <task id="LOCAL-00389" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697429975151</created>
-      <option name="number" value="00389" />
-      <option name="presentableId" value="LOCAL-00389" />
-      <option name="project" value="LOCAL" />
-      <updated>1697429975151</updated>
-    </task>
-    <task id="LOCAL-00390" summary="commit">
-      <option name="closed" value="true" />
-      <created>1697444407145</created>
-      <option name="number" value="00390" />
-      <option name="presentableId" value="LOCAL-00390" />
-      <option name="project" value="LOCAL" />
-      <updated>1697444407145</updated>
     </task>
     <task id="LOCAL-00391" summary="commit">
       <option name="closed" value="true" />
@@ -598,7 +535,71 @@
       <option name="project" value="LOCAL" />
       <updated>1700470173216</updated>
     </task>
-    <option name="localTasksCounter" value="432" />
+    <task id="LOCAL-00432" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700471125962</created>
+      <option name="number" value="00432" />
+      <option name="presentableId" value="LOCAL-00432" />
+      <option name="project" value="LOCAL" />
+      <updated>1700471125962</updated>
+    </task>
+    <task id="LOCAL-00433" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700471314189</created>
+      <option name="number" value="00433" />
+      <option name="presentableId" value="LOCAL-00433" />
+      <option name="project" value="LOCAL" />
+      <updated>1700471314189</updated>
+    </task>
+    <task id="LOCAL-00434" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700542728992</created>
+      <option name="number" value="00434" />
+      <option name="presentableId" value="LOCAL-00434" />
+      <option name="project" value="LOCAL" />
+      <updated>1700542728992</updated>
+    </task>
+    <task id="LOCAL-00435" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700542739072</created>
+      <option name="number" value="00435" />
+      <option name="presentableId" value="LOCAL-00435" />
+      <option name="project" value="LOCAL" />
+      <updated>1700542739073</updated>
+    </task>
+    <task id="LOCAL-00436" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700552308171</created>
+      <option name="number" value="00436" />
+      <option name="presentableId" value="LOCAL-00436" />
+      <option name="project" value="LOCAL" />
+      <updated>1700552308172</updated>
+    </task>
+    <task id="LOCAL-00437" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700635039707</created>
+      <option name="number" value="00437" />
+      <option name="presentableId" value="LOCAL-00437" />
+      <option name="project" value="LOCAL" />
+      <updated>1700635039707</updated>
+    </task>
+    <task id="LOCAL-00438" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700921865144</created>
+      <option name="number" value="00438" />
+      <option name="presentableId" value="LOCAL-00438" />
+      <option name="project" value="LOCAL" />
+      <updated>1700921865145</updated>
+    </task>
+    <task id="LOCAL-00439" summary="commit">
+      <option name="closed" value="true" />
+      <created>1700922814630</created>
+      <option name="number" value="00439" />
+      <option name="presentableId" value="LOCAL-00439" />
+      <option name="project" value="LOCAL" />
+      <updated>1700922814630</updated>
+    </task>
+    <option name="localTasksCounter" value="440" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">

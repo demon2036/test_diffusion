@@ -59,8 +59,10 @@ def prepare_torch_data(xs):
     return xs
 
 
-def create_input_pipeline_torch(num_workers=jax.device_count()*2,batch_size=64,*args, **kwargs):
-    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
+def create_input_pipeline_torch(file_path=None,num_workers=jax.device_count()*2,batch_size=64,*args, **kwargs):
+    # urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
+    # urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/laion_tar/imagenet_train_shards-{00000..00221}.tar '
+    urls=file_path
     # urls = 'pipe:gsutil cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
     #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
