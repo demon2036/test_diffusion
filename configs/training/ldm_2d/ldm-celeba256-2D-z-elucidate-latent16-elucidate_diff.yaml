@@ -59,7 +59,7 @@
         dim: 128,
         num_res_blocks: [ 2,2,2,2 ],
         dim_mults: [ 1,2,4,8 ],
-        out_channels: 8,
+        out_channels: 16,
         dtype: 'float32',
       }
     },
