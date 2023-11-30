@@ -9,7 +9,7 @@
       save_path: 'result/Diffusion',
       model_path: 'check_points/DiffAE',
       dataset_type: 'gcloud_torch',
-      gradient_accumulate_steps: 16
+      gradient_accumulate_steps: 8
   },
   "State": {
     target: modules.state_utils.EMATrainState,
