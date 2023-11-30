@@ -2,6 +2,9 @@ import jax
 
 
 def accumulate_gradient(loss_and_grad_fn, params, images, accum_steps):
+
+    print(f'accum_steps:{accum_steps}')
+
     """Accumulate gradient over multiple steps to save on memory."""
     # See (internal link) for details and experiments.
     if accum_steps and accum_steps > 1:
