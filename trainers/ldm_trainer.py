@@ -111,7 +111,6 @@ class LdmTrainer(Trainer):
                 train_step_key = shard_prng_key(train_step_key)
                 batch = next(self.dl)
                 # batch = shard(batch)
-
                 if self.data_type == 'np':
                     state, metrics = train_step(state, batch, train_step_key, self.gaussian)
                 elif self.data_type == 'img':

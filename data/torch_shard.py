@@ -69,11 +69,11 @@ def create_input_pipeline_torch(file_path=None,num_workers=jax.device_count()*2,
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().decode('pil').map(
+        shardshuffle=False,handler=wds.ignore_and_continue).mcached().decode('pil').map(
         test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=16, prefetch_factor=2, batch_size=batch_size, drop_last=True,
-                            persistent_workers=True)
+    dataloader = wds.WebLoader(dataset, num_workers=16, prefetch_factor=2, batch_size=batch_size, drop_last=True,
+                           )
 
     while True:
         for xs in dataloader:
