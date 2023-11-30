@@ -43,7 +43,7 @@
     params: {
       sample_shape: [ 256,256,3 ],
       loss: 'l2',
-      kl_loss : 1.0e-6xxxxxxxxxxxxxxxxxxxx,
+      kl_loss : 1.0e-6,
     },
   }
 }
