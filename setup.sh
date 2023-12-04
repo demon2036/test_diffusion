@@ -8,6 +8,6 @@ pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_relea
 #pip install flax --ignore-installed PyYAML
 pip install flax
 pip install albumentations einops tqdm matplotlib jax-smi
-pip install tensorflow tensorflow-datasets webdataset keras-cv timm
+pip install tensorflow==2.14 tensorflow-datasets webdataset keras-cv timm
 pip install orbax-checkpoint==0.4.3
 #pip install pytorch_fid
