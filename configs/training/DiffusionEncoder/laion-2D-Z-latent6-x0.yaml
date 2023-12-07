@@ -20,6 +20,7 @@
         out_channels: 3,
         dim_mults: [ 1, 1, 2, 2, 4, 4 ],
         encoder_type: '2D',
+        time_embedding: True,
         latent_type: 'double_z',
         encoder_configs: {
           dims: [ 64,128,256,256 ],
@@ -51,7 +52,7 @@
       scale_shift: True,
       self_condition: True,
       p_loss: False,
-      time_embedding: True
+
     },
   }
 }
