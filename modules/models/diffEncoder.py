@@ -71,6 +71,7 @@ class DiffEncoder(nn.Module):
     res_type: Any = 'default'
     latent_type: Any = 'tanh'
     patch_size: int = 1
+    time_embedding: bool =False
 
     def setup(self):
         encoder_configs = flax.core.frozen_dict.unfreeze(copy.deepcopy(self.encoder_configs))
@@ -90,7 +91,7 @@ class DiffEncoder(nn.Module):
                          use_encoder=True,
                          patch_size=self.patch_size,
                          n=(len(encoder_configs['dims']) - 1) ** 2,
-                         time_embedding=False
+                         time_embedding=self.time_embedding
                          )
 
     def encode(self, x, z_rng=None, *args, **kwargs):
