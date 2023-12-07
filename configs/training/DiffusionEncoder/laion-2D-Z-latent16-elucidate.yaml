@@ -24,7 +24,7 @@
          time_embedding: True,
         encoder_configs: {
           dims: [ 64,128,256,256 ],
-          latent: 6,
+          latent: 16,
           dtype: 'bfloat16',
         }
       }
