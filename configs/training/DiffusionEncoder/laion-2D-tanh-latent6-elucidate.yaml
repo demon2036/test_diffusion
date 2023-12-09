@@ -21,7 +21,7 @@
         dim_mults: [ 1, 1, 2, 2, 4, 4 ],
         encoder_type: '2D',
         latent_type: 'tanh',
-         time_embedding: True,
+#         time_embedding: True,
         encoder_configs: {
           dims: [ 64,128,256,256 ],
           latent: 6,
