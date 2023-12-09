@@ -72,14 +72,16 @@ class ElucidatedDiffusion:
             S_tmin=0.05,
             S_tmax=50,
             S_noise=1.003,
+            mean=0.0,
+            std=1.0,
             apply_method=None,
     ):
 
         if apply_method is not None:
             if not callable(apply_method):
                 cls, method = apply_method.rsplit('.', 1)
-                cls_obj=get_obj_from_str(cls)
-                apply_method = getattr(cls_obj,method)
+                cls_obj = get_obj_from_str(cls)
+                apply_method = getattr(cls_obj, method)
         self.apply_method = apply_method
         print(f'self.apply_method:{self.apply_method}')
 
@@ -117,6 +119,9 @@ class ElucidatedDiffusion:
         self.train_state = True
         self.pmap_preconditioned_network_forward = jax.pmap(self.preconditioned_network_forward)
         self.pmap_sample = jax.pmap(self._sample, )
+
+        self.mean = mean
+        self.std = std
 
     # derived preconditioning params - Table 1
 
@@ -161,7 +166,7 @@ class ElucidatedDiffusion:
                 params = state.ema_params
 
         sigma = jnp.full((batch,), sigma)
-        pattern=f'b -> b {" ".join ("1" for _ in self.sample_shape) }'
+        pattern = f'b -> b {" ".join("1" for _ in self.sample_shape)}'
         padded_sigma = rearrange(sigma, pattern)
 
         net_out, mod_vars = state.apply_fn({'params': params},
@@ -172,7 +177,7 @@ class ElucidatedDiffusion:
                                            mutable='intermediates',
                                            method=self.apply_method
                                            )
-        print(net_out.shape,noised_images.shape,z_rng is None)
+        print(net_out.shape, noised_images.shape, z_rng is None)
         out = self.c_skip(padded_sigma) * noised_images + self.c_out(padded_sigma) * net_out
 
         if clamp:
@@ -321,6 +326,9 @@ class ElucidatedDiffusion:
         # rng, state: EMATrainState, shape, num_sample_steps = None, clamp = True)
         samples = self._sample(rng, state, shape, num_sample_steps, self_condition)
         samples = jnp.reshape(samples, (-1, *self.sample_shape))
+
+        samples = self.denormalize(samples)
+
         return samples
 
     # def sample_using_dpmpp(self, batch_size=16, num_sample_steps=None):
@@ -403,6 +411,9 @@ class ElucidatedDiffusion:
         return losses.mean()
 
     def __call__(self, key, state, params, images):
+
+        images = self.normalize(images)
+
         return self.p_loss(key, state, params, images)
 
     def train(self):
@@ -410,3 +421,9 @@ class ElucidatedDiffusion:
 
     def eval(self):
         self.train_state = False
+
+    def normalize(self, x):
+        return (x - self.mean) / self.std
+
+    def denormalize(self, x):
+        return x * self.std + self.mean
