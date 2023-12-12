@@ -71,7 +71,7 @@ class DiffEncoder(nn.Module):
     res_type: Any = 'default'
     latent_type: Any = 'tanh'
     patch_size: int = 1
-    time_embedding: bool =False
+    time_embedding: bool = False
 
     def setup(self):
         encoder_configs = flax.core.frozen_dict.unfreeze(copy.deepcopy(self.encoder_configs))
@@ -99,6 +99,8 @@ class DiffEncoder(nn.Module):
         x = self.encoder(x)
         if self.latent_type == 'tanh':
             x = nn.tanh(x)
+        elif self.latent_type == 'sin':
+            x = jnp.sin(x)
         elif self.latent_type == 'double_z':
             if z_rng is None:
                 print('z_rng is None ,z_rng will default as 42')

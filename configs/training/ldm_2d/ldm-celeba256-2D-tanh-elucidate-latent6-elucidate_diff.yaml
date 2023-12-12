@@ -6,17 +6,17 @@
         Model: {
           target: modules.models.diffEncoder.DiffEncoder,
           params: {
-              dim: 64,
-              out_channels: 3,
-              dim_mults: [ 1, 1, 2, 2, 4, 4 ],
-              encoder_type: '2D',
-              latent_type: 'tanh',
-              encoder_configs: {
-                dims: [ 64,128,256,256 ],
-                latent: 6,
-#                dtype: 'bfloat16',
-                dtype: 'float32',
-              }
+            dim: 64,
+            out_channels: 3,
+            dim_mults: [ 1, 1, 2, 2, 4, 4 ],
+            encoder_type: '2D',
+            latent_type: 'tanh',
+            #         time_embedding: True,
+            encoder_configs: {
+              dims: [ 64,128,256,256 ],
+              latent: 6,
+              dtype: 'bfloat16',
+            }
             }
           },
         Optimizer: {
