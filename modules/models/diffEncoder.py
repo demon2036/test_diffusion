@@ -112,6 +112,19 @@ class DiffEncoder(nn.Module):
             self.sow('intermediates', 'mean', mean)
             self.sow('intermediates', 'log_var', log_var)
             x = self.reparameter(z_rng, mean, log_var)
+        elif self.latent_type == 'double_z_tanh':
+            if z_rng is None:
+                print('z_rng is None ,z_rng will default as 42')
+                z_rng = jax.random.PRNGKey(42)
+
+            mean, log_var = jnp.split(x, 2, -1)
+            # mean = mean.clip(-3, 3)
+            log_var = log_var.clip(-20, 20)
+            self.sow('intermediates', 'mean', mean)
+            self.sow('intermediates', 'log_var', log_var)
+            x = self.reparameter(z_rng, mean, log_var)
+            x = nn.tanh(x)
+
         elif self.latent_type == 'clip':
             x = jnp.clip(x, -1, 1)
         return x
