@@ -8,8 +8,8 @@ from modules.score.elucidate import ElucidatedDiffusion
 from modules.utils import get_obj_from_str
 
 
-def kl_divergence(mean, logvar):
-    return 0.5 * jnp.sum(jnp.power(mean, 2) + jnp.exp(logvar) - 1.0 - logvar, axis=[1, 2, 3])
+def kl_divergence(mean, logvar,mean_weight=1.0,std_weight=1.0):
+    return 0.5 * jnp.sum(mean_weight*jnp.power(mean, 2) + std_weight*(jnp.exp(logvar) - 1.0 - logvar), axis=[1, 2, 3])
 
 
 def model_predict_ema(model, x, time, x_self_cond=None, method=None):
@@ -25,16 +25,14 @@ class ElucidateAutoEncoder(ElucidatedDiffusion):
     def __init__(
             self,
             kl_loss=0,
+            mean_weight=1.0,
+            std_weight=1.0,
             *args,
             **kwargs):
         super().__init__(*args, **kwargs)
-
-        # if apply_method is not None:
-        #     if not callable(apply_method):
-        #         apply_method = get_obj_from_str(apply_method)
+        self.mean_weight=mean_weight
+        self.std_weight=std_weight
         self.kl_loss = kl_loss
-        # self.apply_method = apply_method
-        # print(f'self.apply_method:{self.apply_method}')
 
     def p_loss(self, key, state, params, images, x_self_cond=None):
 
@@ -60,7 +58,7 @@ class ElucidateAutoEncoder(ElucidatedDiffusion):
         if self.kl_loss > 0:
             mean = mod_vars['intermediates']['mean'][0]
             log_var = mod_vars['intermediates']['log_var'][0]
-            kl_loss = kl_divergence(mean, log_var) * self.kl_loss
+            kl_loss = kl_divergence(mean, log_var,self.mean_weight,self.std_weight) * self.kl_loss
         else:
             kl_loss = jnp.array([0])
 
