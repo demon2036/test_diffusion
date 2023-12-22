@@ -107,8 +107,8 @@ class DiffEncoder(nn.Module):
                 z_rng = jax.random.PRNGKey(42)
 
             mean, log_var = jnp.split(x, 2, -1)
-            mean = mean.clip(-1, 1)
-            log_var = log_var.clip(-1, 1)
+            # mean = mean.clip(-1, 1)
+            log_var = log_var.clip(-20, 20)
             self.sow('intermediates', 'mean', mean)
             self.sow('intermediates', 'log_var', log_var)
             x = self.reparameter(z_rng, mean, log_var)
